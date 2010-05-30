@@ -1,0 +1,17 @@
+#!/bin/bash
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: prepallman 13242 2009-03-29 04:09:11Z zmedico $
+
+source "${PORTAGE_BIN_PATH:-/usr/lib/portage/bin}"/isolated-functions.sh
+
+ret=0
+
+find "${D}" -type d -name man > "${T}"/prepallman.filelist
+while read mandir ; do
+	mandir=${mandir#${D}}
+	prepman "${mandir%/man}"
+	((ret|=$?))
+done < "${T}"/prepallman.filelist
+
+exit ${ret}

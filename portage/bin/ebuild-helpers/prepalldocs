@@ -1,0 +1,16 @@
+#!/bin/bash
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: prepalldocs 13063 2009-03-12 00:28:45Z zmedico $
+
+source "${PORTAGE_BIN_PATH:-/usr/lib/portage/bin}"/isolated-functions.sh
+
+if [[ -n $1 ]] ; then
+	vecho "${0##*/}: invalid usage; takes no arguments" 1>&2
+fi
+
+cd "${D}"
+[[ -d usr/share/doc ]] || exit 0
+
+ecompressdir --ignore /usr/share/doc/${PF}/html
+ecompressdir --queue /usr/share/doc

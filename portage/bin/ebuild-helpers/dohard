@@ -1,0 +1,14 @@
+#!/bin/bash
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: dohard 13063 2009-03-12 00:28:45Z zmedico $
+
+if [[ $# -ne 2 ]] ; then
+	echo "$0: two arguments needed" 1>&2
+	exit 1
+fi
+
+destdir=${2%/*}
+[[ ! -d ${D}${destdir} ]] && dodir "${destdir}"
+
+exec ln -f "${D}$1" "${D}$2"

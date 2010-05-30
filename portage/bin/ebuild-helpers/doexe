@@ -1,0 +1,43 @@
+#!/bin/bash
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: doexe 13242 2009-03-29 04:09:11Z zmedico $
+
+source "${PORTAGE_BIN_PATH:-/usr/lib/portage/bin}"/isolated-functions.sh
+
+if [[ $# -lt 1 ]] ; then
+	echo "$0: at least one argument needed" 1>&2
+	exit 1
+fi
+
+if [[ ! -d ${D}${_E_EXEDESTTREE_} ]] ; then
+	install -d "${D}${_E_EXEDESTTREE_}"
+fi
+
+TMP=$T/.doexe_tmp
+mkdir "$TMP"
+
+ret=0
+
+for x in "$@" ; do
+	if [ -L "${x}" ] ; then
+		cp "$x" "$TMP"
+		mysrc=$TMP/${x##*/}
+	elif [ -d "${x}" ] ; then
+		vecho "doexe: warning, skipping directory ${x}"
+		continue
+	else
+		mysrc="${x}"
+	fi
+	if [ -e "$mysrc" ] ; then
+		install $EXEOPTIONS "$mysrc" "$D$_E_EXEDESTTREE_"
+	else
+		echo "!!! ${0##*/}: $mysrc does not exist" 1>&2
+		false
+	fi
+	((ret|=$?))
+done
+
+rm -rf "$TMP"
+
+exit $ret

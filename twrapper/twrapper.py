@@ -86,12 +86,19 @@ def open_task_list():
 		idfetch_pkg_list_file = open(idfetch_pkg_list_file_name,"r")
 		idfetch_pkg_list=pickle.load(idfetch_pkg_list_file)
 		idfetch_pkg_list_file.close()
-		#delete task list file
-		os.unlink(idfetch_pkg_list_file_name)
 	except:
 		idfetch_pkg_list=[]
 		error_msg("open_task_list(): Can't open file: "+idfetch_pkg_list_file_name+"   >>> Nothing to do.")
 		time.sleep(3)
+
+	#delete task list file
+	try:
+		os.unlink(idfetch_pkg_list_file_name)
+		debug("deleted:"+idfetch_pkg_list_file_name)
+	except:
+		error_msg("open_task_list(): Can't delete file: "+idfetch_pkg_list_file_name)
+		time.sleep(3)
+
 
 	#unlock file
 	os.unlink(idfetch_pkg_list_file_lock_name)
@@ -235,7 +242,7 @@ def do_tasks(idfetch_pkg_list):
 	key='x'
 	if USE_CURSES_FLAG:
 		stdscr.nodelay(1)
-	while (key != ord('q')) and (key != ord('Q')):
+	while (key != ord('q')) and (key != ord('Q')) or exit_flag:
 	
 		for current_fetch_distfile_thread in running_fetch_distfile_thread_list:
 			if current_fetch_distfile_thread.status==0:
@@ -255,6 +262,11 @@ def do_tasks(idfetch_pkg_list):
 			key = stdscr.getch()
 			if (key == ord('q')) or (key == ord('Q')):
 				msg(28,">>>>>>>>>>>>>>>>> EXITING  <<<<<<<<<<<<<<<<<<<<<<<<<<")
+		if finished_downloads == index:
+			msg(28,"All files have been downloaded. Exiting in 3 secs ...")
+			time.sleep(3)
+			exit_flag=1
+			break
 	exit_flag=1
 
 

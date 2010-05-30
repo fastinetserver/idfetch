@@ -1,0 +1,65 @@
+#!/usr/bin/python
+# Copyright 2006-2009 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: emerge 14291 2009-09-20 11:28:14Z arfrever $
+
+from __future__ import print_function
+
+import sys
+# This block ensures that ^C interrupts are handled quietly.
+try:
+	import signal
+
+	def exithandler(signum,frame):
+		signal.signal(signal.SIGINT, signal.SIG_IGN)
+		signal.signal(signal.SIGTERM, signal.SIG_IGN)
+		sys.exit(1)
+
+	signal.signal(signal.SIGINT, exithandler)
+	signal.signal(signal.SIGTERM, exithandler)
+	signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+except KeyboardInterrupt:
+	sys.exit(1)
+
+def debug_signal(signum, frame):
+	import pdb
+	pdb.set_trace()
+signal.signal(signal.SIGUSR1, debug_signal)
+
+try:
+	from _emerge.main import emerge_main
+except ImportError:
+	from os import path as osp
+	import sys
+	sys.path.insert(0, osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), "pym"))
+	from _emerge.main import emerge_main
+
+if __name__ == "__main__":
+	import sys
+	from portage.exception import ParseError, PermissionDenied
+	try:
+		retval = emerge_main()
+	except PermissionDenied as e:
+		sys.stderr.write("Permission denied: '%s'\n" % str(e))
+		sys.exit(e.errno)
+	except ParseError as e:
+		sys.stderr.write("%s\n" % str(e))
+		sys.exit(1)
+	except SystemExit:
+		raise
+	except Exception:
+		# If an unexpected exception occurs then we don't want the mod_echo
+		# output to obscure the traceback, so dump the mod_echo output before
+		# showing the traceback.
+		import traceback
+		tb_str = traceback.format_exc()
+		try:
+			from portage.elog import mod_echo
+		except ImportError:
+			pass
+		else:
+			mod_echo.finalize()
+		sys.stderr.write(tb_str)
+		sys.exit(1)
+	sys.exit(retval)

@@ -1,0 +1,19 @@
+#!/usr/bin/python
+# runTests.py -- Portage Unit Test Functionality
+# Copyright 2006 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: runTests 15702 2010-03-02 21:10:28Z zmedico $
+
+import os, sys
+import os.path as osp
+
+# Insert our parent dir so we can do shiny import "tests"
+# This line courtesy of Marienz and Pkgcore ;)
+sys.path.insert(0, osp.dirname(osp.dirname(osp.dirname(osp.abspath(__file__)))))
+
+import portage.tests as tests
+
+if __name__ == "__main__":
+	result = tests.main()
+	if not result.wasSuccessful():
+		sys.exit(1)

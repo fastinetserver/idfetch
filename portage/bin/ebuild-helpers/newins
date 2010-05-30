@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright 1999-2009 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id: newins 15069 2009-12-13 03:50:56Z zmedico $
+
+if [[ -z ${T} ]] || [[ -z ${2} ]] ; then
+	echo "$0: Need two arguments, old file and new file" 1>&2
+	exit 1
+fi
+
+if [ ! -e "$1" ] ; then
+	echo "!!! ${0##*/}: $1 does not exist" 1>&2
+	exit 1
+fi
+
+rm -rf "${T}/${2}" || exit $?
+case "$EAPI" in
+	0|1|2|3|3_pre2)
+		cp "$1" "$T/$2" || exit $?
+		;;
+	*)
+		cp -P "$1" "$T/$2" || exit $?
+		;;
+esac
+doins "${T}/${2}"
+ret=$?
+rm -rf "${T}/${2}"
+exit $ret
