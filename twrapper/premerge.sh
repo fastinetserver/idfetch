@@ -2,7 +2,7 @@
 if [[ -n "${1}" ]]; then
     emerge -f $@
     ./twrapper.py
-    emerge $@
+#    emerge $@
 else
     echo
     echo "Usage:"

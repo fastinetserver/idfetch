@@ -16,6 +16,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import json
 #import idfetch_settings
 
 import portage
@@ -242,11 +243,14 @@ def fetch(myuris, mysettings, listonly=0, fetchonly=0, locks_in_subdir=".locks",
 		# create lock file
 		idfetch_pkg_list_file_name=mysettings['USE_TWRAPPER']+"/need_to_download/pkg_list.list"
 		print("Using TWRAPPER. Saving pkg_list.list file to ",idfetch_pkg_list_file_name)
+
+
 		try:
 			idfetch_pkg_list_file = open(idfetch_pkg_list_file_name,"r")
-			idfetch_pkg_list=pickle.load(idfetch_pkg_list_file)
+			idfetch_pkg_list=json.loads(idfetch_pkg_list_file.read())
 			idfetch_pkg_list_file.close()
 		except:
+			print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
 			idfetch_pkg_list=list()
 
 		idfetch_pkg=dict()
@@ -1251,7 +1255,7 @@ def fetch(myuris, mysettings, listonly=0, fetchonly=0, locks_in_subdir=".locks",
 	if use_twrapper_to_download:
 		try:
 			idfetch_pkg_list_file = open(idfetch_pkg_list_file_name,"w")
-			pickle.dump(idfetch_pkg_list,idfetch_pkg_list_file)
+			idfetch_pkg_list_file.write(json.dumps(idfetch_pkg_list, sort_keys=1, indent=4))
 			idfetch_pkg_list_file.close()
 #			print("---------------->>>>>>>>>>>      idfetch_pkg_list_file saved       <<<<<<<<<<<<<---------------------------")
 		except:
