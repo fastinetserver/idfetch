@@ -91,8 +91,8 @@ def emerge_msg(msg_text):
 
 def open_task_list():
 	debug(" function open_task_list start")
-	idfetch_pkg_list_file_name=idfetch_settings.TASK_DIR+"/pkg_list.list"
-	idfetch_pkg_list_file_lock_name=idfetch_settings.TASK_DIR+"/!.#pkg_list.list"
+	idfetch_pkg_list_file_name=idfetch_settings.TASK_DIR+"/pkg.list"
+	idfetch_pkg_list_file_lock_name=idfetch_settings.TASK_DIR+"/!.#pkg.list"
 
 	#lock file
 	try:
