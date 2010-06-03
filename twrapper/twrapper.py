@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# Copyright 2010 Gentoo Foundation                                                                                                                        
-# Distributed under the terms of the GNU General Public License v2                                                                                        
+# Copyright 2010 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
 
 """
 First prototype for a simple fetcher. Simultaneous downloads of different
@@ -16,11 +16,9 @@ import signal
 from portage.checksum import perform_md5, verify_all
 from portage.process import spawn
 import idfetch_settings
-#import pickle
 import curses
 import time
 import subprocess
-#import shlex
 import json
 from threading import Thread
 CLEAN_LINE="                                                                                                                                             "
@@ -28,18 +26,17 @@ MAX_ACTIVE_DOWNLOADS=8
 TASK_SPACE=3
 USE_CURSES_FLAG=1
 DEBUG_ON=0
-INSTALL_ON=1
 
 def fit_string(text):
 	text=text+CLEAN_LINE
 	return text[0:max_x-1]
-def msg(index,msg_text):
+def msg(Y,msg_text):
 	global exit_flag
 	if exit_flag:
 		pass
 	else:
 		if USE_CURSES_FLAG:
-			stdscr.addstr(index,0,fit_string(msg_text))
+			stdscr.addstr(Y,0,fit_string(msg_text))
 			stdscr.refresh()
 			pass
 		else:
@@ -47,47 +44,48 @@ def msg(index,msg_text):
 #			time.sleep(0.1)
 
 def sms(msg_text):
-	msg(max_y-3,msg_text)
+	msg(MSG_Y_SMS,"SMS:"+msg_text)
+
+def total_msg():
+	if distfiles_for_manual_download:
+		manual_download_msg_text="Need to download manually "+str(len(distfiles_for_manual_download))+" files"
+	else:
+		manual_download_msg_text=""
+	if total_size:
+		size_msg_text=" Kb = "+str(downloaded_size*100/total_size)+"%] "
+	else:
+		size_msg_text=""
+	msg(2,"-> Pkgs: "\
+		+str(pkgs_downloaded_count)\
+		+"/:"+str(pkgs_count)\
+		+" - Distfiles: "+str(distfiles_downloaded_count)\
+		+"/"+str(distfiles_count)\
+		+" [ "+str((downloaded_size+999)/1000)\
+		+"/"+str((total_size+999)/1000)\
+		+size_msg_text\
+		+manual_download_msg_text\
+		+"<-")
 
 def debug(msg_text):
 	if DEBUG_ON:
-		msg(max_y-3,msg_text)
+		msg(MSG_Y_DEBUG,"DEBUG:"+msg_text)
+
+def status_msg(msg_text):
+	msg(MSG_Y_STATUS,"   ["+msg_text+"]")
 
 def time_msg():
 	if USE_CURSES_FLAG:
-		msg(max_y-2,"["+time.ctime()+"]  q - Quit")
+		msg(MSG_Y_TIME,"["+time.ctime()+"]  q - Quit")
 
-def download_msg(index,msg_text):
-	msg(TASK_SPACE*index,str(index)+")"+msg_text)
-	
-def status_msg(index,msg_text):
-	msg(TASK_SPACE*index+1,"   ["+msg_text+"]")
+def download_msg(place_in_the_list,distfile_num,prefix,size,url):
+	msg_text=prefix+str(distfile_num)+" size:"+str((size+999)/1000)+"Kb ]: "+url
+	msg(TASK_SPACE*place_in_the_list,str(place_in_the_list)+")"+msg_text)
 
-def total_msg():
-	msg(2,"-> Pkgs: "\
-		+"I:"+str(pkgs_installed_count)\
-		+"/D:"+str(pkgs_downloaded_count)\
-		+"/T:"+str(pkgs_count)\
-		+" - Distfiles D:"+str(distfiles_downloaded_count)\
-		+"/T:"+str(distfiles_count)\
-		+" [Bytes D:"+str(downloaded_size)\
-		+" of T:"+str(total_size)\
-		+" bytes = "+str(downloaded_size*100/total_size)+"%] <-")
-	if install_pkgs_is_running:
-		msg(26,"EMERGE: [INSTALLING...]")
-	else:
-		msg(26,"EMERGE: [IDLE]")
-
-
-
-def progress_msg(index,msg_text1):
-		msg(TASK_SPACE*index+1,msg_text1)
+def progress_msg(place_in_the_list,msg_text1):
+		msg(TASK_SPACE*place_in_the_list+1,msg_text1)
 
 def error_msg(msg_text):
-	msg(max_y-4,"WARNING: "+msg_text)
-
-def emerge_msg(msg_text):
-	msg(max_y-7,"Emerging: "+msg_text)
+	msg(MSG_Y_ERROR,"ERROR: "+msg_text)
 
 def open_task_list():
 	debug(" function open_task_list start")
@@ -125,49 +123,6 @@ def open_task_list():
 
 	return idfetch_pkg_list
 
-class install_pkgs(Thread):
-	def __init__ (self,idfetch_pkg_list):
-		Thread.__init__(self)
-		self.idfetch_pkg_list=idfetch_pkg_list
-		self.status = 2
-	def run(self):
-		global pkgs_installed_count
-		global install_pkgs_is_running
-		while pkgs_installed_count < pkgs_count:
-				self.atom_name=self.idfetch_pkg_list[pkgs_installed_count]['pkg_name'][0:self.idfetch_pkg_list[pkgs_installed_count]['pkg_name'].find("-")]
-				
-				if self.idfetch_pkg_list[pkgs_installed_count]['fetched_distfiles_count'] >= self.idfetch_pkg_list[pkgs_installed_count]['distfiles_count']:
-					self.emerge_subprocess = subprocess.Popen([\
-#						'echo',
-						'/usr/bin/emerge',\
-						self.atom_name],\
-						bufsize=1024,stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-					mypids.append(self.emerge_subprocess.pid)
-					while 1:
-						try:
-							self.line=self.emerge_subprocess.stdout.readline()
-							if self.line:
-								emerge_msg("pkg "+str(pkgs_installed_count)+" :"+self.atom_name+"   "+self.line.rstrip())
-#										self.igot = re.findall('aksldjfklsjd;lfkj',self.line)
-#										if self.igot:
-#											self.status=0
-#											self.emerge_subprocess.wait()
-#											break
-							else:
-								self.emerge_subprocess.stdout.close()
-								pkgs_installed_count+=1
-								emerge_msg("emerge ended")
-								total_msg()
-								break
-						except:
-							pass
-							error_msg("ERROR!!! CODE:108")
-							self.emerge_subprocess.stdout.close()
-							break
-				else:
-					break
-		install_pkgs_is_running=0
-
 class fetchit(Thread):
 	def __init__ (self,parent_pkg, distfile, distfiles_count):
 		Thread.__init__(self)
@@ -191,12 +146,14 @@ class fetchit(Thread):
 		self.url_list=list(self.distfile['url_list'])
 		self.trials_log_file= open (self.trials_log_file_name,"w")
 		self.tries_counter=0
+		if not(self.url_list):
+			error_msg("url_list is empty for distfile:"+self.distfile['name'])
 		while (self.url_list) and (self.status !=0) and (not(exit_flag)) :
 			self.tries_counter+=1
 			self.current_url=self.url_list.pop()
-			self.msg_text="[DL "+str(self.index)+" size:"+str(self.distfile['size'])+"b ]: "+self.current_url
-			self.trials_log_file.write(self.msg_text+"\n")
-			download_msg(self.place_in_the_list,self.msg_text)
+#			self.msg_text="[DL "+str(self.index)+" size:"+str(self.distfile['size'])+"b ]: "+self.current_url
+#			self.trials_log_file.write(self.msg_text+"\n")
+			download_msg(self.place_in_the_list,self.index,"[DL ",self.distfile['size'],self.current_url)
 			self.wget_subprocess = subprocess.Popen(['/usr/bin/wget',\
 				"-c",\
 				"--connect-timeout=1", self.current_url,\
@@ -205,7 +162,6 @@ class fetchit(Thread):
 				"--read-timeout="+str(idfetch_settings.WGET_READ_TIMEOUT)],\
 				bufsize=1024,stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 			mypids.append(self.wget_subprocess.pid)
-			self.exit_flag=0
 			while 1:
 				try:
 					self.line=self.wget_subprocess.stdout.readline()
@@ -223,27 +179,23 @@ class fetchit(Thread):
 							self.wget_subprocess.wait()
 							break
 					else:
-						self.exit_flag=1
+						break
 				except:
-					pass
 					error_msg("ERROR!!! CODE:100")
-					self.wget_subprocess.stdout.close()
-				if self.exit_flag:
-#					msg(self.place_in_the_list,"================== wget exited =============================")
-					break
+			self.wget_subprocess.stdout.close()
 
 			if self.status ==0:
 				self.msg_text="[FIN "+str(self.index)+" size:"+str(self.distfile['size'])+"b ]: "+self.current_url
 				self.trials_log_file.write(self.msg_text+"\n")
-				download_msg(self.place_in_the_list,self.msg_text)
+				download_msg(self.place_in_the_list,self.index,"[FIN ",self.distfile['size'],self.current_url)
 			elif self.url_list:
 				self.msg_text="[ERROR "+str(self.index)+" size:"+str(self.distfile['size'])+"b ]: "+self.current_url
 				self.trials_log_file.write(self.msg_text+"\n")
-				download_msg(self.place_in_the_list,self.msg_text)
+				download_msg(self.place_in_the_list,self.index,"[ERROR ",self.distfile['size'],self.current_url)
 			else:
 				self.msg_text="[ERROR+LIST_IS_EMPTY "+str(self.index)+" size:"+str(self.distfile['size'])+"b ]: "+self.current_url
 				self.trials_log_file.write(self.msg_text+"\n")
-				download_msg(self.place_in_the_list,self.msg_text)
+				download_msg(self.place_in_the_list,self.index,"[ERROR+LIST_IS_EMPTY ",self.distfile['size'],self.current_url)
 		self.trials_log_file.close()
 
 	def run(self):
@@ -265,8 +217,8 @@ class fetchit(Thread):
 #					if e.errno not in (errno.ENOENT, errno.ESTALE):
 #						raise
 					debug("cant get mystat for file: "+self.myfile_path)
-					del e
 					self.fetch()
+					del e
 				else:
 					# If the file is empty then it's obviously invalid. Remove
 					# the empty file and try to download if possible.
@@ -293,7 +245,6 @@ class fetchit(Thread):
 							else:
 								# Already fetched and with correct hashes
 								self.status=0
-
 
 	def get_place_in_the_list(self):
 		return self.place_in_the_list
@@ -325,8 +276,9 @@ def do_tasks(idfetch_pkg_list):
 	global total_size
 	global downloaded_size
 	global install_pkgs_is_running
-	
-	pkgs_count=len(idfetch_pkg_list)
+	global distfiles_for_manual_download
+
+	pkgs_count=0
 	pkgs_downloaded_count=0
 	pkgs_installed_count=0
 	distfiles_count=0
@@ -335,16 +287,20 @@ def do_tasks(idfetch_pkg_list):
 	downloaded_size=0
 	install_pkgs_is_running=0
 
-#	idfetch_pkg_list.reverse()
-	prev_pkg=0
 	for current_pkg in idfetch_pkg_list:
 		current_pkg['installed']=0
-		current_pkg['prev_pkg']=prev_pkg
 		current_pkg['distfiles_count']=0
 		current_pkg['fetched_distfiles_count']=0
-		
+		current_pkg_has_distfiles_to_download=0
 		for current_distfile in current_pkg['distfile_list']:
 			#some files may have duplicates, let's skip them
+			if not(current_distfile['url_list']):
+				if current_distfile['myuri']:
+					error_msg("Download "+current_distfile['myuri']+" manually and save to "+idfetch_settings.DIST_DIR)
+					if not(current_distfile['name'] in distfiles_for_manual_download):
+						distfiles_for_manual_download.append(current_distfile['name'])
+						total_msg()
+				continue # donwload rest of the files
 			no_duplicate=1
 			for cur_fetch_distfile_thread in fetch_distfile_thread_list:
 				if current_distfile['name']==cur_fetch_distfile_thread.distfile['name']:
@@ -354,6 +310,7 @@ def do_tasks(idfetch_pkg_list):
 				#create new thread because there is no duplicate
 #				pkg_contains_distfiles_for_download=1
 				distfiles_count+=1
+				current_pkg_has_distfiles_to_download=1
 				current_pkg['distfiles_count']+=1
 				debug("============================================")
 				debug("pkg:  "+current_pkg['pkg_name'])
@@ -362,7 +319,8 @@ def do_tasks(idfetch_pkg_list):
 				total_size+=current_distfile['size']
 				current_fetch_distfile_thread = fetchit(current_pkg, current_distfile, distfiles_count)
 				fetch_distfile_thread_list.append(current_fetch_distfile_thread)
-		prev_pkg=current_pkg
+		if current_pkg_has_distfiles_to_download:
+			pkgs_count+=1
 
 #	pkgs_downloaded_count
 	place_in_the_list=0
@@ -387,6 +345,7 @@ def do_tasks(idfetch_pkg_list):
 		for current_fetch_distfile_thread in running_fetch_distfile_thread_list:
 			if current_fetch_distfile_thread.status==0:
 				distfiles_downloaded_count+=1
+				current_fetch_distfile_thread.parent_pkg['fetched_distfiles_count']+=1
 				downloaded_size+=current_fetch_distfile_thread.distfile['size']
 				running_fetch_distfile_thread_list.remove(current_fetch_distfile_thread)
 				if to_start_fetch_distfile_thread_list:
@@ -394,20 +353,9 @@ def do_tasks(idfetch_pkg_list):
 					starting_fetch_distfile_thread=to_start_fetch_distfile_thread_list.pop()
 					running_fetch_distfile_thread_list.append(starting_fetch_distfile_thread)
 					starting_fetch_distfile_thread.start(current_fetch_distfile_thread.get_place_in_the_list())
-				#install if package has all the files and previous pkgs are installed
-				current_fetch_distfile_thread.parent_pkg['fetched_distfiles_count']+=1
-				if current_fetch_distfile_thread.parent_pkg['fetched_distfiles_count']>=current_fetch_distfile_thread.parent_pkg['distfiles_count']:
-					pkgs_downloaded_count+=1
-					if not(install_pkgs_is_running):
-						if idfetch_pkg_list[pkgs_installed_count]['fetched_distfiles_count'] >= idfetch_pkg_list[pkgs_installed_count]['distfiles_count']:
-							install_pkgs_is_running=1
-							cur_install_pkg_thread=install_pkgs(idfetch_pkg_list)
-							cur_install_pkg_thread.start()
-						else:
-							msg(28,"Next package to install:"+str(pkgs_installed_count+1)\
-								+" pkg_name: "+idfetch_pkg_list[pkgs_installed_count]['pkg_name']\
-								+" fetched:"+str(idfetch_pkg_list[pkgs_installed_count]['fetched_distfiles_count'])\
-								+" of "+str(idfetch_pkg_list[pkgs_installed_count]['distfiles_count']))
+					#install if package has all the files and previous pkgs are installed
+					if current_fetch_distfile_thread.parent_pkg['fetched_distfiles_count']>=current_fetch_distfile_thread.parent_pkg['distfiles_count']:
+						pkgs_downloaded_count+=1
 				total_msg()
 			time_msg()
 		# Don't make it too hard for your cpu. Not much changes in 0.5 secs. Let's wait and give cpu some rest.
@@ -415,7 +363,7 @@ def do_tasks(idfetch_pkg_list):
 		if USE_CURSES_FLAG:
 			key = stdscr.getch()
 			if (key == ord('q')) or (key == ord('Q')):
-				msg(28,">>>>>>>>>>>>>>>>> EXITING  <<<<<<<<<<<<<<<<<<<<<<<<<<")
+				status_msg(">>>>>>>>>>>>>>>>> EXITING  <<<<<<<<<<<<<<<<<<<<<<<<<<")
 		if (distfiles_downloaded_count == distfiles_count) and not(install_pkgs_is_running):
 			msg(28,"All files have been downloaded and installed. Exiting in 3 secs ...")
 			time.sleep(3)
@@ -431,13 +379,13 @@ def main(idfetch_pkg_list):
 		do_tasks(idfetch_pkg_list)
 	finally:
 		for pid in mypids:
-			try:                                                                                                                                      
-				if os.waitpid(pid, os.WNOHANG) == (0, 0):                                                                                         
-					os.kill(pid, signal.SIGTERM)                                                                                              
-					os.waitpid(pid, 0)                                                                                                        
-			except OSError:                                                                                                                           
-			# This pid has been cleaned up outside                                                                                            
-			# of spawn().                                                                                                                     
+			try:
+				if os.waitpid(pid, os.WNOHANG) == (0, 0):
+					os.kill(pid, signal.SIGTERM)
+					os.waitpid(pid, 0)
+			except OSError:
+			# This pid has been cleaned up outside
+			# of spawn().
 				pass
 		if USE_CURSES_FLAG:
 			curses.nocbreak()
@@ -448,6 +396,7 @@ def main(idfetch_pkg_list):
 
 if __name__ == '__main__':
 	exit_flag=0
+	distfiles_for_manual_download=list()
 	idfetch_pkg_list=[]
 	# mypids will hold the pids of all processes created.
 	mypids = []
@@ -463,6 +412,12 @@ if __name__ == '__main__':
 		max_y=100
 		max_x=100
 	try:
+		MSG_Y_TIME=max_y-5
+		MSG_Y_SMS=max_y-4
+		MSG_Y_DEBUG=max_y-3
+		MSG_Y_ERROR=max_y-2
+		MSG_Y_STATUS=max_y-1
+
 		main(idfetch_pkg_list)
 	finally:
 		sys.exit()
