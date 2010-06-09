@@ -31,11 +31,11 @@ void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
 };
 
 Tdistfile::Tdistfile(json_object* json_obj_distfile){
-	name=json_object_to_json_string(json_object_object_get(json_obj_distfile,"name"));
+	name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
 	size=atoi(json_object_to_json_string(json_object_object_get(json_obj_distfile,"size")));
-	RMD160=json_object_to_json_string(json_object_object_get(json_obj_distfile,"RMD160"));
-	SHA1=json_object_to_json_string(json_object_object_get(json_obj_distfile,"SHA1"));
-	SHA256=json_object_to_json_string(json_object_object_get(json_obj_distfile,"SHA256"));
+	RMD160=json_object_get_string(json_object_object_get(json_obj_distfile,"RMD160"));
+	SHA1=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA1"));
+	SHA256=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA256"));
 	load_url_list(json_object_object_get(json_obj_distfile,"url_list"));
 };
 Tdistfile::~Tdistfile(){
@@ -50,7 +50,7 @@ void Tdistfile::dosegments()
     int segments_count=size/segment_size;
     cout << "Need to download: " << segments_count+1 << " segments\n";
     for (int segment_num=0; segment_num <= segments_count; segment_num++){
-      int fetcher_result=1000;
+      int asegment_result=1000;
       do {
 	cout << "===Seg #"<<segment_num<< " of "<<segments_count<< "==========================\n";
 	cout << "name:"<<name<<"\n";
@@ -60,13 +60,13 @@ void Tdistfile::dosegments()
 	  range_end=size;
 	else
 	  range_end=(segment_num+1)*segment_size-1;
-	Tsegment fetcher(url_list[url_num],"distfile.seg"+toString(segment_num), toString(segment_num*segment_size)+"-"+toString(range_end));
-	cout << fetcher.get_file_name() << "\n";
+	Tsegment asegment(url_list[url_num],name+".seg"+toString(segment_num), toString(segment_num*segment_size)+"-"+toString(range_end));
+	cout << asegment.get_file_name() << "\n";
 	url_num++;
 	//if (url_num >= sizeof(url_list)/sizeof(string))
 	  //url_num=0;
-	fetcher_result=fetcher.fetch();
-      } while (fetcher_result);
+	asegment_result=asegment.fetch();
+      } while (asegment_result);
     }
   }
 }
