@@ -7,8 +7,6 @@
 #include <cstdio>
 #include <curl/curl.h>
 
-int segment_size=20000;
-
 using namespace std;
 
 template<typename T> std::string toString(T t) 
@@ -22,57 +20,68 @@ unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
 class Tsegment{
-	private:
-		string file_name;
-		char* urllist[];
-	public:
-		unsigned long downloaded_bytes;
-		string url;
-		string range;
-		FILE *segment_file;
-		Tsegment(string segment_url, string segment_file_name, string segment_range);
-		~Tsegment();
-		string get_file_name(){return file_name;};
-		int fetch();
-		
+private:
+  CURL *easyhandle;
+  string file_name;
+  char* urllist;
+public:
+  unsigned int segment_num;
+  unsigned int segment_size;
+  unsigned long downloaded_bytes;
+  string url;
+  string range;
+  FILE *segment_file;
+  Tsegment():easyhandle(0),file_name(""),urllist(0),segment_num(0),segment_size(1000),downloaded_bytes(0),url(""),range(""),segment_file(0){};
+  Tsegment(const Tsegment &L);             // copy constructor
+  Tsegment & operator=(const Tsegment &L);
+  ~Tsegment();
+  void set_segment(unsigned int seg_num, string segment_url, string segment_file_name, unsigned int seg_size, string segment_range);
+  string get_file_name(){return file_name;};
+  int add_easy_handle_to_multi(CURLM *cm);
 };
 
-Tsegment::Tsegment(string segment_url, string segment_file_name, string segment_range){
-	url=segment_url;
-	range=segment_range;
-	downloaded_bytes=0;
-	file_name=segment_file_name;
-	//try
-		segment_file = fopen(file_name.c_str(), "w" );
+void Tsegment::set_segment(unsigned int seg_num, string segment_url, string segment_file_name, unsigned int seg_size, string segment_range){
+  segment_num=seg_num;
+  segment_size=seg_size;
+  url=segment_url;
+  range=segment_range;
+  downloaded_bytes=0;
+  file_name=segment_file_name;
+  //try
+  segment_file = fopen(file_name.c_str(), "w" );
 }
 Tsegment::~Tsegment(){
 	//try
 		fclose(segment_file);
 }
 
-
-
-int Tsegment::fetch(){
-  CURL *easyhandle;
-  CURLcode result;
+int Tsegment::add_easy_handle_to_multi(CURLM *cm){
+//  CURLcode curl_result;
 
   easyhandle = curl_easy_init();
   cout << "Started downloading\n";
+
+  //  curl_easy_setopt(eh, CURLOPT_WRITEFUNCTION, cb);
+  //  curl_easy_setopt(eh, CURLOPT_HEADER, 0L);
+  //  curl_easy_setopt(eh, CURLOPT_URL, urls[i]);
+  //  curl_easy_setopt(eh, CURLOPT_VERBOSE, 0L);
+
+
   //  cout << "UUURRLL:" <<url.c_str()<<"\n";
   //  cout << "range:" <<range <<"\n";
   if(easyhandle) {
     curl_easy_setopt(easyhandle, CURLOPT_URL, url.c_str() );
     //    curl_easy_setopt(easyhandle, CURLOPT_URL, "http://www.mail.ru");
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, this);
+    curl_easy_setopt(easyhandle, CURLOPT_PRIVATE, this);
     curl_easy_setopt(easyhandle, CURLOPT_RANGE, range.c_str());
     curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, write_data);
-    result = curl_easy_perform(easyhandle);
 
-    cout << "RESULT:" << result << "\n";
-     // always cleanup
-    curl_easy_cleanup(easyhandle);
-    return result;
+    curl_multi_add_handle(cm, easyhandle);
+    return 0;
   }
+  else
+    return 1;
 }
 /*
 void combine_segments(){
@@ -97,7 +106,8 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
   Tsegment *segment;
   segment =(Tsegment*)cur_segment;
   segment->downloaded_bytes+=nmemb;
-  fwrite(buffer,size,nmemb,segment->segment_file);
-  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" " << segment->downloaded_bytes << " b = " << (segment->downloaded_bytes*100/segment_size) << "%\n";
-  return nmemb;
+  int bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
+  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" "<< segment->downloaded_bytes 
+       << " b = " << (segment->downloaded_bytes*100/segment->segment_size) << "%\n";
+  return bytes_written;
 }

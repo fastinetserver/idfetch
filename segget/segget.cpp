@@ -24,10 +24,11 @@ void load_pkgs(){
 		pkg_count=json_object_array_length(json_array_pkg_list);
 		Ppkg_array= new Tpkg* [pkg_count];
 		for(int array_item_num=0;array_item_num<pkg_count;array_item_num++){
-			Ppkg_array[array_item_num]=new Tpkg(json_object_array_get_idx(json_array_pkg_list,array_item_num));
+			Ppkg_array[array_item_num]=new Tpkg;
+			Ppkg_array[array_item_num]->load_pkg_from_json(json_object_array_get_idx(json_array_pkg_list,array_item_num));
 		}
 	}
-};
+}
 
 void show_pkgs(){
 	for (int array_item_num=0;array_item_num<pkg_count;array_item_num++){
@@ -39,16 +40,13 @@ void show_pkgs(){
 			}
 		}
 	}
-};
+}
 
 
 int main()
 {
   load_pkgs();
   show_pkgs();
-
-  int array_item_num=0;
-  int distfile_array_item_num=0;
   for (int array_item_num=0;array_item_num<pkg_count;array_item_num++){
     //cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
     for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
