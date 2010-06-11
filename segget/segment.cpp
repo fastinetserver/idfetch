@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <cstdio>
 #include <curl/curl.h>
-
+//#include "distfile.cpp"
 using namespace std;
 
+typedef unsigned int uint;
 template<typename T> std::string toString(T t) 
 { 
     std::stringstream s; 
@@ -16,6 +17,8 @@ template<typename T> std::string toString(T t)
     return s.str(); 
 } 
            
+#define MAX_CONNECTS 10 /* number of simultaneous transfers */
+
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
@@ -25,31 +28,42 @@ private:
   string file_name;
   char* urllist;
 public:
-  unsigned int segment_num;
-  unsigned int segment_size;
+  void* parent_distfile;
+  uint connection_num;
+  uint segment_num;
+  uint segment_size;
   unsigned long downloaded_bytes;
   string url;
   string range;
   FILE *segment_file;
-  Tsegment():easyhandle(0),file_name(""),urllist(0),segment_num(0),segment_size(1000),downloaded_bytes(0),url(""),range(""),segment_file(0){};
+  Tsegment():easyhandle(0),file_name(""),urllist(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
+	     url(""),range(""),segment_file(0){};
   Tsegment(const Tsegment &L);             // copy constructor
   Tsegment & operator=(const Tsegment &L);
   ~Tsegment();
-  void set_segment(unsigned int seg_num, string segment_url, string segment_file_name, unsigned int seg_size, string segment_range);
+  void set_segment(void* prnt_distfile, uint seg_num, string distfile_name, unsigned int seg_size, string segment_range);
+  void prepare_for_connection(CURLM *cm, uint con_num, string segment_url);
   string get_file_name(){return file_name;};
   int add_easy_handle_to_multi(CURLM *cm);
 };
 
-void Tsegment::set_segment(unsigned int seg_num, string segment_url, string segment_file_name, unsigned int seg_size, string segment_range){
+Tsegment *segments_in_progress[MAX_CONNECTS]={0};
+
+void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, uint seg_size, string segment_range){
+  parent_distfile=prnt_distfile;
   segment_num=seg_num;
   segment_size=seg_size;
-  url=segment_url;
   range=segment_range;
   downloaded_bytes=0;
-  file_name=segment_file_name;
+  file_name=distfile_name+".seg"+toString(seg_num);
   //try
-  segment_file = fopen(file_name.c_str(), "w" );
 }
+void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_url){
+  connection_num=con_num;
+  url=segment_url;
+  add_easy_handle_to_multi(cm);
+}
+
 Tsegment::~Tsegment(){
 	//try
 		fclose(segment_file);
@@ -57,6 +71,8 @@ Tsegment::~Tsegment(){
 
 int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 //  CURLcode curl_result;
+
+  segment_file = fopen(file_name.c_str(), "w" );
 
   easyhandle = curl_easy_init();
   cout << "Started downloading\n";
@@ -107,7 +123,17 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
   segment =(Tsegment*)cur_segment;
   segment->downloaded_bytes+=nmemb;
   int bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
-  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" "<< segment->downloaded_bytes 
-       << " b = " << (segment->downloaded_bytes*100/segment->segment_size) << "%\n";
+  cout << "Done:";
+  for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
+    if (segments_in_progress[con_num]){
+      cout.width(4);
+      cout<<segments_in_progress[con_num]->downloaded_bytes*100/segments_in_progress[con_num]->segment_size<<"% ";
+    }
+    else
+      cout <<" n/a";
+  
+  cout <<"\n";
+  //  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" "<< segment->downloaded_bytes 
+  //     << " b = " << (segment->downloaded_bytes*100/segment->segment_size) << "%\n";
   return bytes_written;
 }

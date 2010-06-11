@@ -6,13 +6,14 @@
 #include "distfile.cpp"
 
 using namespace std;
+typedef unsigned int uint;
 
 class Tpkg{
 	public:
 		Tdistfile **Pdistfile_list;
 		string name;
 		string category;
-		int distfile_count;
+		uint distfile_count;
 		void load_distfile_list(json_object* json_array_distfile_list);
 		Tpkg(): Pdistfile_list(0),name(""),category(""), distfile_count(0){};
 		Tpkg(const Tpkg &L);             // copy constructor
@@ -23,7 +24,7 @@ class Tpkg{
 void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
 	distfile_count=json_object_array_length(json_array_distfile_list);
 	Pdistfile_list= new Tdistfile* [distfile_count];
-	for(int distfile_array_item_num=0;distfile_array_item_num<distfile_count;distfile_array_item_num++){
+	for(uint distfile_array_item_num=0;distfile_array_item_num<distfile_count;distfile_array_item_num++){
 		Pdistfile_list[distfile_array_item_num]=new Tdistfile();
 		Pdistfile_list[distfile_array_item_num]->load_distfile_from_json(json_object_array_get_idx(json_array_distfile_list,distfile_array_item_num));
 	}
@@ -38,7 +39,7 @@ void Tpkg::load_pkg_from_json(json_object* json_obj_pkg){
 }
 
 Tpkg::~Tpkg(){
-	for (int i=0;i<distfile_count;i++)
+	for (uint i=0;i<distfile_count;i++)
 		delete Pdistfile_list[i];
 	delete [] Pdistfile_list;
 }
