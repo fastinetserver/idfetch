@@ -7,7 +7,10 @@
 
 using namespace std;
 
-int pkg_count;
+typedef unsigned int uint;
+uint pkg_count (0);
+uint distfiles_count (0);
+uint total_size (0);
 Tpkg **Ppkg_array;
 
 void load_pkgs(){
@@ -23,7 +26,7 @@ void load_pkgs(){
 	else {
 		pkg_count=json_object_array_length(json_array_pkg_list);
 		Ppkg_array= new Tpkg* [pkg_count];
-		for(int array_item_num=0;array_item_num<pkg_count;array_item_num++){
+		for(uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
 			Ppkg_array[array_item_num]=new Tpkg;
 			Ppkg_array[array_item_num]->load_pkg_from_json(json_object_array_get_idx(json_array_pkg_list,array_item_num));
 		}
@@ -31,7 +34,7 @@ void load_pkgs(){
 }
 
 void show_pkgs(){
-	for (int array_item_num=0;array_item_num<pkg_count;array_item_num++){
+	for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
 		cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
 		for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
 			cout << "    "<< distfile_array_item_num<<") distfile_name:"<< Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->name<<"\n";
@@ -41,13 +44,18 @@ void show_pkgs(){
 		}
 	}
 }
-
-
-int main()
-{
-  load_pkgs();
-  show_pkgs();
-  for (int array_item_num=0;array_item_num<pkg_count;array_item_num++){
+void get_totals(){
+  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
+    for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
+      if (Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count)
+	distfiles_count++;
+      total_size+=Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->size;
+    }
+  }
+  cout<<"Total:"<<pkg_count<<" pkgs including "<<distfiles_count<<" distfiles equal "<< total_size/1024<< "Kb\n";
+}
+void download_pkgs(){
+  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
     //cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
     for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
       //cout << "    "<< distfile_array_item_num<<") distfile_name:"<< Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->show_name() <<"\n";
@@ -59,6 +67,14 @@ int main()
     }
   }
   //      Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->dosegments();
-  
+}
+
+
+int main()
+{
+  load_pkgs();
+  show_pkgs();
+  get_totals();
+  download_pkgs();
   return 0;
 }
