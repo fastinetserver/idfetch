@@ -93,6 +93,11 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
     curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(easyhandle, CURLOPT_PRIVATE, this);
     curl_easy_setopt(easyhandle, CURLOPT_RANGE, range.c_str());
+    curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, 60*100);
+    curl_easy_setopt(easyhandle, CURLOPT_FTP_RESPONSE_TIMEOUT, 60*80);
+
+    //set connection timeout
+    curl_easy_setopt(easyhandle, CURLOPT_CONNECTTIMEOUT, 15);
     curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, write_data);
 
     curl_multi_add_handle(cm, easyhandle);
