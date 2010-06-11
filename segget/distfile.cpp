@@ -13,7 +13,7 @@
 #include <json/json.h>
 #include "segment.cpp"
 
-int max_segment_size=50*1000;
+int max_segment_size=1000*500;
 
 using namespace std;
 

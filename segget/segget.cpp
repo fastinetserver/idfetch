@@ -64,7 +64,8 @@ int choose_segment(uint connection_num){
   while (pkg_num<pkg_count){
     while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
       while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
-	segments_in_progress[connection_num]=Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
+	//	segments_in_progress[connection_num]=
+	Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
 	segment_num++;
 	return 0;
       }
@@ -152,7 +153,10 @@ int download_pkgs(){
 	if (msg->data.result){
 	  // error -> start downloading again
 	  cout << "Restarting segment #"<<current_segment->segment_num<<"\n";
-	  current_segment->parent_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
+	  fclose(current_segment->segment_file);
+	  Tdistfile* prnt_distfile;
+	  prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
+	  prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
 	  U++;
 	}
 	else{

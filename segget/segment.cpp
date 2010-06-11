@@ -17,7 +17,7 @@ template<typename T> std::string toString(T t)
     return s.str(); 
 } 
            
-#define MAX_CONNECTS 10 /* number of simultaneous transfers */
+#define MAX_CONNECTS 4 /* number of simultaneous transfers */
 
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
@@ -59,6 +59,8 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   //try
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_url){
+  segments_in_progress[con_num]=this;  
+  downloaded_bytes=0;
   connection_num=con_num;
   url=segment_url;
   add_easy_handle_to_multi(cm);
@@ -126,7 +128,10 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
   cout << "Done:";
   for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
     if (segments_in_progress[con_num]){
+      cout<<"S:";
       cout.width(4);
+      cout<<segments_in_progress[con_num]->segment_num<<":";
+      cout.width(3);
       cout<<segments_in_progress[con_num]->downloaded_bytes*100/segments_in_progress[con_num]->segment_size<<"% ";
     }
     else
