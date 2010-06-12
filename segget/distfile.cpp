@@ -91,7 +91,7 @@ Tdistfile::~Tdistfile(){
 
 Tsegment* Tdistfile::provide_segment(CURLM* cm, uint con_num, uint seg_num)
 {
-  cout << "=Seg #"<<seg_num<< " of "<<segments_count<< " from " << "url:"<<url_list[url_num]<<"\n";
+  //  cout << "=Seg #"<<seg_num<< " of "<<segments_count<< " from " << "url:"<<url_list[url_num]<<"\n";
   url_num++;
   if (url_num >= url_count) 
     url_num=0;

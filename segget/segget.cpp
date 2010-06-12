@@ -4,7 +4,7 @@
 #include <iostream>
 #include "json/json.h"
 #include "pkg.cpp"
-//#include <ncurses>
+#include <ncurses.h>
 
 using namespace std;
 
@@ -58,7 +58,7 @@ void get_totals(){
       total_size+=Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->size;
     }
   }
-  cout<<"Total:"<<pkg_count<<" pkgs including "<<distfiles_count<<" distfiles equal "<< total_size/1024<< "Kb\n";
+  msg_total("Total:"+toString(pkg_count)+" pkgs including "+toString(distfiles_count)+" distfiles equal "+toString(total_size/1024)+"Kb");
 }
 int choose_segment(uint connection_num){
   while (pkg_num<pkg_count){
@@ -147,12 +147,12 @@ int download_pkgs(){
         Tsegment *current_segment;
         CURL *e = msg->easy_handle;
         curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-        fprintf(stderr, "R: %d - %s while downloading segment #<%d>\n",
-                msg->data.result, curl_easy_strerror(msg->data.result), current_segment->segment_num);
+	string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
+	msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
         curl_multi_remove_handle(cm, e);
 	if (msg->data.result){
 	  // error -> start downloading again
-	  cout << "Restarting segment #"<<current_segment->segment_num<<"\n";
+	  msg_status2(current_segment->connection_num,current_segment->segment_num,"Restarting segment !");
 	  fclose(current_segment->segment_file);
 	  Tdistfile* prnt_distfile;
 	  prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
@@ -168,7 +168,7 @@ int download_pkgs(){
         curl_easy_cleanup(e);
       }
       else {
-	fprintf(stderr, "E: CURLMsg (%d)\n", msg->msg);
+	msg_error("ERROR: CURLMsg: "+msg->msg);
       }
     }
   }
@@ -184,13 +184,14 @@ int download_pkgs(){
 
 int main()
 {
-  //  initscr();
-  //  printw("Hello World !!!");
-  //  refresh();
+  initscr();
+  curs_set(0);
+  refresh();
   load_pkgs();
-  show_pkgs();
+  //show_pkgs();
   get_totals();
   download_pkgs();
-  //endwin();
+  getch();
+  endwin();
   return 0;
 }

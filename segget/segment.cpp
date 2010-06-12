@@ -6,18 +6,14 @@
 #include <stdio.h>
 #include <cstdio>
 #include <curl/curl.h>
+#include "tui.cpp"
+#include <ncurses.h>
 //#include "distfile.cpp"
 using namespace std;
 
 typedef unsigned int uint;
-template<typename T> std::string toString(T t) 
-{ 
-    std::stringstream s; 
-    s << t; 
-    return s.str(); 
-} 
            
-#define MAX_CONNECTS 4 /* number of simultaneous transfers */
+#define MAX_CONNECTS 6 /* number of simultaneous transfers */
 
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
@@ -39,6 +35,7 @@ public:
   Tsegment():easyhandle(0),file_name(""),urllist(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
 	     url(""),range(""),segment_file(0){};
   Tsegment(const Tsegment &L);             // copy constructor
+
   Tsegment & operator=(const Tsegment &L);
   ~Tsegment();
   void set_segment(void* prnt_distfile, uint seg_num, string distfile_name, unsigned int seg_size, string segment_range);
@@ -59,6 +56,7 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   //try
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_url){
+  msg_connecting(con_num,segment_num,"Downloading from "+segment_url);
   segments_in_progress[con_num]=this;  
   downloaded_bytes=0;
   connection_num=con_num;
@@ -77,7 +75,7 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
   segment_file = fopen(file_name.c_str(), "w" );
 
   easyhandle = curl_easy_init();
-  cout << "Started downloading\n";
+  //  cout << "Started downloading\n";
 
   //  curl_easy_setopt(eh, CURLOPT_WRITEFUNCTION, cb);
   //  curl_easy_setopt(eh, CURLOPT_HEADER, 0L);
@@ -130,6 +128,14 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
   segment =(Tsegment*)cur_segment;
   segment->downloaded_bytes+=nmemb;
   int bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
+
+  //  for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
+  //  if (segments_in_progress[con_num]){
+      msg_segment_progress(segment->connection_num,segment->segment_num,segment->downloaded_bytes*100/segment->segment_size);
+      //  }
+      //    else
+      // printw(" EEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRROOOOOOOOOOOOOOOORRRRRRRRRRRRR n/a");
+  /*
   cout << "Done:";
   for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
     if (segments_in_progress[con_num]){
@@ -143,6 +149,8 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
       cout <<" n/a";
   
   cout <<"\n";
+*/
+  refresh();
   //  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" "<< segment->downloaded_bytes 
   //     << " b = " << (segment->downloaded_bytes*100/segment->segment_size) << "%\n";
   return bytes_written;
