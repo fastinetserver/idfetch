@@ -44,8 +44,8 @@ void msg_status2(uint connection_num, uint segment_num, string msg_text){
 void msg_error(string error_text){
      msg(20,0, error_text);
 }
-void msg_total(string total_msg_text){
-     msg(24,0, total_msg_text);
+void msg_total(string msg_text){
+    msg(24,0,msg_text);
 }
 void debug(string debug_msg_text){
     ofstream file ("debug.txt", ios::app);

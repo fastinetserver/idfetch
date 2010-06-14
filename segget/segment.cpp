@@ -7,8 +7,8 @@
 #include <cstdio>
 #include <ncurses.h>
 #include <curl/curl.h>
-#include "tui.cpp"
 #include "settings.cpp"
+#include "stats.cpp"
 
 //#include "distfile.cpp"
 
@@ -54,18 +54,20 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   segment_size=seg_size;
   range=segment_range;
   file_name="./distfiles/"+distfile_name+".seg"+toString(seg_num);
+  ulong downloaded_size;
   if (settings.get_resume()){
     //check if downloaded
     ifstream file(file_name.c_str(), ios::in|ios::binary);
     ulong start = file.tellg();
     file.seekg (0, ios::end);
     ulong end = file.tellg();
-    ulong downloaded_size = end - start;
+    downloaded_size = end - start;
     debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
     file.close();
     if (downloaded_size==segment_size){
       downloaded=true;
       debug("seg:"+toString(seg_num)+" Downloaded");
+      stats.inc_downloaded_size(downloaded_size);
     }
     else{
       debug("seg:"+toString(seg_num)+" not downloaded");
