@@ -5,14 +5,15 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdio>
+#include <ncurses.h>
 #include <curl/curl.h>
 #include "tui.cpp"
-#include <ncurses.h>
+#include "settings.cpp"
+
 //#include "distfile.cpp"
+
 using namespace std;
 
-typedef unsigned int uint;
-           
 #define MAX_CONNECTS 6 /* number of simultaneous transfers */
 
 unsigned long downloaded_bytes=0;
@@ -24,6 +25,7 @@ private:
   string file_name;
   char* urllist;
 public:
+  bool downloaded;
   void* parent_distfile;
   uint connection_num;
   uint segment_num;
@@ -32,7 +34,7 @@ public:
   string url;
   string range;
   FILE *segment_file;
-  Tsegment():easyhandle(0),file_name(""),urllist(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
+  Tsegment():easyhandle(0),file_name(""),urllist(0), downloaded (0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
 	     url(""),range(""),segment_file(0){};
   Tsegment(const Tsegment &L);             // copy constructor
 
@@ -51,8 +53,25 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   segment_num=seg_num;
   segment_size=seg_size;
   range=segment_range;
-  downloaded_bytes=0;
-  file_name=distfile_name+".seg"+toString(seg_num);
+  file_name="./distfiles/"+distfile_name+".seg"+toString(seg_num);
+  if (settings.get_resume()){
+    //check if downloaded
+    ifstream file(file_name.c_str(), ios::in|ios::binary);
+    ulong start = file.tellg();
+    file.seekg (0, ios::end);
+    ulong end = file.tellg();
+    ulong downloaded_size = end - start;
+    debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
+    file.close();
+    if (downloaded_size==segment_size){
+      downloaded=true;
+      debug("seg:"+toString(seg_num)+" Downloaded");
+    }
+    else{
+      debug("seg:"+toString(seg_num)+" not downloaded");
+      downloaded_bytes=0;
+    }
+  }
   //try
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_url){

@@ -41,7 +41,7 @@ public:
   void load_distfile_from_json(json_object* json_obj_distfile);
   void load_url_list(json_object* json_array_distfile_urllist);
   void split_into_segments();
-  Tsegment* provide_segment(CURLM* cm, uint con_num, uint seg_num);
+  int provide_segment(CURLM* cm, uint con_num, uint seg_num);
 };
 
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -89,12 +89,17 @@ Tdistfile::~Tdistfile(){
 	delete [] url_list;
 }
 
-Tsegment* Tdistfile::provide_segment(CURLM* cm, uint con_num, uint seg_num)
+int Tdistfile::provide_segment(CURLM* cm, uint con_num, uint seg_num)
 {
   //  cout << "=Seg #"<<seg_num<< " of "<<segments_count<< " from " << "url:"<<url_list[url_num]<<"\n";
-  url_num++;
-  if (url_num >= url_count) 
-    url_num=0;
-  dn_segments[seg_num].prepare_for_connection(cm, con_num, url_list[url_num]);
-  return &dn_segments[seg_num];
+  if (dn_segments[seg_num].downloaded)
+    return 1;
+  else{
+    url_num++;
+    if (url_num >= url_count) 
+      url_num=0;
+    dn_segments[seg_num].prepare_for_connection(cm, con_num, url_list[url_num]);
+    return 0;  
+  }  
+  //segment=dn_segments[seg_num];
 }

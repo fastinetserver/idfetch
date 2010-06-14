@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>
-#include "json/json.h"
-#include "pkg.cpp"
+#include <json/json.h>
 #include <ncurses.h>
+#include "pkg.cpp"
+//#include "settings.cpp"
 
 using namespace std;
 
@@ -38,7 +39,10 @@ void load_pkgs(){
 		}
 	}
 }
-
+void set_settings(){
+  settings.set_resume(true);
+  
+}
 void show_pkgs(){
 	for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
 		cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
@@ -65,9 +69,15 @@ int choose_segment(uint connection_num){
     while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
       while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
 	//	segments_in_progress[connection_num]=
-	Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
-	segment_num++;
-	return 0;
+//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
+	if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num))){
+	  segment_num++;
+	  return 0;
+	}
+	else{
+	  msg_status2(connection_num, segment_num, "Segment already downloaded");
+	  segment_num++;
+	}
       }
       segment_num=0;
       distfile_num++;
@@ -181,9 +191,9 @@ int download_pkgs(){
   return EXIT_SUCCESS;
 }
 
-
 int main()
 {
+  set_settings();
   initscr();
   curs_set(0);
   refresh();

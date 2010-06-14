@@ -1,6 +1,7 @@
 BINS = segget
 OBJS = $(addsuffix .o,$(BINS))
 PKGCONFIG_MODULES = json libcurl
+MISSING_PLUGINS_LIBS = 
 LIBS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))
 CXXFLAGS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))
 
@@ -9,17 +10,18 @@ CXXFLAGS_WARNINGS = -pedantic -Wall -Wextra -Wformat -Weffc++
 CXXFLAGS_OPT = -O2 -g
 
 LIBS = $(LIBS_PKGCONFIG)
-CXXFLAGS = $(CXXFLAGS_PKGCONFIG) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
+#MIBS = -lncurses
+CXXFLAGS = $(CXXFLAGS_PKGCONFIG) -lncurses $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
 
-all: $(BINS)
+all: clean $(BINS)
 	
 %.o: %.cxx
 	$(CXX) -c -o $@ $(CXXFLAGS) $^
 %: %.o
-	$(CXX) -o $@ $(LIBS) $^
+	$(CXX) -o $@ $(LIBS) $(CIBS) $^
 
 clean:
 	-rm -f $(BINS) $(OBJS)
-	-rm -f *.seg*
+	-rm -f debug.txt
 
 .PRECIOUS: %.o

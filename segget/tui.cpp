@@ -47,3 +47,9 @@ void msg_error(string error_text){
 void msg_total(string total_msg_text){
      msg(24,0, total_msg_text);
 }
+void debug(string debug_msg_text){
+    ofstream file ("debug.txt", ios::app);
+    file << debug_msg_text << endl;
+    file.close();
+    msg(26,0, debug_msg_text);
+}
