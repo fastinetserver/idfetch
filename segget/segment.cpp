@@ -14,8 +14,6 @@
 
 using namespace std;
 
-#define MAX_CONNECTS 6 /* number of simultaneous transfers */
-
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
@@ -143,36 +141,40 @@ void combine_segments(){
 	cout << segments_count << " files combined\n";
 };
 */
+void show_progress(double time_left){
+  stats.total_bytes_per_last_interval=0;
+  for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
+//    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
+    Tsegment* segment=(Tsegment*)connection_array[con_num].segment;
+    stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
+    msg_segment_progress(con_num,segment->segment_num,
+			 segment->downloaded_bytes,segment->segment_size,
+			 connection_array[con_num].get_bytes_per_last_interval()*1000/time_left);
+    connection_array[con_num].reset_bytes_per_last_interval();
+  }
+  stats.last_time_interval=time_left;
+  stats.show_totals();
+  
+  
+}
+
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
   Tsegment *segment;
   segment =(Tsegment*)cur_segment;
   segment->downloaded_bytes+=nmemb;
-  int bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
-
-  //  for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
-  //  if (segments_in_progress[con_num]){
-      msg_segment_progress(segment->connection_num,segment->segment_num,segment->downloaded_bytes*100/segment->segment_size);
-      //  }
-      //    else
-      // printw(" EEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRROOOOOOOOOOOOOOOORRRRRRRRRRRRR n/a");
-  /*
-  cout << "Done:";
-  for (uint con_num=0; con_num<MAX_CONNECTS; con_num++)
-    if (segments_in_progress[con_num]){
-      cout<<"S:";
-      cout.width(4);
-      cout<<segments_in_progress[con_num]->segment_num<<":";
-      cout.width(3);
-      cout<<segments_in_progress[con_num]->downloaded_bytes*100/segments_in_progress[con_num]->segment_size<<"% ";
-    }
-    else
-      cout <<" n/a";
+  ulong bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
   
-  cout <<"\n";
-*/
-  refresh();
-  //  cout << "DOWNLOADING:" << segment->get_file_name()<< " range:"<<segment->range<<" "<< segment->downloaded_bytes 
-  //     << " b = " << (segment->downloaded_bytes*100/segment->segment_size) << "%\n";
+  connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
+    
+  struct timeval now_time;
+  gettimeofday(&now_time, NULL);
+  double diff_sec = difftime(now_time.tv_sec, prev_time.tv_sec) * 1000000;
+  double diff_milli = difftime(now_time.tv_usec, prev_time.tv_usec) + diff_sec;
+  if (diff_milli > 1000000){
+      show_progress(diff_milli);
+      prev_time=now_time;
+  }
+
   return bytes_written;
 }

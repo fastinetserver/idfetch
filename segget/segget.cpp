@@ -9,7 +9,6 @@
 
 using namespace std;
 
-typedef unsigned int uint;
 uint pkg_num (0);
 uint distfile_num(0);
 uint segment_num(0);

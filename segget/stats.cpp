@@ -1,9 +1,13 @@
+#include "connection.cpp"
 #include "tui.cpp"
+
 class Tstats{
   private:
     ulong downloaded_size;
     uint total_size;
   public:
+    ulong total_bytes_per_last_interval;
+    ulong last_time_interval;
     uint pkg_count;
     uint distfiles_count;
     void inc_downloaded_size(ulong more_bytes){ downloaded_size+=more_bytes;};
@@ -14,11 +18,13 @@ class Tstats{
 };
 
 void Tstats::show_totals(){
-    msg_total( 
-      "Total: PKGs:"   + toString(pkg_count)
-      +" = Distfiles:" + toString(distfiles_count)
-      +" = Bytes:"+ toString(downloaded_size/1024)+"/"+toString(total_size/1024)+"Kb"
-      +" = "+toString(downloaded_size*100/total_size)+" percent");
+    msg_total("Total" 
+      +field(" PKGs:",pkg_count,4)
+      +field(" = Distfiles:",distfiles_count,4)
+      +field(" = Size:",downloaded_size/1024,7)
+      +field(" / ",total_size/1024,7)+" Kb "
+      +field(" = Percent: ",downloaded_size*100/total_size,3)
+      +field(" Total speed: ",(total_bytes_per_last_interval*1000/(1+last_time_interval)),7)+" Kb/s");
 }
 
 Tstats stats;

@@ -20,28 +20,30 @@ using namespace std;
 typedef unsigned int uint;
 
 class Tdistfile{
-public:
-  string *url_list;
-  unsigned int url_num;
-  unsigned int segment_num;
-  unsigned int segments_count;
-  Tsegment *dn_segments;
-  string name;
-  int size;
-  string RMD160;
-  string SHA1;
-  string SHA256;
-  uint url_count;
-  unsigned int segment_size;
-  Tdistfile(): url_list(0),url_num(0),segment_num(0),segments_count(0),dn_segments(0),name(""),size(0),
-	       RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(max_segment_size){};
-  Tdistfile(const Tdistfile &L);             // copy constructor
-  Tdistfile & operator=(const Tdistfile &L);
-  ~Tdistfile();
-  void load_distfile_from_json(json_object* json_obj_distfile);
-  void load_url_list(json_object* json_array_distfile_urllist);
-  void split_into_segments();
-  int provide_segment(CURLM* cm, uint con_num, uint seg_num);
+  private:
+    uint dld_segments_count;
+  public:
+    string *url_list;
+    uint url_num;
+    uint segment_num;
+    uint segments_count;
+    Tsegment *dn_segments;
+    string name;
+    int size;
+    string RMD160;
+    string SHA1;
+    string SHA256;
+    uint url_count;
+    uint segment_size;
+    Tdistfile(): dld_segments_count(0), url_list(0),url_num(0),segment_num(0),segments_count(0),dn_segments(0),name(""),size(0),
+		RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(max_segment_size){};
+    Tdistfile(const Tdistfile &L);             // copy constructor
+    Tdistfile & operator=(const Tdistfile &L);
+    ~Tdistfile();
+    void load_distfile_from_json(json_object* json_obj_distfile);
+    void load_url_list(json_object* json_array_distfile_urllist);
+    void split_into_segments();
+    int provide_segment(CURLM* cm, uint con_num, uint seg_num);
 };
 
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -99,6 +101,7 @@ int Tdistfile::provide_segment(CURLM* cm, uint con_num, uint seg_num)
     if (url_num >= url_count) 
       url_num=0;
     dn_segments[seg_num].prepare_for_connection(cm, con_num, url_list[url_num]);
+    connection_array[con_num].segment=&dn_segments[seg_num];
     return 0;  
   }  
   //segment=dn_segments[seg_num];
