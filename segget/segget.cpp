@@ -50,30 +50,23 @@ void show_pkgs(){
 		}
 	}
 }
-void get_totals(){
-  for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
-    for(uint distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
-      if (Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count)
-	stats.distfiles_count++;
-      stats.inc_total_size(Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->size);
-    }
-  }
-  stats.show_totals();
-}
 
 int choose_segment(uint connection_num){
   while (pkg_num<stats.pkg_count){
+    debug("pkg_num:"+toString(pkg_num));
     while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
+      debug("         distfile_num:"+toString(distfile_num));
       while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
+      debug("                      segment_num:"+toString(segment_num));
 	//	segments_in_progress[connection_num]=
 //	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-	if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num))){
+	if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+	  // segment already downloaded => go for the next one
 	  segment_num++;
-	  return 0;
 	}
 	else{
-	  msg_status2(connection_num, segment_num, "Segment already downloaded");
 	  segment_num++;
+	  return 0;
 	}
       }
       segment_num=0;
@@ -159,7 +152,7 @@ int download_pkgs(){
         curl_multi_remove_handle(cm, e);
 	if (msg->data.result){
 	  // error -> start downloading again
-	  msg_status2(current_segment->connection_num,current_segment->segment_num,"Restarting segment !");
+	  msg_status2(current_segment->connection_num, "Restarting "+current_segment->file_name);
 	  fclose(current_segment->segment_file);
 	  Tdistfile* prnt_distfile;
 	  prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
@@ -198,7 +191,7 @@ int main()
   refresh();
   load_pkgs();
   //show_pkgs();
-  get_totals();
+  stats.show_totals();
   download_pkgs();
   getch();
   endwin();

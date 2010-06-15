@@ -10,8 +10,6 @@
 #include "settings.cpp"
 #include "stats.cpp"
 
-//#include "distfile.cpp"
-
 using namespace std;
 
 unsigned long downloaded_bytes=0;
@@ -20,9 +18,9 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 class Tsegment{
 private:
   CURL *easyhandle;
-  string file_name;
   char* urllist;
 public:
+  string file_name;
   bool downloaded;
   uint try_num;
   void* parent_distfile;
@@ -33,14 +31,14 @@ public:
   string url;
   string range;
   FILE *segment_file;
-  Tsegment():easyhandle(0),file_name(""),urllist(0), downloaded (0),try_num(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
+  Tsegment():easyhandle(0),urllist(0),file_name(""), downloaded (0),try_num(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
 	     url(""),range(""),segment_file(0){};
   Tsegment(const Tsegment &L);             // copy constructor
 
   Tsegment & operator=(const Tsegment &L);
   ~Tsegment();
   void set_segment(void* prnt_distfile, uint seg_num, string distfile_name, unsigned int seg_size, string segment_range);
-  void prepare_for_connection(CURLM *cm, uint con_num, string segment_url);
+  void prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url);
   string get_file_name(){return file_name;};
   int add_easy_handle_to_multi(CURLM *cm);
 };
@@ -75,8 +73,8 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   }
   //try
 }
-void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_url){
-  msg_connecting(con_num,segment_num,"Downloading from "+segment_url);
+void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url){
+  msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+segment_url);
   segments_in_progress[con_num]=this;  
   downloaded_bytes=0;
   connection_num=con_num;

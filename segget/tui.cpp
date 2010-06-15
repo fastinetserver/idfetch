@@ -45,8 +45,8 @@ void msg(uint y, uint x, string msg_text){
 }
 
 
-void msg_connecting(uint connection_num, uint segment_num, string msg_text){
-  msg(connection_num*CONNECTION_LINES+1,0,"Seg#"+toString(segment_num)+" "+msg_text);
+void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text){
+  msg(connection_num*CONNECTION_LINES+1,0,"DF#"+toString(distfile_num)+" Seg#"+toString(segment_num)+" "+msg_text);
 }
 
 void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed){
@@ -57,7 +57,7 @@ void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, u
 	+field(" Try:",try_num,4)
 	+field(" Bytes:",dld_bytes,7)
 	+field(" / ",total_bytes,7)
-	+field(" = Percent:",percent,3)
+	+field(" = ",percent,3)+"%%"
 	+field(" Speed:",speed,7)+" Kb/s");
 	
 }
@@ -65,8 +65,8 @@ void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, u
 void msg_status1(uint connection_num, uint segment_num, string msg_text){
   msg(connection_num*CONNECTION_LINES+2,0,"Seg#"+toString(segment_num)+" "+msg_text);
 }
-void msg_status2(uint connection_num, uint segment_num, string msg_text){
-     msg(connection_num*CONNECTION_LINES+3,0,"Seg#"+toString(segment_num)+" "+msg_text);
+void msg_status2(uint connection_num, string msg_text){
+     msg(connection_num*CONNECTION_LINES+3,0,msg_text);
 }
 void msg_error(string error_text){
      msg(20,0, error_text);

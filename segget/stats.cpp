@@ -23,7 +23,7 @@ void Tstats::show_totals(){
       +field(" = Distfiles:",distfiles_count,4)
       +field(" = Size:",downloaded_size/1024,7)
       +field(" / ",total_size/1024,7)+" Kb "
-      +field(" = Percent: ",downloaded_size*100/total_size,3)
+      +field(" = ",downloaded_size*100/total_size,3)+"%%"
       +field(" Total speed: ",(total_bytes_per_last_interval*1000/(1+last_time_interval)),7)+" Kb/s");
 }
 
