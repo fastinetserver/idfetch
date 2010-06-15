@@ -13,7 +13,7 @@
 #include <json/json.h>
 #include "segment.cpp"
 
-int max_segment_size=1000*500;
+ulong max_segment_size=1000*500;
 
 using namespace std;
 
@@ -23,6 +23,7 @@ class Tdistfile{
   private:
     uint dld_segments_count;
   public:
+    bool downloaded;
     string *url_list;
     uint url_num;
     uint segment_num;
@@ -30,13 +31,14 @@ class Tdistfile{
     Tsegment *dn_segments;
     string name;
     uint num;
-    int size;
+    ulong size;
     string RMD160;
     string SHA1;
     string SHA256;
     uint url_count;
     uint segment_size;
-    Tdistfile(): dld_segments_count(0), url_list(0),url_num(0),segment_num(0),segments_count(0),dn_segments(0),name(""),num(0),size(0),
+    Tdistfile(): dld_segments_count(0), downloaded(0), url_list(0),url_num(0),segment_num(0),segments_count(0),
+		dn_segments(0),name(""),num(0),size(0),
 		RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(max_segment_size){};
     Tdistfile(const Tdistfile &L);             // copy constructor
     Tdistfile & operator=(const Tdistfile &L);
@@ -48,6 +50,7 @@ class Tdistfile{
     int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
     void inc_dld_segments_count(Tsegment * current_segment);
     void combine_segments();
+    bool check_if_dld();
 };
 
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -62,15 +65,41 @@ void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
 	}
 }
 
+bool Tdistfile::check_if_dld(){
+ ifstream filec((settings.distfile_dir+name).c_str());
+// file.seekg (0);
+ ulong start = filec.tellg();
+ filec.seekg (0, ios::end);
+ ulong end = filec.tellg();
+ ulong d_size;
+ d_size = end - start;
+ //debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
+ filec.close();
+ if (d_size==size){
+    downloaded=true;
+    num=++stats.distfiles_count;
+    stats.inc_dld_distfiles_count();
+    stats.inc_dld_size(size);
+    debug("Distfile:"+name+" already downloaded");
+    return true;
+ }
+ else{
+    debug("Distfile:"+name+" not downloaded");
+    return false;
+ }
+}
+
 void Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
 	name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
 	size=atoi(json_object_to_json_string(json_object_object_get(json_obj_distfile,"size")));
-	split_into_segments();
 	RMD160=json_object_get_string(json_object_object_get(json_obj_distfile,"RMD160"));
 	SHA1=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA1"));
 	SHA256=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA256"));
-	load_url_list(json_object_object_get(json_obj_distfile,"url_list"));
-	
+
+	if (not(check_if_dld())){
+	  split_into_segments();
+	  load_url_list(json_object_object_get(json_obj_distfile,"url_list"));
+	}
 }
 
 void Tdistfile::split_into_segments(){
@@ -125,7 +154,7 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 }
 void Tdistfile::combine_segments(){
   debug("Combining distfile"+name);
-  ofstream distfile_file(("./distfiles/"+name).c_str(),ofstream::binary|ofstream::app);
+  ofstream distfile_file(("./distfiles/"+name).c_str(),ofstream::binary|ios::trunc);
 
 	
   char * buffer;

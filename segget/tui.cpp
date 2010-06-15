@@ -39,7 +39,7 @@ void msg(uint y, uint x, string msg_text);
 
 void msg(uint y, uint x, string msg_text){
      move(y,x);
-     string ready_msg_text=msg_text+"                    ";
+     string ready_msg_text=msg_text+"                        ";
      printw(ready_msg_text.c_str());
      refresh();
 }
@@ -78,5 +78,5 @@ void debug(string debug_msg_text){
     ofstream file ("debug.txt", ios::app);
     file << debug_msg_text << endl;
     file.close();
-    msg(26,0, debug_msg_text);
+    msg(31,0, "DEBUG:"+debug_msg_text);
 }

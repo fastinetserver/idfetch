@@ -37,7 +37,7 @@ void load_pkgs(){
 }
 void set_settings(){
   settings.set_resume(true);
-  
+  settings.distfile_dir="./distfiles/";  
 }
 void show_pkgs(){
 	for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
@@ -55,21 +55,23 @@ int choose_segment(uint connection_num){
   while (pkg_num<stats.pkg_count){
     debug("pkg_num:"+toString(pkg_num));
     while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
-      debug("         distfile_num:"+toString(distfile_num));
-      while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
-      debug("                      segment_num:"+toString(segment_num));
-	//	segments_in_progress[connection_num]=
-//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-	if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
-	  // segment already downloaded => go for the next one
-	  segment_num++;
+      if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->downloaded)){
+	debug("         distfile_num:"+toString(distfile_num));
+	while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
+	  debug("                      segment_num:"+toString(segment_num));
+	  //	segments_in_progress[connection_num]=
+	  //	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
+	  if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+	    // segment already downloaded => go for the next one
+	    segment_num++;
+	  }
+	  else{
+	    segment_num++;
+	    return 0;
+	  }
 	}
-	else{
-	  segment_num++;
-	  return 0;
-	}
+	segment_num=0;
       }
-      segment_num=0;
       distfile_num++;
     }
     distfile_num=0;
