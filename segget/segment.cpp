@@ -50,7 +50,7 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   segment_num=seg_num;
   segment_size=seg_size;
   range=segment_range;
-  file_name="./distfiles/"+distfile_name+".seg"+toString(seg_num);
+  file_name="./tmp/"+distfile_name+".seg"+toString(seg_num);
   ulong downloaded_size;
   if (settings.get_resume()){
     //check if downloaded
@@ -64,7 +64,6 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
     if (downloaded_size==segment_size){
       downloaded=true;
       debug("seg:"+toString(seg_num)+" Downloaded");
-      stats.inc_downloaded_size(downloaded_size);
     }
     else{
       debug("seg:"+toString(seg_num)+" not downloaded");
@@ -123,24 +122,6 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
   else
     return 1;
 }
-/*
-void combine_segments(){
-	cout << "Combining files \n";
-	FILE* segment_file;
-	FILE* complete_file;
-	complete_file = fopen("dist.tar.bz2","w");
-	char buffer[segment_size];
-	for (int segment_num=0; segment_num <= segments_count; segment_num++){
-		cout << "joining segment " << segment_num << "\n";
-		segment_file = fopen(("distfile.seg"+toString(segment_num)).c_str(),"r");
-		int read_bytes=fread(buffer, 1, segment_size, segment_file);
-		fwrite(buffer,read_bytes, 1, complete_file);
-		fclose(segment_file);
-	}
-	fclose(complete_file);
-	cout << segments_count << " files combined\n";
-};
-*/
 void show_progress(double time_left){
   stats.total_bytes_per_last_interval=0;
   for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){

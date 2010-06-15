@@ -41,10 +41,13 @@ class Tdistfile{
     Tdistfile(const Tdistfile &L);             // copy constructor
     Tdistfile & operator=(const Tdistfile &L);
     ~Tdistfile();
+
     void load_distfile_from_json(json_object* json_obj_distfile);
     void load_url_list(json_object* json_array_distfile_urllist);
     void split_into_segments();
     int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
+    void inc_dld_segments_count(Tsegment * current_segment);
+    void combine_segments();
 };
 
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -89,6 +92,8 @@ void Tdistfile::split_into_segments(){
     else
       range_end=(segment_num+1)*segment_size-1;
     dn_segments[segment_num].set_segment(this, segment_num, name, segment_size, toString(segment_num*segment_size)+"-"+toString(range_end));
+    if (dn_segments[segment_num].downloaded)
+      inc_dld_segments_count(&dn_segments[segment_num]);
   }
 }
 
@@ -97,8 +102,7 @@ Tdistfile::~Tdistfile(){
 	delete [] url_list;
 }
 
-int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num)
-{
+int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
   //  cout << "=Seg #"<<seg_num<< " of "<<segments_count<< " from " << "url:"<<url_list[url_num]<<"\n";
   if (dn_segments[seg_num].downloaded){
     msg_status2(connection_num, dn_segments[seg_num].file_name+" already downloaded");
@@ -113,4 +117,52 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num)
     return 0;  
   }  
   //segment=dn_segments[seg_num];
+}
+void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
+  stats.inc_dld_size(current_segment->segment_size);
+  if (++dld_segments_count==segments_count)
+    combine_segments();
+}
+void Tdistfile::combine_segments(){
+  debug("Combining distfile"+name);
+  ofstream distfile_file(("./distfiles/"+name).c_str(),ofstream::binary|ofstream::app);
+
+	
+  char * buffer;
+  ulong cur_seg_size;
+
+//  char * buffer;
+//  buffer = new char [size];
+
+  for (uint seg_num=0; seg_num <= segments_count; seg_num++){
+    debug("Joining "+name+" segment "+toString(seg_num)+"          ");
+    ifstream segment_file(dn_segments[seg_num].file_name.c_str(),ifstream::binary);
+
+    // get size of file
+    ulong start=segment_file.tellg();
+
+    segment_file.seekg(0,ifstream::end);
+    ulong end=segment_file.tellg();
+    cur_seg_size=end-start;
+    
+    segment_file.seekg(0);
+    
+
+    // allocate memory for file content
+    buffer = new char [cur_seg_size];
+
+    // read content of infile
+    segment_file.read (buffer,cur_seg_size);
+
+    // write to outfile
+    distfile_file.write (buffer,cur_seg_size);
+  
+    // release dynamically-allocated memory
+    delete[] buffer;
+
+    segment_file.close();
+  }
+  distfile_file.close();
+  stats.inc_dld_distfiles_count();
+  debug("Distfile combined");
 }
