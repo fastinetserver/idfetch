@@ -24,6 +24,7 @@ private:
   char* urllist;
 public:
   bool downloaded;
+  uint try_num;
   void* parent_distfile;
   uint connection_num;
   uint segment_num;
@@ -32,7 +33,7 @@ public:
   string url;
   string range;
   FILE *segment_file;
-  Tsegment():easyhandle(0),file_name(""),urllist(0), downloaded (0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
+  Tsegment():easyhandle(0),file_name(""),urllist(0), downloaded (0),try_num(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
 	     url(""),range(""),segment_file(0){};
   Tsegment(const Tsegment &L);             // copy constructor
 
@@ -80,6 +81,7 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, string segment_ur
   downloaded_bytes=0;
   connection_num=con_num;
   url=segment_url;
+  try_num++;
   add_easy_handle_to_multi(cm);
 }
 
@@ -147,7 +149,7 @@ void show_progress(double time_left){
 //    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
     Tsegment* segment=(Tsegment*)connection_array[con_num].segment;
     stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
-    msg_segment_progress(con_num,segment->segment_num,
+    msg_segment_progress(con_num,segment->segment_num, segment->try_num,
 			 segment->downloaded_bytes,segment->segment_size,
 			 connection_array[con_num].get_bytes_per_last_interval()*1000/time_left);
     connection_array[con_num].reset_bytes_per_last_interval();

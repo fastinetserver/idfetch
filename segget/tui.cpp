@@ -49,11 +49,12 @@ void msg_connecting(uint connection_num, uint segment_num, string msg_text){
   msg(connection_num*CONNECTION_LINES+1,0,"Seg#"+toString(segment_num)+" "+msg_text);
 }
 
-void msg_segment_progress(uint connection_num, uint segment_num, ulong dld_bytes, ulong total_bytes, ulong speed){
+void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed){
   int percent=dld_bytes*100/total_bytes;
   msg(connection_num*CONNECTION_LINES,0,
-	field("-=[",connection_num,2)+"]=-"
-	+field(" [Segment:",segment_num, 5)+"] "
+	field("[",connection_num,2)+"]"
+	+field(" Segment:",segment_num, 5)
+	+field(" Try:",try_num,4)
 	+field(" Bytes:",dld_bytes,7)
 	+field(" / ",total_bytes,7)
 	+field(" = Percent:",percent,3)
