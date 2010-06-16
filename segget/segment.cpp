@@ -37,7 +37,7 @@ public:
 
   Tsegment & operator=(const Tsegment &L);
   ~Tsegment();
-  void set_segment(void* prnt_distfile, uint seg_num, string distfile_name, unsigned int seg_size, string segment_range);
+  void set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end);
   void prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url);
   string get_file_name(){return file_name;};
   int add_easy_handle_to_multi(CURLM *cm);
@@ -45,11 +45,11 @@ public:
 
 Tsegment *segments_in_progress[MAX_CONNECTS]={0};
 
-void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, uint seg_size, string segment_range){
+void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
   parent_distfile=prnt_distfile;
   segment_num=seg_num;
-  segment_size=seg_size;
-  range=segment_range;
+  segment_size=range_end-seg_num*default_seg_size+1;
+  range=toString(seg_num*default_seg_size)+"-"+toString(range_end);
   file_name="./tmp/"+distfile_name+".seg"+toString(seg_num);
   ulong downloaded_size;
   if (settings.get_resume()){
@@ -126,12 +126,15 @@ void show_progress(double time_left){
   stats.total_bytes_per_last_interval=0;
   for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
 //    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
-    Tsegment* segment=(Tsegment*)connection_array[con_num].segment;
-    stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
-    msg_segment_progress(con_num,segment->segment_num, segment->try_num,
-			 segment->downloaded_bytes,segment->segment_size,
-			 connection_array[con_num].get_bytes_per_last_interval()*1000/time_left);
-    connection_array[con_num].reset_bytes_per_last_interval();
+		//if connection is not NULL
+		if (connection_array[con_num].segment){
+			Tsegment* segment=(Tsegment*)connection_array[con_num].segment;
+			stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
+			msg_segment_progress(con_num,segment->segment_num, segment->try_num,
+				segment->downloaded_bytes,segment->segment_size,
+				connection_array[con_num].get_bytes_per_last_interval()*1000/time_left);
+			connection_array[con_num].reset_bytes_per_last_interval();
+		}
   }
   stats.last_time_interval=time_left;
   stats.show_totals();

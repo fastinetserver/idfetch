@@ -116,11 +116,15 @@ void Tdistfile::split_into_segments(){
   dn_segments = new Tsegment [segments_count];
   //none downloaded yet
   for (uint segment_num=0; segment_num<segments_count; segment_num++){
-    if (segment_num == segments_count)
-      range_end=size;
-    else
+    if (segment_num == (segments_count-1)){
+      range_end=size-1;
+      debug("last_segment ends"+toString(range_end));
+    }
+    else{
       range_end=(segment_num+1)*segment_size-1;
-    dn_segments[segment_num].set_segment(this, segment_num, name, segment_size, toString(segment_num*segment_size)+"-"+toString(range_end));
+      debug("segment_range:"+toString(range_end));
+    };
+    dn_segments[segment_num].set_segment(this, segment_num, name, segment_size, range_end);
     if (dn_segments[segment_num].downloaded)
       inc_dld_segments_count(&dn_segments[segment_num]);
   }
@@ -175,7 +179,7 @@ void Tdistfile::combine_segments(){
     cur_seg_size=end-start;
     
     segment_file.seekg(0);
-    
+    debug(">>>>>SEG:"+dn_segments[seg_num].file_name+" Start: "+toString(start)+" End: "+toString(end)+" Size: "+toString(cur_seg_size));
 
     // allocate memory for file content
     buffer = new char [cur_seg_size];

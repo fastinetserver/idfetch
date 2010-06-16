@@ -144,32 +144,34 @@ int download_pkgs(){
       }
     }
 
-    while ((msg = curl_multi_info_read(cm, &Q))) {
-      if (msg->msg == CURLMSG_DONE) {
-        Tsegment *current_segment;
-        CURL *e = msg->easy_handle;
-        curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-	string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
-	msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
-        curl_multi_remove_handle(cm, e);
-	Tdistfile* prnt_distfile;
-	prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
-	if (msg->data.result){
-	  // error -> start downloading again
-	  msg_status2(current_segment->connection_num, "Restarting "+current_segment->file_name);
-	  fclose(current_segment->segment_file);
-	  prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
-	  U++;
-	}
-	else{
-	  if (not choose_segment(current_segment->connection_num)) {
-	    // no error - start new one
-	    prnt_distfile->inc_dld_segments_count(current_segment);
-	    U++; // just to prevent it from remaining at 0 if there are more URLs to get
-	  }
-	}
-	stats.show_totals();
-        curl_easy_cleanup(e);
+	while ((msg = curl_multi_info_read(cm, &Q))) {
+		if (msg->msg == CURLMSG_DONE) {
+			Tsegment *current_segment;
+			CURL *e = msg->easy_handle;
+			curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
+			string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
+			msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
+			curl_multi_remove_handle(cm, e);
+			fclose(current_segment->segment_file);
+			Tdistfile* prnt_distfile;
+			prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
+			if (msg->data.result){
+				// error -> start downloading again
+				msg_status2(current_segment->connection_num, "Restarting "+current_segment->file_name);
+				log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+				prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
+				U++;
+			}
+			else{
+				// no error => count this one and start new
+				log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+				prnt_distfile->inc_dld_segments_count(current_segment);
+				if (not choose_segment(current_segment->connection_num)) {
+					U++; // just to prevent it from remaining at 0 if there are more URLs to get
+				}
+		}
+		stats.show_totals();
+		curl_easy_cleanup(e);
       }
       else {
 	msg_error("ERROR: CURLMsg: "+msg->msg);
@@ -180,8 +182,7 @@ int download_pkgs(){
   curl_multi_cleanup(cm);
   curl_global_cleanup();
   string em;
-  cout << "exit loop (yes)?\n";
-  cin >> em;
+  debug("Exiting... (Press any key to exit) ");
   return EXIT_SUCCESS;
 }
 

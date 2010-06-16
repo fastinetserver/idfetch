@@ -74,6 +74,12 @@ void msg_error(string error_text){
 void msg_total(string msg_text){
     msg(30,0,msg_text);
 }
+void log(string log_msg_text){
+    ofstream file ("segget.log", ios::app);
+    file << log_msg_text << endl;
+    file.close();
+    msg(32,0, "ERROR:"+log_msg_text);
+}
 void error_log(string error_msg_text){
     ofstream file ("error.log", ios::app);
     file << error_msg_text << endl;

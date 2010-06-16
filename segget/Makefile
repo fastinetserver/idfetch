@@ -22,6 +22,6 @@ all: clean $(BINS)
 
 clean:
 	-rm -f $(BINS) $(OBJS)
-	-rm -f debug.txt
+	-rm -f debug.log error.log idfetch.log
 
 .PRECIOUS: %.o
