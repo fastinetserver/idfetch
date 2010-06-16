@@ -163,7 +163,7 @@ void Tdistfile::combine_segments(){
 //  char * buffer;
 //  buffer = new char [size];
 
-  for (uint seg_num=0; seg_num <= segments_count; seg_num++){
+  for (uint seg_num=0; seg_num < segments_count; seg_num++){
     debug("Joining "+name+" segment "+toString(seg_num)+"          ");
     ifstream segment_file(dn_segments[seg_num].file_name.c_str(),ifstream::binary);
 
@@ -188,10 +188,15 @@ void Tdistfile::combine_segments(){
   
     // release dynamically-allocated memory
     delete[] buffer;
-
     segment_file.close();
+    if(remove(dn_segments[seg_num].file_name.c_str()) != 0 )
+      error_log("Tdistfile::combine_segments() - Error: can't delete:"+dn_segments[seg_num].file_name);
+    else
+      debug(dn_segments[seg_num].file_name+" deleted" );
+    
   }
   distfile_file.close();
   stats.inc_dld_distfiles_count();
   debug("Distfile combined");
+  
 }
