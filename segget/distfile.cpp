@@ -197,10 +197,32 @@ void Tdistfile::combine_segments(){
       error_log("Tdistfile::combine_segments() - Error: can't delete:"+dn_segments[seg_num].file_name);
     else
       debug(dn_segments[seg_num].file_name+" deleted" );
-    
+
+
   }
   distfile_file.close();
   stats.inc_dld_distfiles_count();
-  debug("Distfile combined");
-  
+  log("Distfile "+name+" has been combined");
+
+	if (rmd160_ok("./distfiles/"+name,RMD160))
+		log("RMD160 checksum for distfile:"+name+" is [OK]");
+	else{
+		log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
+		error_log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
+	}
+
+	if (sha1_ok("./distfiles/"+name,SHA1))
+		log("SHA1   checksum for distfile:"+name+" is [OK]");
+	else{
+		log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
+		error_log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
+	}
+
+	if (sha256_ok("./distfiles/"+name,SHA256))
+		log("SHA256 checksum for distfile:"+name+" is [OK]");
+	else{
+		log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
+		error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
+	}
+
 }

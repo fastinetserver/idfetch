@@ -78,17 +78,17 @@ void log(string log_msg_text){
     ofstream file ("segget.log", ios::app);
     file << log_msg_text << endl;
     file.close();
-    msg(32,0, "ERROR:"+log_msg_text);
-}
-void error_log(string error_msg_text){
-    ofstream file ("error.log", ios::app);
-    file << error_msg_text << endl;
-    file.close();
-    msg(32,0, "ERROR:"+error_msg_text);
+    msg(31,0, "LOG:"+log_msg_text);
 }
 void debug(string debug_msg_text){
     ofstream file ("debug.log", ios::app);
     file << debug_msg_text << endl;
     file.close();
-    msg(31,0, "DEBUG:"+debug_msg_text);
+    msg(32,0, "DEBUG:"+debug_msg_text);
+}
+void error_log(string error_msg_text){
+    ofstream file ("error.log", ios::app);
+    file << error_msg_text << endl;
+    file.close();
+    msg(33,0, "ERROR:"+error_msg_text);
 }

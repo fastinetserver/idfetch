@@ -1,6 +1,6 @@
 BINS = segget
 OBJS = $(addsuffix .o,$(BINS))
-PKGCONFIG_MODULES = json libcurl
+PKGCONFIG_MODULES = json libcurl libcrypto
 MISSING_PLUGINS_LIBS = 
 LIBS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))
 CXXFLAGS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))

@@ -1,5 +1,5 @@
 #include "connection.cpp"
-#include "tui.cpp"
+#include "checksum.cpp"
 
 class Tstats{
   private:
