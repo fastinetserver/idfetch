@@ -1,13 +1,3 @@
-//#include <sstream> 
-//#include <fstream>
-//#include <cstring>
-//#include <string>
-//#include <iostream>
-//#include <stdio.h>
-//#include <cstdio>
-
-#include <string>
-#include <ncurses.h>
 using namespace std;
 template<typename T> std::string toString(T t) 
 { 
@@ -25,7 +15,6 @@ template<typename T> std::string field(string prefix,T t, int width)
     s2 << prefix+s1.str();
     return s2.str(); 
 } 
-
 
 string set_width(string input_string, int width){
     std::stringstream s;

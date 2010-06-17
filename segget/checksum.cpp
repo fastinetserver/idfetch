@@ -1,11 +1,10 @@
 #include <string>
-//#include <iostream>
-//#include "tui.cpp"
+#include "cryptopp/crc.h"
 #include "cryptopp/sha.h"
+#include "cryptopp/whrlpool.h"
 #include "cryptopp/ripemd.h"
+#include "cryptopp/md5.h"
 #include "cryptopp/files.h"
-//#include "cryptopp/base64.h"
-//#include "cryptopp/base32.h"
 #include "cryptopp/hex.h"
 #include "tui.cpp"
 
@@ -21,7 +20,7 @@ std::string noupper(string s){
 
 bool rmd160_ok(string distfile_filename, string portage_hash){
 	std::string digest;
-	CryptoPP::RIPEMD160 hash;  // don't use MD5 anymore. It is considered insecure
+	CryptoPP::RIPEMD160 hash;
 	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
 		new CryptoPP::HashFilter(hash,
 			new CryptoPP::HexEncoder(
@@ -33,7 +32,7 @@ bool rmd160_ok(string distfile_filename, string portage_hash){
 }
 bool sha1_ok(string distfile_filename, string portage_hash){
 	std::string digest;
-	CryptoPP::SHA1 hash;  // don't use MD5 anymore. It is considered insecure
+	CryptoPP::SHA1 hash;
 	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
 		new CryptoPP::HashFilter(hash,
 			new CryptoPP::HexEncoder(
@@ -46,7 +45,59 @@ bool sha1_ok(string distfile_filename, string portage_hash){
 }
 bool sha256_ok(string distfile_filename, string portage_hash){
 	std::string digest;
-	CryptoPP::SHA256 hash;  // don't use MD5 anymore. It is considered insecure
+	CryptoPP::SHA256 hash;
+	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
+		new CryptoPP::HashFilter(hash,
+			new CryptoPP::HexEncoder(
+				new CryptoPP::StringSink(digest))));
+//	debug("SHA256:"+noupper(digest));
+	if (portage_hash==noupper(digest))
+		return true;
+	else
+		return false;
+}
+bool sha512_ok(string distfile_filename, string portage_hash){
+	std::string digest;
+	CryptoPP::SHA512 hash;
+	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
+		new CryptoPP::HashFilter(hash,
+			new CryptoPP::HexEncoder(
+				new CryptoPP::StringSink(digest))));
+//	debug("SHA256:"+noupper(digest));
+	if (portage_hash==noupper(digest))
+		return true;
+	else
+		return false;
+}
+bool whirlpool_ok(string distfile_filename, string portage_hash){
+	std::string digest;
+	CryptoPP::Whirlpool hash;
+	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
+		new CryptoPP::HashFilter(hash,
+			new CryptoPP::HexEncoder(
+				new CryptoPP::StringSink(digest))));
+//	debug("SHA256:"+noupper(digest));
+	if (portage_hash==noupper(digest))
+		return true;
+	else
+		return false;
+}
+bool md5_ok(string distfile_filename, string portage_hash){
+	std::string digest;
+	CryptoPP::MD5 hash;
+	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
+		new CryptoPP::HashFilter(hash,
+			new CryptoPP::HexEncoder(
+				new CryptoPP::StringSink(digest))));
+//	debug("SHA256:"+noupper(digest));
+	if (portage_hash==noupper(digest))
+		return true;
+	else
+		return false;
+}
+bool crc32_ok(string distfile_filename, string portage_hash){
+	std::string digest;
+	CryptoPP::CRC32 hash;
 	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
 		new CryptoPP::HashFilter(hash,
 			new CryptoPP::HexEncoder(

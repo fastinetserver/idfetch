@@ -142,11 +142,11 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
     return 1;
   }
   else{
+    dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[url_num]);
+    connection_array[connection_num].segment=&dn_segments[seg_num];
     url_num++;
     if (url_num >= url_count) 
       url_num=0;
-    dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[url_num]);
-    connection_array[connection_num].segment=&dn_segments[seg_num];
     return 0;  
   }  
   //segment=dn_segments[seg_num];
