@@ -1,3 +1,6 @@
+#ifndef __TUI_H__
+#define __TUI_H__
+
 using namespace std;
 template<typename T> std::string toString(T t) 
 { 
@@ -40,14 +43,24 @@ void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, st
 
 void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed){
   int percent=dld_bytes*100/total_bytes;
-  msg(connection_num*CONNECTION_LINES,0,
-	field("[",connection_num,2)+"]"
-	+field(" Segment:",segment_num, 5)
-	+field(" Try:",try_num,4)
-	+field(" Bytes:",dld_bytes,7)
-	+field(" / ",total_bytes,7)
-	+field(" = ",percent,3)+"%%"
-	+field(" Speed:",speed,7)+" Kb/s");
+	if (speed<1000)
+		  msg(connection_num*CONNECTION_LINES,0,
+		field("[",connection_num,2)+"]"
+		+field(" Segment:",segment_num, 5)
+		+field(" Try:",try_num,4)
+		+field(" Bytes:",dld_bytes,7)
+		+field(" / ",total_bytes,7)
+		+field(" = ",percent,3)+"%%"
+		+field(" Speed:",speed,7)+" b/s");
+	else
+		msg(connection_num*CONNECTION_LINES,0,
+		field("[",connection_num,2)+"]"
+		+field(" Segment:",segment_num, 5)
+		+field(" Try:",try_num,4)
+		+field(" Bytes:",dld_bytes,7)
+		+field(" / ",total_bytes,7)
+		+field(" = ",percent,3)+"%%"
+		+field(" Speed:",speed/1000,7)+" Kb/s");
 	
 }
 
@@ -81,3 +94,5 @@ void error_log(string error_msg_text){
     file.close();
     msg(33,0, "ERROR:"+error_msg_text);
 }
+
+#endif

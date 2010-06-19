@@ -1,3 +1,5 @@
+#ifndef __DISTFILE_H__
+#define __DISTFILE_H__
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +68,7 @@ void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
 }
 
 bool Tdistfile::check_if_dld(){
- ifstream filec((settings.distfile_dir+name).c_str());
+ ifstream filec((settings.distfiles_dir+"/"+name).c_str());
 // file.seekg (0);
  ulong start = filec.tellg();
  filec.seekg (0, ios::end);
@@ -158,7 +160,7 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 }
 void Tdistfile::combine_segments(){
   debug("Combining distfile"+name);
-  ofstream distfile_file(("./distfiles/"+name).c_str(),ofstream::binary|ios::trunc);
+  ofstream distfile_file((settings.distfiles_dir+"/"+name).c_str(),ofstream::binary|ios::trunc);
 
 	
   char * buffer;
@@ -169,7 +171,7 @@ void Tdistfile::combine_segments(){
 
   for (uint seg_num=0; seg_num < segments_count; seg_num++){
     debug("Joining "+name+" segment "+toString(seg_num)+"          ");
-    ifstream segment_file(dn_segments[seg_num].file_name.c_str(),ifstream::binary);
+    ifstream segment_file((settings.segments_dir+"/"+dn_segments[seg_num].file_name).c_str(),ifstream::binary);
 
     // get size of file
     ulong start=segment_file.tellg();
@@ -193,10 +195,9 @@ void Tdistfile::combine_segments(){
     // release dynamically-allocated memory
     delete[] buffer;
     segment_file.close();
-    if(remove(dn_segments[seg_num].file_name.c_str()) != 0 )
-      error_log("Tdistfile::combine_segments() - Error: can't delete:"+dn_segments[seg_num].file_name);
+    if(remove((settings.segments_dir+"/"+dn_segments[seg_num].file_name).c_str()) != 0 )      error_log("Tdistfile::combine_segments() - Error: can't delete:"+settings.segments_dir+"/"+dn_segments[seg_num].file_name);
     else
-      debug(dn_segments[seg_num].file_name+" deleted" );
+      debug(settings.segments_dir+"/"+dn_segments[seg_num].file_name+" deleted" );
 
 
   }
@@ -204,21 +205,21 @@ void Tdistfile::combine_segments(){
   stats.inc_dld_distfiles_count();
   log("Distfile "+name+" has been combined");
 
-	if (rmd160_ok("./distfiles/"+name,RMD160))
+	if (rmd160_ok(settings.distfiles_dir+"/"+name,RMD160))
 		log("RMD160 checksum for distfile:"+name+" is [OK]");
 	else{
 		log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
 		error_log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
 	}
 
-	if (sha1_ok("./distfiles/"+name,SHA1))
+	if (sha1_ok(settings.distfiles_dir+"/"+name,SHA1))
 		log("SHA1   checksum for distfile:"+name+" is [OK]");
 	else{
 		log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
 		error_log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
 	}
 
-	if (sha256_ok("./distfiles/"+name,SHA256))
+	if (sha256_ok(settings.distfiles_dir+"/"+name,SHA256))
 		log("SHA256 checksum for distfile:"+name+" is [OK]");
 	else{
 		log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
@@ -226,3 +227,4 @@ void Tdistfile::combine_segments(){
 	}
 
 }
+#endif

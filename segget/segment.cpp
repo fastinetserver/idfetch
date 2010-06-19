@@ -1,3 +1,5 @@
+#ifndef __SEGMENT_H__
+#define __SEGMENT_H__
 #include <sstream> 
 #include <fstream>
 #include <cstring>
@@ -50,11 +52,11 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
   segment_num=seg_num;
   segment_size=range_end-seg_num*default_seg_size+1;
   range=toString(seg_num*default_seg_size)+"-"+toString(range_end);
-  file_name="./tmp/"+distfile_name+".seg"+toString(seg_num);
+  file_name="."+distfile_name+".seg"+toString(seg_num);
   ulong downloaded_size;
   if (settings.get_resume()){
     //check if downloaded
-    ifstream file(file_name.c_str(), ios::in|ios::binary);
+    ifstream file((settings.segments_dir+"/"+file_name).c_str(), ios::in|ios::binary);
     ulong start = file.tellg();
     file.seekg (0, ios::end);
     ulong end = file.tellg();
@@ -90,7 +92,7 @@ Tsegment::~Tsegment(){
 int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 //  CURLcode curl_result;
 
-  segment_file = fopen(file_name.c_str(), "w" );
+  segment_file = fopen((settings.segments_dir+"/"+file_name).c_str(), "w" );
 
   easyhandle = curl_easy_init();
   //  cout << "Started downloading\n";
@@ -122,7 +124,7 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
   else
     return 1;
 }
-void show_progress(double time_left){
+void show_progress(ulong time_diff){
   stats.total_bytes_per_last_interval=0;
   for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
 //    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
@@ -132,33 +134,38 @@ void show_progress(double time_left){
 			stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
 			msg_segment_progress(con_num,segment->segment_num, segment->try_num,
 				segment->downloaded_bytes,segment->segment_size,
-				connection_array[con_num].get_bytes_per_last_interval()*1000/time_left);
+				(connection_array[con_num].get_bytes_per_last_interval())/time_diff);
 			connection_array[con_num].reset_bytes_per_last_interval();
 		}
   }
-  stats.last_time_interval=time_left;
+  stats.last_time_interval=time_diff;
   stats.show_totals();
-  
-  
 }
 
 
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
-  Tsegment *segment;
-  segment =(Tsegment*)cur_segment;
-  segment->downloaded_bytes+=nmemb;
-  ulong bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
-  
-  connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
-    
-  struct timeval now_time;
-  gettimeofday(&now_time, NULL);
-  double diff_sec = difftime(now_time.tv_sec, prev_time.tv_sec) * 1000000;
-  double diff_milli = difftime(now_time.tv_usec, prev_time.tv_usec) + diff_sec;
-  if (diff_milli > 1000000){
-      show_progress(diff_milli);
-      prev_time=now_time;
-  }
+	Tsegment *segment;
+	segment =(Tsegment*)cur_segment;
+	segment->downloaded_bytes+=nmemb;
+	ulong bytes_written=fwrite(buffer,size,nmemb,segment->segment_file);
+//	debug(settings.segments_dir+"/"+segment->file_name);
+	connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
 
-  return bytes_written;
+	time_t now_time;
+	now_time = time((time_t *)NULL);
+//	ulong diff_sec = difftime(now_time.tv_sec, prev_time.tv_sec) * 1000000;
+//	ulong diff_milli = difftime(now_time.tv_usec, prev_time.tv_usec) + diff_sec;
+	ulong time_diff=now_time-prev_time;
+//	debug(segment->file_name+"==="+toString((ulong)now_time)+"=="+toString(now_time));
+	if (time_diff >= 1){
+//		debug(segment->file_name+"--->"+toString((ulong)()));
+		show_progress(time_diff);
+		prev_time=now_time;
+	};
+//	else 
+//	debug(segment->file_name+"==="+toString(prev_time.tv_sec)+"=="+toString(prev_time.tv_usec)+"==="+toString((ulong)(diff_milli)));
+	      //toString(diff_milli));
+	//refresh();
+	return bytes_written;
 }
+#endif

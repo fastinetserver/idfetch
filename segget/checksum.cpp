@@ -1,22 +1,17 @@
+#ifndef __CHECKSUM_H__
+#define __CHECKSUM_H__
+
 #include <string>
 #include "cryptopp/crc.h"
 #include "cryptopp/sha.h"
 #include "cryptopp/whrlpool.h"
 #include "cryptopp/ripemd.h"
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 #include "cryptopp/md5.h"
 #include "cryptopp/files.h"
 #include "cryptopp/hex.h"
 #include "tui.cpp"
-
-int lower_char(int c)
-{
-  return std::tolower((unsigned char)c);
-}
-
-std::string noupper(string s){ 
-	std::transform(s.begin(), s.end(), s.begin(), lower_char);
-	return s; 
-} 
+#include "str.cpp"
 
 bool rmd160_ok(string distfile_filename, string portage_hash){
 	std::string digest;
@@ -84,7 +79,7 @@ bool whirlpool_ok(string distfile_filename, string portage_hash){
 }
 bool md5_ok(string distfile_filename, string portage_hash){
 	std::string digest;
-	CryptoPP::MD5 hash;
+	CryptoPP::Weak::MD5 hash;
 	CryptoPP::FileSource distfile_to_hash(distfile_filename.c_str(), true,
 		new CryptoPP::HashFilter(hash,
 			new CryptoPP::HexEncoder(
@@ -108,3 +103,4 @@ bool crc32_ok(string distfile_filename, string portage_hash){
 	else
 		return false;
 }
+#endif

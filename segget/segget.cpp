@@ -37,7 +37,8 @@ void load_pkgs(){
 }
 void set_settings(){
   settings.set_resume(true);
-  settings.distfile_dir="./distfiles/";  
+  settings.distfiles_dir="./distfiles";  
+  settings.segments_dir="./tmp";  
 }
 void show_pkgs(){
 	for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
@@ -188,15 +189,17 @@ int download_pkgs(){
 
 int main()
 {
-  set_settings();
-  initscr();
-  curs_set(0);
-  refresh();
-  load_pkgs();
-  //show_pkgs();
-  stats.show_totals();
-  download_pkgs();
-  getch();
-  endwin();
-  return 0;
+//  set_settings();
+	prev_time=time((time_t *)NULL);
+	initscr();
+	curs_set(0);
+	refresh();
+	settings.load_from_conf_file();
+	load_pkgs();
+	//show_pkgs();
+	stats.show_totals();
+	download_pkgs();
+	getch();
+	endwin();
+	return 0;
 }

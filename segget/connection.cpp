@@ -1,4 +1,7 @@
-#include <sys/time.h>
+#ifndef __CONNECTION_H__
+#define __CONNECTION_H__
+
+#include <time.h>
 
 class Tconnection{
   private:
@@ -12,5 +15,6 @@ class Tconnection{
 };
 
 #define MAX_CONNECTS 6 /* number of simultaneous transfers */
-struct timeval prev_time;
+time_t prev_time;
 Tconnection connection_array[MAX_CONNECTS];
+#endif

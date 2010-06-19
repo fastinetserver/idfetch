@@ -1,3 +1,6 @@
+#ifndef __STATS_H__
+#define __STATS_H__
+
 #include "connection.cpp"
 #include "checksum.cpp"
 
@@ -28,8 +31,8 @@ void Tstats::show_totals(){
       +field(" = Size:",        dld_size/1000,7)
       +field(" / ",             total_size/1000,7)+" Kb "
       +field(" = ",             dld_size*100/total_size,3)+"%%"
-      +field(" Total speed: ",  (total_bytes_per_last_interval*1000/(1+last_time_interval)),7)+" Kb/s");
+      +field(" Total speed: ",  (total_bytes_per_last_interval/1000/(1+last_time_interval)),7)+" Kb/s");
 }
 
 Tstats stats;
-
+#endif

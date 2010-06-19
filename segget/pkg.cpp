@@ -1,3 +1,6 @@
+#ifndef __PKG_H__
+#define __PKG_H__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
@@ -43,3 +46,4 @@ Tpkg::~Tpkg(){
 		delete Pdistfile_list[i];
 	delete [] Pdistfile_list;
 }
+#endif
