@@ -33,7 +33,6 @@ void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
 	}
 }
 
-
 void Tpkg::load_pkg_from_json(json_object* json_obj_pkg){
 //	printf("\t%d %s\n",array_item_num, json_object_to_json_string(json_obj_pkg));
 	name=json_object_to_json_string(json_object_object_get(json_obj_pkg,"pkg_name"));

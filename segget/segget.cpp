@@ -18,10 +18,10 @@ void load_pkgs(){
 	string buff((std::istreambuf_iterator<char>(myfile)), std::istreambuf_iterator<char>());
 	myfile>>buff;
 	myfile.close();
-//	cout<< buff<<"\n";
-        json_object *json_array_pkg_list;
-        json_array_pkg_list = json_tokener_parse(buff.c_str());
-        if (is_error(json_array_pkg_list))
+	//	cout<< buff<<"\n";
+	json_object *json_array_pkg_list;
+	json_array_pkg_list = json_tokener_parse(buff.c_str());
+	if (is_error(json_array_pkg_list))
 		printf("error parsing json: %s\n",json_tokener_errors[-(unsigned long)json_array_pkg_list]);
 	else {
 		stats.pkg_count=json_object_array_length(json_array_pkg_list);
@@ -33,9 +33,9 @@ void load_pkgs(){
 	}
 }
 void set_settings(){
-  settings.set_resume(true);
-  settings.distfiles_dir="./distfiles";  
-  settings.segments_dir="./tmp";  
+	settings.set_resume(true);
+	settings.distfiles_dir="./distfiles";  
+	settings.segments_dir="./tmp";  
 }
 void show_pkgs(){
 	for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
@@ -71,7 +71,7 @@ int choose_segment(uint connection_num){
 								segment_num++; // segment already downloaded/downloading => go for the next one
 					}
 					else
-						debug("	distfile_num:"+toString(distfile_num)+"has "
+						debug("	distfile #"+toString(distfile_num)+" has "
 						+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num)
 						+" connections => choosing another distfile.");
 				segment_num=0;
@@ -90,102 +90,91 @@ int choose_segment(uint connection_num){
 	return 1;
 }
 int download_pkgs(){
-  //  cout << "Need to download: " << segments_count << " segments\n";
+	//  cout << "Need to download: " << segments_count << " segments\n";
+	CURLMsg *msg;
+	long L;
+	int M, Q, U = -1;
+	fd_set R, W, E;
+	struct timeval T;
+	curl_global_init(CURL_GLOBAL_ALL);
+	cm = curl_multi_init();
 
-  CURLMsg *msg;
-  long L;
-  int M, Q, U = -1;
-  fd_set R, W, E;
-  struct timeval T;
+	// we can optionally limit the total amount of connections this multi handle uses
+	curl_multi_setopt(cm, CURLMOPT_MAXCONNECTS, (long)MAX_CONNECTS);
 
-  curl_global_init(CURL_GLOBAL_ALL);
-
-  cm = curl_multi_init();
-
-  /* we can optionally limit the total amount of connections this multi handle
-     uses */
-  curl_multi_setopt(cm, CURLMOPT_MAXCONNECTS, (long)MAX_CONNECTS);
-
-  for (uint connection_num = 0; connection_num < MAX_CONNECTS; ++connection_num) {
-    choose_segment(connection_num);
-  };
-  
-  while (U) {
-    while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
-
-    if (U) {
-      FD_ZERO(&R);
-      FD_ZERO(&W);
-      FD_ZERO(&E);
-
-      if (curl_multi_fdset(cm, &R, &W, &E, &M)) {
-        fprintf(stderr, "E: curl_multi_fdset\n");
-        return EXIT_FAILURE;
-      }
-
-      if (curl_multi_timeout(cm, &L)) {
-        fprintf(stderr, "E: curl_multi_timeout\n");
-        return EXIT_FAILURE;
-      }
-      if (L == -1)
-        L = 100;
-
-      if (M == -1) {
-#ifdef WIN32
-        Sleep(L);
-#else
-        sleep(L / 1000);
-#endif
-      } else {
-        T.tv_sec = L/1000;
-        T.tv_usec = (L%1000)*1000;
-
-        if (0 > select(M+1, &R, &W, &E, &T)) {
-          fprintf(stderr, "E: select(%i,,,,%li): %i: %s\n",
-              M+1, L, errno, strerror(errno));
-          return EXIT_FAILURE;
-        }
-      }
-    }
-
-	while ((msg = curl_multi_info_read(cm, &Q))) {
-		if (msg->msg == CURLMSG_DONE) {
-			Tsegment *current_segment;
-			CURL *e = msg->easy_handle;
-			curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-			string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
-			msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
-			curl_multi_remove_handle(cm, e);
-			fclose(current_segment->segment_file);
-			Tdistfile* prnt_distfile;
-			prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
-			prnt_distfile->active_connections_num--;
-			if (msg->data.result){
-				// error -> start downloading again
-				msg_status2(current_segment->connection_num, " Failed download "+current_segment->file_name);
-				if (current_segment->try_num>=settings.max_tries){
-					current_segment->status=FAILED;
-					error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
+	for (uint connection_num = 0; connection_num < MAX_CONNECTS; ++connection_num) {
+		choose_segment(connection_num);
+	};
+	while (U) {
+		while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
+		if (U) {
+			FD_ZERO(&R);
+			FD_ZERO(&W);
+			FD_ZERO(&E);
+			if (curl_multi_fdset(cm, &R, &W, &E, &M)) {
+				fprintf(stderr, "E: curl_multi_fdset\n");
+				return EXIT_FAILURE;
+			}
+			if (curl_multi_timeout(cm, &L)) {
+				fprintf(stderr, "E: curl_multi_timeout\n");
+				return EXIT_FAILURE;
+			}
+			if (L == -1)
+				L = 100;
+			if (M == -1) {
+				#ifdef WIN32
+				Sleep(L);
+				#else
+					sleep(L / 1000);
+				#endif
+			} else {
+				T.tv_sec = L/1000;
+				T.tv_usec = (L%1000)*1000;
+				if (0 > select(M+1, &R, &W, &E, &T)) {
+					fprintf(stderr, "E: select(%i,,,,%li): %i: %s\n",
+					M+1, L, errno, strerror(errno));
+					return EXIT_FAILURE;
 				}
-				else current_segment->status=WAITING;
-//				log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
-//				prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
-//				U++;
-			}else{
-				// no error => count this one and start new
-				log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
-				current_segment->status=DOWNLOADED;
-				prnt_distfile->inc_dld_segments_count(current_segment);
-			};
-			if (not choose_segment(current_segment->connection_num)) {
-				U++; // just to prevent it from remaining at 0 if there are more URLs to get
-			};
-			stats.show_totals();
-			curl_easy_cleanup(e);
-		}else {
-			msg_error("ERROR: CURLMsg: "+msg->msg);
+			}
 		}
-	}
+		while ((msg = curl_multi_info_read(cm, &Q))) {
+			if (msg->msg == CURLMSG_DONE) {
+				Tsegment *current_segment;
+				CURL *e = msg->easy_handle;
+				curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
+				string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
+				msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
+				curl_multi_remove_handle(cm, e);
+				fclose(current_segment->segment_file);
+				Tdistfile* prnt_distfile;
+				prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
+				prnt_distfile->active_connections_num--;
+				if (msg->data.result){
+					// error -> start downloading again
+					msg_status2(current_segment->connection_num, " Failed download "+current_segment->file_name);
+					if (current_segment->try_num>=settings.max_tries){
+						current_segment->status=FAILED;
+						error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
+					}
+					else current_segment->status=WAITING;
+						//log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+						//prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
+						//U++;
+				}else{
+					// no error => count this one and start new
+					log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+					current_segment->status=DOWNLOADED;
+					prnt_distfile->inc_dld_segments_count(current_segment);
+				};
+				if (not choose_segment(current_segment->connection_num)) {
+					U++; // just to prevent it from remaining at 0 if there are more URLs to get
+				};
+				stats.show_totals();
+				curl_easy_cleanup(e);
+			}else {
+				msg_error("ERROR: CURLMsg: "+msg->msg);
+			}
+		}
 	}
 	curl_multi_cleanup(cm);
 	curl_global_cleanup();
@@ -195,7 +184,7 @@ int download_pkgs(){
 
 int main()
 {
-//  set_settings();
+	//set_settings();
 	prev_time=time((time_t *)NULL);
 	initscr();
 	curs_set(0);

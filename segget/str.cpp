@@ -6,7 +6,7 @@ using namespace std;
 
 int lower_char(int c)
 {
-  return tolower((unsigned char)c);
+	return tolower((unsigned char)c);
 }
 
 string noupper(string s){ 
