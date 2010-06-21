@@ -17,7 +17,7 @@ using namespace std;
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
-enum Tstatus{WAITING, DOWNLOADING, DOWNLOADED};
+enum Tstatus{WAITING, DOWNLOADING, DOWNLOADED, FAILED};
 
 class Tsegment{
 private:

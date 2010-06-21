@@ -15,12 +15,14 @@ class Tsettings{
 		string segments_dir;
 		uint max_connections;
 		uint max_connection_num_per_distfile;
+		uint max_tries;
 		Tsettings():
 			resume_on(1),
 			distfiles_dir("./distfiles"),
 			segments_dir("./tmp"),
 			max_connections(6),
-			max_connection_num_per_distfile(3)
+			max_connection_num_per_distfile(3),
+			max_tries(30)
 			{};
 		void set_resume(bool resume_setting){resume_on=resume_setting;};
 		bool get_resume(){return resume_on;};
@@ -35,6 +37,7 @@ void Tsettings::load_from_conf_file(){
 	conf.set(max_connections,		"connections",		"max_connections");
 	conf.set(max_connection_num_per_distfile,		"distfiles",		"max_connection_num_per_distfile");
 	conf.set(resume_on,				"segments",			"resume_on");
+	conf.set(max_tries,				"segments",			"max_tries");
 }
 
 Tsettings settings;

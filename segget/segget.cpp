@@ -65,7 +65,7 @@ int choose_segment(uint connection_num){
 						//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
 						if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==WAITING){
 							Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
-							return 0;
+							return 0; // success segment.max_tries has not been reached
 						}
 						else
 								segment_num++; // segment already downloaded/downloading => go for the next one
@@ -162,35 +162,35 @@ int download_pkgs(){
 			prnt_distfile->active_connections_num--;
 			if (msg->data.result){
 				// error -> start downloading again
-				msg_status2(current_segment->connection_num, "Restarting "+current_segment->file_name);
-				log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
-				current_segment->status=WAITING;
-				prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
-				U++;
-			}
-			else{
+				msg_status2(current_segment->connection_num, " Failed download "+current_segment->file_name);
+				if (current_segment->try_num>=settings.max_tries){
+					current_segment->status=FAILED;
+					error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
+				}
+				else current_segment->status=WAITING;
+//				log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+//				prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
+//				U++;
+			}else{
 				// no error => count this one and start new
 				log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
 				current_segment->status=DOWNLOADED;
 				prnt_distfile->inc_dld_segments_count(current_segment);
-				if (not choose_segment(current_segment->connection_num)) {
-					U++; // just to prevent it from remaining at 0 if there are more URLs to get
-				}
+			};
+			if (not choose_segment(current_segment->connection_num)) {
+				U++; // just to prevent it from remaining at 0 if there are more URLs to get
+			};
+			stats.show_totals();
+			curl_easy_cleanup(e);
+		}else {
+			msg_error("ERROR: CURLMsg: "+msg->msg);
 		}
-		stats.show_totals();
-		curl_easy_cleanup(e);
-      }
-      else {
-	msg_error("ERROR: CURLMsg: "+msg->msg);
-      }
-    }
-  }
-
-  curl_multi_cleanup(cm);
-  curl_global_cleanup();
-  string em;
-  debug("Exiting... (Press any key to exit) ");
-  return EXIT_SUCCESS;
+	}
+	}
+	curl_multi_cleanup(cm);
+	curl_global_cleanup();
+	debug("Exiting... (Press any key to exit) ");
+	return EXIT_SUCCESS;
 }
 
 int main()
