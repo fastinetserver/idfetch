@@ -17,24 +17,39 @@ using namespace std;
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
+enum Tstatus{WAITING, DOWNLOADING, DOWNLOADED};
+
 class Tsegment{
 private:
   CURL *easyhandle;
   char* urllist;
 public:
-  string file_name;
-  bool downloaded;
-  uint try_num;
-  void* parent_distfile;
-  uint connection_num;
-  uint segment_num;
-  uint segment_size;
-  unsigned long downloaded_bytes;
-  string url;
-  string range;
-  FILE *segment_file;
-  Tsegment():easyhandle(0),urllist(0),file_name(""), downloaded (0),try_num(0),parent_distfile(0),connection_num(0),segment_num(0),segment_size(1000),downloaded_bytes(0),
-	     url(""),range(""),segment_file(0){};
+	string file_name;
+	Tstatus status;
+	uint try_num;
+	void* parent_distfile;
+	uint connection_num;
+	uint segment_num;
+	uint segment_size;
+	unsigned long downloaded_bytes;
+	string url;
+	string range;
+	FILE *segment_file;
+	Tsegment():
+		easyhandle(0),
+		urllist(0),
+		file_name(""),
+		status(WAITING),
+		try_num(0),
+		parent_distfile(0),
+		connection_num(0),
+		segment_num(0),
+		segment_size(1000),
+		downloaded_bytes(0),
+		url(""),
+		range(""),
+		segment_file(0)
+		{};
   Tsegment(const Tsegment &L);             // copy constructor
 
   Tsegment & operator=(const Tsegment &L);
@@ -48,40 +63,41 @@ public:
 Tsegment *segments_in_progress[MAX_CONNECTS]={0};
 
 void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
-  parent_distfile=prnt_distfile;
-  segment_num=seg_num;
-  segment_size=range_end-seg_num*default_seg_size+1;
-  range=toString(seg_num*default_seg_size)+"-"+toString(range_end);
-  file_name="."+distfile_name+".seg"+toString(seg_num);
-  ulong downloaded_size;
-  if (settings.get_resume()){
-    //check if downloaded
-    ifstream file((settings.segments_dir+"/"+file_name).c_str(), ios::in|ios::binary);
-    ulong start = file.tellg();
-    file.seekg (0, ios::end);
-    ulong end = file.tellg();
-    downloaded_size = end - start;
-    debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
-    file.close();
-    if (downloaded_size==segment_size){
-      downloaded=true;
-      debug("seg:"+toString(seg_num)+" Downloaded");
-    }
-    else{
-      debug("seg:"+toString(seg_num)+" not downloaded");
-      downloaded_bytes=0;
-    }
-  }
-  //try
+	parent_distfile=prnt_distfile;
+	segment_num=seg_num;
+	segment_size=range_end-seg_num*default_seg_size+1;
+	range=toString(seg_num*default_seg_size)+"-"+toString(range_end);
+	file_name="."+distfile_name+".seg"+toString(seg_num);
+	ulong downloaded_size;
+	if (settings.get_resume()){
+		//check if downloaded
+		ifstream file((settings.segments_dir+"/"+file_name).c_str(), ios::in|ios::binary);
+		ulong start = file.tellg();
+		file.seekg (0, ios::end);
+		ulong end = file.tellg();
+		downloaded_size = end - start;
+		debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
+		file.close();
+		if (downloaded_size==segment_size){
+			status=DOWNLOADED;
+			debug("seg:"+toString(seg_num)+" Downloaded");
+		}
+		else{
+			debug("seg:"+toString(seg_num)+" not downloaded");
+			downloaded_bytes=0;
+		}
+	}
+	//try
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url){
-  msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+segment_url);
-  segments_in_progress[con_num]=this;  
-  downloaded_bytes=0;
-  connection_num=con_num;
-  url=segment_url;
-  try_num++;
-  add_easy_handle_to_multi(cm);
+	msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+segment_url);
+	segments_in_progress[con_num]=this;
+	status=DOWNLOADING;
+	downloaded_bytes=0;
+	connection_num=con_num;
+	url=segment_url;
+	try_num++;
+	add_easy_handle_to_multi(cm);
 }
 
 Tsegment::~Tsegment(){

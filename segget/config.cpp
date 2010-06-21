@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include "str.cpp"
+#include "tui.cpp"
 using namespace std;
 
 map<string,string> content_;
@@ -15,7 +16,7 @@ public:
 	ConfigFile(std::string const& configFile);
 
 	int set(string &dst,string const& section, string const& entry) const;
-	int set(int &dst,string const& section, string const& entry) const;
+	int set(uint &dst,string const& section, string const& entry) const;
 	int set(bool &dst,string const& section, string const& entry) const;
 };
 
@@ -70,6 +71,7 @@ int ConfigFile::set(string &dst, std::string const& section, std::string const& 
 	std::map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
+		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+dst);
 		return 1;
 	}
 	else{
@@ -77,11 +79,12 @@ int ConfigFile::set(string &dst, std::string const& section, std::string const& 
 		return 0;
 	}
 }
-int ConfigFile::set(int &dst, std::string const& section, std::string const& entry) const {
+int ConfigFile::set(uint &dst, std::string const& section, std::string const& entry) const {
 
 	std::map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
+		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+toString(dst));
 		return 1;
 	}
 	else{
@@ -94,6 +97,7 @@ int ConfigFile::set(bool &dst, std::string const& section, std::string const& en
 	std::map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
+		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+toString(dst));
 		return 1;
 	}
 	else{

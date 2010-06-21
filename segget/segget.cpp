@@ -9,9 +9,6 @@
 
 using namespace std;
 
-uint pkg_num (0);
-uint distfile_num(0);
-uint segment_num(0);
 Tpkg **Ppkg_array;
 
 CURLM *cm;
@@ -53,38 +50,44 @@ void show_pkgs(){
 }
 
 int choose_segment(uint connection_num){
-  while (pkg_num<stats.pkg_count){
-    debug("pkg_num:"+toString(pkg_num));
-    while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
-      if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->downloaded)){
-	debug("         distfile_num:"+toString(distfile_num));
-	while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
-	  debug("                      segment_num:"+toString(segment_num));
-	  //	segments_in_progress[connection_num]=
-	  //	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-	  if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
-	    // segment already downloaded => go for the next one
-	    segment_num++;
-	  }
-	  else{
-	    segment_num++;
-	    return 0;
-	  }
+	uint pkg_num (0);
+	uint distfile_num(0);
+	uint segment_num(0);
+	while (pkg_num<stats.pkg_count){
+		debug("pkg_num:"+toString(pkg_num));
+		while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
+			if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->downloaded)){
+				debug("	distfile_num:"+toString(distfile_num));
+				if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile)
+					while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
+						debug("		segment_num:"+toString(segment_num));
+						//	segments_in_progress[connection_num]=
+						//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
+						if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==WAITING){
+							Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
+							return 0;
+						}
+						else
+								segment_num++; // segment already downloaded/downloading => go for the next one
+					}
+					else
+						debug("	distfile_num:"+toString(distfile_num)+"has "
+						+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num)
+						+" connections => choosing another distfile.");
+				segment_num=0;
+			}
+			distfile_num++;
+		}
+		distfile_num=0;
+		pkg_num++;
 	}
-	segment_num=0;
-      }
-      distfile_num++;
-    }
-    distfile_num=0;
-    pkg_num++;
-  }
-  //  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
-  //for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
-  //  if (Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count)
-  //	Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->dosegments();
-  //}
-  //}
-  return 1;
+	//  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
+	//for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
+	//  if (Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count)
+	//	Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->dosegments();
+	//}
+	//}
+	return 1;
 }
 int download_pkgs(){
   //  cout << "Need to download: " << segments_count << " segments\n";
@@ -156,16 +159,19 @@ int download_pkgs(){
 			fclose(current_segment->segment_file);
 			Tdistfile* prnt_distfile;
 			prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
+			prnt_distfile->active_connections_num--;
 			if (msg->data.result){
 				// error -> start downloading again
 				msg_status2(current_segment->connection_num, "Restarting "+current_segment->file_name);
 				log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+				current_segment->status=WAITING;
 				prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
 				U++;
 			}
 			else{
 				// no error => count this one and start new
 				log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+				current_segment->status=DOWNLOADED;
 				prnt_distfile->inc_dld_segments_count(current_segment);
 				if (not choose_segment(current_segment->connection_num)) {
 					U++; // just to prevent it from remaining at 0 if there are more URLs to get
