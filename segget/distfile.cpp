@@ -15,7 +15,7 @@
 #include <json/json.h>
 #include "segment.cpp"
 
-ulong max_segment_size=1000*500;
+//ulong max_segment_size=1000*500;
 
 using namespace std;
 
@@ -44,7 +44,7 @@ class Tdistfile{
 		active_connections_num(0),
 		url_list(0),url_num(0),segment_num(0),segments_count(0),
 		dn_segments(0),name(""),num(0),size(0),
-		RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(max_segment_size){};
+		RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(settings.max_segment_size){};
 	Tdistfile(const Tdistfile &L);             // copy constructor
 	Tdistfile & operator=(const Tdistfile &L);
 	~Tdistfile();
@@ -109,8 +109,8 @@ void Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
 
 void Tdistfile::split_into_segments(){
   int range_end;
-  if (size>max_segment_size){
-    segments_count=size/max_segment_size;
+  if (size>settings.max_segment_size){
+    segments_count=size/settings.max_segment_size;
     // set segments to have equal size, only last segment may be somewhat large (up to segment_count bytes large)
     segment_size=size/segments_count;	  
   }
