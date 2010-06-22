@@ -142,7 +142,7 @@ int download_pkgs(){
 				Tsegment *current_segment;
 				CURL *e = msg->easy_handle;
 				curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-				string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+"while downloading segment";
+				string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
 				msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 				curl_multi_remove_handle(cm, e);
 				fclose(current_segment->segment_file);
