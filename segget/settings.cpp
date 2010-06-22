@@ -27,6 +27,7 @@ class Tsettings{
 		uint low_connection_speed_limit;
 		uint low_connection_speed_time;
 		uint max_connection_speed;
+		string bind_interface;
 		Tsettings():
 		//folders
 			distfiles_dir("./distfiles"),
@@ -44,7 +45,8 @@ class Tsettings{
 			time_out(6000),
 			low_connection_speed_limit(1000),
 			low_connection_speed_time(10),
-			max_connection_speed(0)
+			max_connection_speed(0),
+			bind_interface("none")
 			{};
 		void set_resume(bool resume_setting){resume_on=resume_setting;};
 		bool get_resume(){return resume_on;};
@@ -70,6 +72,7 @@ void Tsettings::load_from_conf_file(){
 	conf.set(low_connection_speed_limit,		"connections",		"low_connection_speed_limit");
 	conf.set(low_connection_speed_time,			"connections",		"low_connection_speed_time");
 	conf.set(max_connection_speed,				"connections",		"max_connection_speed");
+	conf.set(bind_interface,					"connections",		"bind_interface");
 }
 
 Tsettings settings;

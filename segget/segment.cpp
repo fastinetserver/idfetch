@@ -126,6 +126,11 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, settings.low_connection_speed_limit);
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, settings.low_connection_speed_time);
 		curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, settings.max_connection_speed);
+		if ((settings.bind_interface!="none") 
+				and (settings.bind_interface!="") 
+				and (settings.bind_interface!="NONE"))
+			curl_easy_setopt(easyhandle, CURLOPT_INTERFACE, settings.bind_interface.c_str());
+		
 		//set connection timeout
 		curl_easy_setopt(easyhandle, CURLOPT_CONNECTTIMEOUT, settings.connection_timeout);
 		curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, write_data);
