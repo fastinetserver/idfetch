@@ -73,6 +73,7 @@ int ConfigFile::set(string &dst, string const& section, string const& entry) con
 	}
 	else{
 		dst=ci->second;
+		log("Settings: ["+section+"]."+entry+"="+dst);
 		return 0;
 	}
 }
@@ -86,6 +87,7 @@ int ConfigFile::set(uint &dst, string const& section, string const& entry) const
 	}
 	else{
 		dst=atoi(ci->second.c_str());
+		log("Settings: ["+section+"]."+entry+"="+toString(dst));
 		return 0;
 	}
 }
@@ -99,6 +101,7 @@ int ConfigFile::set(bool &dst, string const& section, string const& entry) const
 	}
 	else{
 		dst=atoi(ci->second.c_str());
+		log("Settings: ["+section+"]."+entry+"="+toString(dst));
 		return 0;
 	}
 }

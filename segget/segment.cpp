@@ -127,6 +127,23 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, settings.low_connection_speed_limit);
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, settings.low_connection_speed_time);
 		curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, settings.max_connection_speed);
+
+
+		if (settings.proxy_off)
+			curl_easy_setopt(easyhandle, CURLOPT_NOPROXY, "*");
+		else{
+			if ((settings.proxy_ip_or_name!="none") and (settings.proxy_port!=0)){
+				curl_easy_setopt(easyhandle, CURLOPT_PROXY, settings.proxy_ip_or_name.c_str());
+				curl_easy_setopt(easyhandle, CURLOPT_PROXYPORT, settings.proxy_port);
+				debug("Using proxy:"+settings.proxy_ip_or_name+":"+toString(settings.proxy_port));
+			}
+			if (settings.proxy_user!="none"){
+				curl_easy_setopt(easyhandle, CURLOPT_PROXYUSERNAME, settings.proxy_user.c_str());
+				if (settings.proxy_password!="none")
+					curl_easy_setopt(easyhandle, CURLOPT_PROXYPASSWORD, settings.proxy_password.c_str());
+			}
+		}
+
 		if ((settings.bind_interface!="none") 
 				and (settings.bind_interface!="") 
 				and (settings.bind_interface!="NONE"))

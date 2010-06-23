@@ -31,6 +31,12 @@ class Tsettings{
 	//mirrors
 		uint max_connections_num_per_mirror;
 		uint benchmark_oblivion;
+	//proxy
+		string proxy_ip_or_name;
+		uint proxy_port;
+		uint proxy_off;
+		string proxy_user;
+		string proxy_password;
 		Tsettings():
 		//folders
 			distfiles_dir("./distfiles"),
@@ -52,7 +58,13 @@ class Tsettings{
 			bind_interface("none"),
 		//mirrors
 			max_connections_num_per_mirror(2),
-			benchmark_oblivion(5)
+			benchmark_oblivion(5),
+		//proxy
+			proxy_ip_or_name("none"),
+			proxy_port(0),
+			proxy_off(1),
+			proxy_user("none"),
+			proxy_password("none")
 		//logs
 			{};
 		void set_resume(bool resume_setting){resume_on=resume_setting;};
@@ -83,6 +95,12 @@ void Tsettings::load_from_conf_file(){
 
 	conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror");
 	conf.set(benchmark_oblivion,				"mirrors",			"benchmark_oblivion");
+
+	conf.set(proxy_ip_or_name,					"proxy",			"proxy_ip_or_name");
+	conf.set(proxy_port,						"proxy",			"proxy_port");
+	conf.set(proxy_off,							"proxy",			"proxy_off");
+	conf.set(proxy_user,						"proxy",			"proxy_user");
+	conf.set(proxy_password,					"proxy",			"proxy_password");
 }
 
 Tsettings settings;
