@@ -9,8 +9,6 @@
 #include "tui.cpp"
 using namespace std;
 
-#define FORGETNESS 20;
-
 class Tmirror{
 	private:
 		uint active_num;
@@ -31,7 +29,7 @@ class Tmirror{
 
 double Tmirror::get_laziness_criterion(){
 	double criterion=multiplier*1000000000*dld_time/dld_size;
-	multiplier=multiplier*100/(100+settings.forgetness);
+	multiplier=multiplier*100/(100+settings.benchmark_oblivion);
 	return criterion;
 }
 void Tmirror::start(){
