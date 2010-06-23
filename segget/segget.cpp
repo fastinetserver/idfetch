@@ -54,13 +54,13 @@ int choose_segment(uint connection_num){
 	uint distfile_num(0);
 	uint segment_num(0);
 	while (pkg_num<stats.pkg_count){
-		debug("pkg_num:"+toString(pkg_num));
+//		debug("pkg_num:"+toString(pkg_num));
 		while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
 			if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->downloaded)){
-				debug("	distfile_num:"+toString(distfile_num));
+//				debug("	distfile_num:"+toString(distfile_num));
 				if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile)
 					while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
-						debug("		segment_num:"+toString(segment_num));
+//						debug("		segment_num:"+toString(segment_num));
 						//	segments_in_progress[connection_num]=
 						//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
 						if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==WAITING){
@@ -142,16 +142,21 @@ int download_pkgs(){
 				Tsegment *current_segment;
 				CURL *e = msg->easy_handle;
 				curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-				string result_msg_text="RESULT:"+toString(msg->data.result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
+				uint result=msg->data.result;
+				string result_msg_text="RESULT:"+toString(result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
 				msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 				curl_multi_remove_handle(cm, e);
 				fclose(current_segment->segment_file);
+				Tmirror *Pcurr_mirror=find_mirror(strip_mirror_name(current_segment->url));
+				time_t now_time = time((time_t *)NULL);
 				Tdistfile* prnt_distfile;
 				prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
 				prnt_distfile->active_connections_num--;
-				if (msg->data.result){
+				if (result!=0){
 					// error -> start downloading again
-					msg_status2(current_segment->connection_num, " Failed download "+current_segment->file_name);
+					msg_status2(current_segment->connection_num, toString(result)+"]- Failed download "+current_segment->file_name);
+					debug(toString(result)+"]- Failed download "+current_segment->url);
+					Pcurr_mirror->stop(now_time-connection_array[current_segment->connection_num].start_time,0);
 					if (current_segment->try_num>=settings.max_tries){
 						current_segment->status=FAILED;
 						error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
@@ -163,6 +168,8 @@ int download_pkgs(){
 				}else{
 					// no error => count this one and start new
 					log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
+					debug(" Successful download "+current_segment->url);
+					Pcurr_mirror->stop(now_time-connection_array[current_segment->connection_num].start_time,current_segment->segment_size);
 					current_segment->status=DOWNLOADED;
 					prnt_distfile->inc_dld_segments_count(current_segment);
 				};

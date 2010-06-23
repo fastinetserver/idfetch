@@ -2,7 +2,6 @@
 #define __STATS_H__
 
 #include "connection.cpp"
-#include "checksum.cpp"
 
 class Tstats{
 	private:

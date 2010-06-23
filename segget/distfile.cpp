@@ -14,6 +14,8 @@
 #include <iostream>
 #include <json/json.h>
 #include "segment.cpp"
+#include "mirror.cpp"
+#include "checksum.cpp"
 
 //ulong max_segment_size=1000*500;
 
@@ -140,11 +142,46 @@ Tdistfile::~Tdistfile(){
 
 void Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	active_connections_num++;
-	dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[url_num]);
-	connection_array[connection_num].segment=&dn_segments[seg_num];
-	url_num++;
-	if (url_num >= url_count)
-		url_num=0;
+
+	Tmirror *Pcurr_mirror;
+	Tmirror *Pbest_mirror;
+//=============================================================================
+//
+//
+//  BEWARE first mirror needs to be checked for settings.max_connections_num_per_mirror
+//
+//
+//=============================================================================
+	
+	// assume first mirrror to be the best and compare it with the rest
+	uint best_mirror_num=-1;
+//	Pcurr_mirror=find_mirror(strip_mirror_name(url_list[best_mirror_num]));
+	Pbest_mirror=0;
+	ulong best_mirror_laziness_criterion=-1;
+	double curr_mirror_laziness_criterion;
+
+	for (url_num=0; url_num<url_count; url_num++){
+		Pcurr_mirror=find_mirror(strip_mirror_name(url_list[url_num]));
+		if (Pcurr_mirror->get_active_num()<settings.max_connections_num_per_mirror){
+			curr_mirror_laziness_criterion=Pcurr_mirror->get_laziness_criterion();
+			if (curr_mirror_laziness_criterion<best_mirror_laziness_criterion){
+				best_mirror_num=url_num;
+				best_mirror_laziness_criterion=curr_mirror_laziness_criterion;
+				Pbest_mirror=Pcurr_mirror;
+			}
+			if (best_mirror_laziness_criterion==0)
+				// 0 can not be improved - it's one of the best
+				break;
+		}
+	}
+	debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
+	if (Pbest_mirror){
+		Pbest_mirror->start();
+		dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[best_mirror_num]);
+		connection_array[connection_num].segment=&dn_segments[seg_num];
+	}
+	else
+		error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
 }
 void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	stats.inc_dld_size(current_segment->segment_size);
@@ -189,6 +226,7 @@ void Tdistfile::combine_segments(){
 	distfile_file.close();
 	stats.inc_dld_distfiles_count();
 	log("Distfile "+name+" has been combined");
+
 	if (rmd160_ok(settings.distfiles_dir+"/"+name,RMD160))
 		log("RMD160 checksum for distfile:"+name+" is [OK]");
 	else{
@@ -209,5 +247,6 @@ void Tdistfile::combine_segments(){
 		log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
 		error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
 	}
+
 }
 #endif

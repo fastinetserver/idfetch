@@ -10,6 +10,7 @@ using namespace std;
 class Tsettings{
 	private:
 	public:
+		uint forgetness;
 	//folders
 		string distfiles_dir;
 		string segments_dir;
@@ -28,7 +29,10 @@ class Tsettings{
 		uint low_connection_speed_time;
 		uint max_connection_speed;
 		string bind_interface;
+	//mirrors
+		uint max_connections_num_per_mirror;
 		Tsettings():
+			forgetness (5),
 		//folders
 			distfiles_dir("./distfiles"),
 			segments_dir("./tmp"),
@@ -46,7 +50,9 @@ class Tsettings{
 			low_connection_speed_limit(1000),
 			low_connection_speed_time(10),
 			max_connection_speed(0),
-			bind_interface("none")
+			bind_interface("none"),
+		//mirrors
+			max_connections_num_per_mirror(2)
 			{};
 		void set_resume(bool resume_setting){resume_on=resume_setting;};
 		bool get_resume(){return resume_on;};
@@ -73,6 +79,8 @@ void Tsettings::load_from_conf_file(){
 	conf.set(low_connection_speed_time,			"connections",		"low_connection_speed_time");
 	conf.set(max_connection_speed,				"connections",		"max_connection_speed");
 	conf.set(bind_interface,					"connections",		"bind_interface");
+
+	conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror");
 }
 
 Tsettings settings;

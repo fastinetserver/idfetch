@@ -7,8 +7,12 @@ class Tconnection{
 	private:
 		ulong bytes_per_last_interval;
 	public:
+		time_t start_time;
 		void *segment;
-		Tconnection():bytes_per_last_interval(0),segment(0){};
+		Tconnection():
+			bytes_per_last_interval(0),
+			start_time(0),
+			segment(0){};
 		void  inc_bytes_per_last_interval(ulong new_bytes_count){bytes_per_last_interval+=new_bytes_count;};
 		ulong get_bytes_per_last_interval(){return bytes_per_last_interval;};
 		void  reset_bytes_per_last_interval(){bytes_per_last_interval=0;};

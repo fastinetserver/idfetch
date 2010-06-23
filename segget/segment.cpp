@@ -94,6 +94,7 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num
 	status=DOWNLOADING;
 	downloaded_bytes=0;
 	connection_num=con_num;
+	connection_array[con_num].start_time=time((time_t *)NULL);
 	url=segment_url;
 	try_num++;
 	add_easy_handle_to_multi(cm);
