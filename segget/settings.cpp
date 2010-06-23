@@ -31,6 +31,8 @@ class Tsettings{
 	//mirrors
 		uint max_connections_num_per_mirror;
 		uint benchmark_oblivion;
+	//user-data
+		string user_agent;
 	//proxy
 		string proxy_ip_or_name;
 		uint proxy_port;
@@ -59,6 +61,8 @@ class Tsettings{
 		//mirrors
 			max_connections_num_per_mirror(2),
 			benchmark_oblivion(5),
+		//user-data
+			user_agent("segget"),
 		//proxy
 			proxy_ip_or_name("none"),
 			proxy_port(0),
@@ -95,6 +99,8 @@ void Tsettings::load_from_conf_file(){
 
 	conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror");
 	conf.set(benchmark_oblivion,				"mirrors",			"benchmark_oblivion");
+
+	conf.set(user_agent,						"user-data",		"user_agent");
 
 	conf.set(proxy_ip_or_name,					"proxy",			"proxy_ip_or_name");
 	conf.set(proxy_port,						"proxy",			"proxy_port");

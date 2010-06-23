@@ -127,7 +127,7 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, settings.low_connection_speed_limit);
 		curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, settings.low_connection_speed_time);
 		curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, settings.max_connection_speed);
-
+		curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, settings.user_agent.c_str());
 
 		if (settings.proxy_off)
 			curl_easy_setopt(easyhandle, CURLOPT_NOPROXY, "*");
