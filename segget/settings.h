@@ -54,24 +54,24 @@ class Tsettings{
 		//segments
 			max_segment_size(500000),
 			resume_on(1),
-			max_tries(30),
+			max_tries(10),
 		//connections
 			max_connections(6),
 			connection_timeout(15),
-			ftp_response_timeout(5000),
-			time_out(6000),
+			ftp_response_timeout(180),
+			time_out(500),
 			low_connection_speed_limit(1000),
 			low_connection_speed_time(10),
 			max_connection_speed(0),
 			bind_interface("none"),
 		//mirrors
-			max_connections_num_per_mirror(2),
+			max_connections_num_per_mirror(1),
 			benchmark_oblivion(5),
 		//user-data
 			user_agent("segget"),
 		//proxy
 			proxy_ip_or_name("none"),
-			proxy_port(0),
+			proxy_port(3128),
 			proxy_off(1),
 			proxy_user("none"),
 			proxy_password("none"),

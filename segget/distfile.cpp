@@ -157,25 +157,25 @@ void Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	uint best_mirror_num=-1;
 //	Pcurr_mirror=find_mirror(strip_mirror_name(url_list[best_mirror_num]));
 	Pbest_mirror=0;
-	ulong best_mirror_laziness_criterion=-1;
-	double curr_mirror_laziness_criterion;
+	ulong best_mirror_self_rating=-1;
+	ulong curr_mirror_self_rating;
 
 	for (url_num=0; url_num<url_count; url_num++){
 		Pcurr_mirror=find_mirror(strip_mirror_name(url_list[url_num]));
 		if (Pcurr_mirror->get_active_num()<settings.max_connections_num_per_mirror){
-			curr_mirror_laziness_criterion=Pcurr_mirror->get_laziness_criterion();
-			if (curr_mirror_laziness_criterion<best_mirror_laziness_criterion){
+			curr_mirror_self_rating=Pcurr_mirror->mirror_mirror_on_the_wall();
+			if (curr_mirror_self_rating<best_mirror_self_rating){
 				best_mirror_num=url_num;
-				best_mirror_laziness_criterion=curr_mirror_laziness_criterion;
+				best_mirror_self_rating=curr_mirror_self_rating;
 				Pbest_mirror=Pcurr_mirror;
 			}
-			if (best_mirror_laziness_criterion==0)
+			if (best_mirror_self_rating==0)
 				// 0 can not be improved - it's one of the best
 				break;
 		}
 	}
-	debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
 	if (Pbest_mirror){
+		debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
 		Pbest_mirror->start();
 		dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[best_mirror_num]);
 		connection_array[connection_num].segment=&dn_segments[seg_num];

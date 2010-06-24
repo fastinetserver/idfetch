@@ -15,34 +15,34 @@ class Tmirror{
 	public:
 		ulong	dld_time;
 		ulong	dld_size;
-		double	multiplier;
+		double	honesty;
 		Tmirror():
 			active_num(0),
 			dld_time(0),
 			dld_size(1),
-			multiplier(1){};
+			honesty(1){};
 		void	start();
 		void	stop(ulong time, uint size);
-		double get_laziness_criterion();
+		double mirror_mirror_on_the_wall();
 		uint get_active_num(){return active_num;};
 };
 
-double Tmirror::get_laziness_criterion(){
-	double criterion=multiplier*1000000000*dld_time/dld_size;
-	multiplier=multiplier*100/(100+settings.benchmark_oblivion);
+double Tmirror::mirror_mirror_on_the_wall(){
+	double criterion=honesty*1000000000*dld_time/dld_size;
+	honesty=honesty*100/(100+settings.benchmark_oblivion);
 	return criterion;
 }
 void Tmirror::start(){
 	if (!dld_time)
 		dld_time=1;
 	active_num++;
-	multiplier=1;
+	honesty=1;
 }
 
 void Tmirror::stop(ulong time, uint size){
 	dld_time+=time;
 	dld_size+=size;
-	multiplier=1;
+	honesty=1;
 	debug(toString(time)+"---"+toString(size));
 	active_num--;
 }
@@ -62,8 +62,8 @@ Tmirror* find_mirror(string mirror_url){
 		debug("==================>>");
 		debug("       time:"+toString(mirror_iterator->second->dld_time));
 		debug("       size:"+toString(mirror_iterator->second->dld_size));
-		debug(" multiplier:"+toString(mirror_iterator->second->multiplier));
-		debug("  criterion:"+toString(mirror_iterator->second->get_laziness_criterion()));
+		debug("    honesty:"+toString(mirror_iterator->second->honesty));
+		debug("  criterion:"+toString(mirror_iterator->second->mirror_mirror_on_the_wall()));
 		return mirror_iterator->second;
 	}
 }
