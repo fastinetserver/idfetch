@@ -9,11 +9,12 @@
 #include <cstdio>
 #include <ncurses.h>
 #include <curl/curl.h>
-#include "settings.cpp"
+#include "settings.h"
 #include "stats.cpp"
 
 using namespace std;
 
+extern Tsettings settings;
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 

@@ -4,11 +4,11 @@
 #include <string>
 #include <map>
 #include "str.cpp"
-#include "tui.cpp"
+#include "tui.h"
 #include "settings.cpp"
-#include "tui.cpp"
 using namespace std;
 
+extern Tsettings settings;
 class Tmirror{
 	private:
 		uint active_num;

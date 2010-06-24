@@ -2,6 +2,7 @@
 #define __STATS_H__
 
 #include "connection.cpp"
+#include "tui.h"
 
 class Tstats{
 	private:

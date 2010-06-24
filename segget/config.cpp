@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include "str.cpp"
-#include "tui.cpp"
+#include "tui.h"
 using namespace std;
 
 map<string,string> content_;

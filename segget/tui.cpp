@@ -1,17 +1,16 @@
-#ifndef __TUI_H__
-#define __TUI_H__
+#include "tui.h"
+extern Tsettings settings;
 
-using namespace std;
-template<typename T> std::string toString(T t)
+template<typename T> string toString(T t)
 {
-	std::stringstream s;
+	stringstream s;
 	s << t;
 	return s.str();
 }
 
-template<typename T> std::string field(string prefix,T t, int width) 
+template<typename T> string field(string prefix,T t, int width) 
 {
-	std::stringstream s1,s2;
+	stringstream s1,s2;
 	s1 << t;
 	width=width+prefix.length();
 	s2.width(width);
@@ -75,21 +74,20 @@ void msg_total(string msg_text){
 	msg(30,0,msg_text);
 }
 void log(string log_msg_text){
-	ofstream file ("segget.log", ios::app);
+	ofstream file ((settings.logs_dir+"/"+settings.general_log_file).c_str(), ios::app);
 	file << log_msg_text << endl;
 	file.close();
 	msg(31,0, "LOG:"+log_msg_text);
 }
 void debug(string debug_msg_text){
-	ofstream file ("debug.log", ios::app);
+	ofstream file ((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
 	file << debug_msg_text << endl;
 	file.close();
 	msg(32,0, "DEBUG:"+debug_msg_text);
 }
 void error_log(string error_msg_text){
-	ofstream file ("error.log", ios::app);
+	ofstream file ((settings.logs_dir+"/"+settings.error_log_file).c_str(), ios::app);
 	file << error_msg_text << endl;
 	file.close();
 	msg(33,0, "ERROR:"+error_msg_text);
 }
-#endif
