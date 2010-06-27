@@ -3,6 +3,8 @@
 
 #include "connection.cpp"
 #include "tui.h"
+#include <sys/time.h>
+using namespace std;
 
 class Tstats{
 	private:
@@ -11,7 +13,8 @@ class Tstats{
 		uint total_size;
 	public:
 		ulong total_bytes_per_last_interval;
-		ulong last_time_interval;
+		struct timeval previous_time;
+		double last_time_interval;
 		uint pkg_count;
 		uint distfiles_count;
 		Tstats():
@@ -19,6 +22,7 @@ class Tstats{
 			dld_distfiles_count(0),
 			total_size(0),
 			total_bytes_per_last_interval(0),
+			previous_time(),
 			last_time_interval(1),
 			pkg_count(0),
 			distfiles_count(0)
@@ -40,6 +44,10 @@ void Tstats::show_totals(){
 			show_last_time_interval=last_time_interval;
 		if (total_size>1)
 			show_total_size=total_size;
+
+		struct timeval now_timee;
+		gettimeofday(&now_timee,NULL);
+
 		msg_total("Total" 
 			+field(" PKGs:",          pkg_count,4)
 			+field(" = DFs:",         dld_distfiles_count,4)
@@ -47,8 +55,11 @@ void Tstats::show_totals(){
 			+field(" = Size:",        dld_size/1000,7)
 			+field(" / ",             total_size/1000,7)+" Kb "
 			+field(" = ",             dld_size*100/(1+show_total_size),3)+"%%"
-			+field(" Total speed: ",  (total_bytes_per_last_interval/1000/(show_last_time_interval)),7)
-			+" Kb/s");
+			+field(" Total speed: ",  (total_bytes_per_last_interval/(show_last_time_interval)),7)
+			+" Kb/s"
+//			+" Secs:"+toString(now_timee.tv_sec)
+//			+" usecs:"+toString(now_timee.tv_usec)
+			);
 	}
 	catch(...)
 	{

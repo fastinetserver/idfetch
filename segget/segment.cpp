@@ -166,7 +166,7 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 		return 1;
 	}
 }
-void show_progress(ulong time_diff){
+void show_progress(double time_diff){
 	try{
 		stats.total_bytes_per_last_interval=0;
 		for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
@@ -177,7 +177,7 @@ void show_progress(ulong time_diff){
 				stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
 				msg_segment_progress(con_num,segment->segment_num, segment->try_num,
 					segment->downloaded_bytes,segment->segment_size,
-					(connection_array[con_num].get_bytes_per_last_interval())/time_diff);
+					(connection_array[con_num].get_bytes_per_last_interval()*1000)/time_diff);
 				connection_array[con_num].reset_bytes_per_last_interval();
 			}
 		}
@@ -204,16 +204,17 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 		}
 		connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
 
-		time_t now_time;
-		now_time = time((time_t *)NULL);
+		timeval now_time;
+		gettimeofday(&now_time,NULL);
 //	ulong diff_sec = difftime(now_time.tv_sec, prev_time.tv_sec) * 1000000;
 //	ulong diff_milli = difftime(now_time.tv_usec, prev_time.tv_usec) + diff_sec;
-		ulong time_diff=now_time-prev_time;
+		
+		double time_diff_msecs=(now_time.tv_sec-stats.previous_time.tv_sec)*1000+(now_time.tv_usec-stats.previous_time.tv_usec)/1000;
 //	debug(segment->file_name+"==="+toString((ulong)now_time)+"=="+toString(now_time));
-		if (time_diff >= 1){
+		if (time_diff_msecs >= 500){
 //		debug(segment->file_name+"--->"+toString((ulong)()));
-			show_progress(time_diff);
-			prev_time=now_time;
+			show_progress(time_diff_msecs);
+			stats.previous_time=now_time;
 		};
 //	else 
 //	debug(segment->file_name+"==="+toString(prev_time.tv_sec)+"=="+toString(prev_time.tv_usec)+"==="+toString((ulong)(diff_milli)));
