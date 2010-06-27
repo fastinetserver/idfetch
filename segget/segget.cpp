@@ -191,17 +191,56 @@ int download_pkgs(){
 
 int main()
 {
-	//set_settings();
-	prev_time=time((time_t *)NULL);
-	initscr();
-	curs_set(0);
-	refresh();
-	settings.load_from_conf_file();
-	load_pkgs();
-	//show_pkgs();
-	stats.show_totals();
-	download_pkgs();
-	getch();
-	endwin();
+	try{
+		prev_time=time((time_t *)NULL);
+		try{
+			//init curses
+			initscr();
+			curs_set(0);
+			refresh();
+		}
+		catch(...)
+		{
+			//error while init curses
+		}
+		try{
+			//load settings
+				settings.load_from_conf_file();
+		}
+		catch(...)
+		{
+			//error while loading settings
+		}
+		try{
+			load_pkgs();
+		}
+		catch(...){
+			//error while loading pkgs
+		}
+		try{
+			//show_pkgs();
+			stats.show_totals();
+		}
+		catch(...){
+			//error while showing stats
+		}
+		try{
+			download_pkgs();
+		}
+		catch(...){
+			//error while downloading_pkgs
+		}
+		getch();
+	}
+	catch(...){
+		//error during init and downloading process
+	}
+	try{
+		endwin();
+	}
+	catch(...)
+	{
+		//error while ending curses
+	}
 	return 0;
 }

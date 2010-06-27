@@ -36,7 +36,7 @@ class Tsettings{
 	//proxy
 		string proxy_ip_or_name;
 		uint proxy_port;
-		uint proxy_off;
+		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
 	//logs

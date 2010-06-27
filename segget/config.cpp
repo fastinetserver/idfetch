@@ -16,7 +16,7 @@ public:
 	ConfigFile(std::string const& configFile);
 
 	int set(string &dst,string const& section, string const& entry) const;
-	int set(uint &dst,string const& section, string const& entry) const;
+	int set(uint &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
 	int set(bool &dst,string const& section, string const& entry) const;
 };
 
@@ -38,37 +38,52 @@ string trim(std::string const& source, char const* delims = " \t\r\n") {
 }
 
 ConfigFile::ConfigFile(string const& configFile) {
-	ifstream file(configFile.c_str());
-	string line;
-	string name;
-	string value;
-	string inSection;
-	int posEqual;
-	while (std::getline(file,line)) {
-		if (! line.length()) continue;
-		if (line[0] == '#') continue;
-		if (line[0] == ';') continue;
+	ifstream file;
+	file.exceptions (ifstream::failbit | ifstream::badbit);
+	try{
+		file.open(configFile.c_str());
+	}
+	catch(...){
+		error_log("Error opening settings file: "+configFile+". Default settings will be used. Check if config file exists and segget has rights to access it.");
+		return;
+	}
+	try{
+		//processing file
+		string line;
+		string name;
+		string value;
+		string inSection;
+		int posEqual;
+		while (not(file.eof())) {
+			getline(file,line);
+			if (! line.length()) continue;
+			if (line[0] == '#') continue;
+			if (line[0] == ';') continue;
 
-		line=noupper(line);
-		if (line[0] == '[') {
-			inSection=trim(line.substr(1,line.find(']')-1));
-			continue;
+			line=noupper(line);
+			if (line[0] == '[') {
+				inSection=trim(line.substr(1,line.find(']')-1));
+				continue;
+			}
+
+			posEqual=line.find('=');
+			name  = trim(line.substr(0,posEqual));
+			value = trim(line.substr(posEqual+1));
+
+			content_[inSection+'/'+name]=value;
 		}
-
-		posEqual=line.find('=');
-		name  = trim(line.substr(0,posEqual));
-		value = trim(line.substr(posEqual+1));
-
-		content_[inSection+'/'+name]=value;
+	}
+	catch(...){
+		error_log("Settings file: "+configFile+" was opened, but an error occured while reading settings from it.");
 	}
 }
 
 int ConfigFile::set(string &dst, string const& section, string const& entry) const {
-
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+dst);
+		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
+		log("! Settings: ["+section+"]."+entry+"="+dst+". Default value forced.");
 		return 1;
 	}
 	else{
@@ -77,31 +92,71 @@ int ConfigFile::set(string &dst, string const& section, string const& entry) con
 		return 0;
 	}
 }
-int ConfigFile::set(uint &dst, string const& section, string const& entry) const {
-
+int ConfigFile::set(uint &dst, string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const {
+	uint return_value;
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+toString(dst));
+		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
+		log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 		return 1;
 	}
 	else{
-		dst=atoi(ci->second.c_str());
-		log("Settings: ["+section+"]."+entry+"="+toString(dst));
-		return 0;
+		return_value=atoi(ci->second.c_str());
+		if (return_value==0)
+			if (toString(return_value)!=ci->second){
+				log("! Settings: ["+section+"]."+entry
+						+" must have an integer value in range from "+toString(min_limit)
+						+" to "+toString(max_limit)
+						+". Can't convert "+ci->second
+						+" to integer. ");
+				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+				return 1;
+			}
+		if ((return_value>=min_limit) and (return_value<=max_limit)){
+			//everything is ok
+			log("Settings: ["+section+"]."+entry+"="+toString(return_value));
+			dst=return_value;
+			return 0;
+		}else{
+			log("! Settings: ["+section+"]."+entry
+				+" must have an integer value in range from "+toString(min_limit)
+				+" to "+toString(max_limit)+".");
+				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+			return 1;
+		}
 	}
 }
 int ConfigFile::set(bool &dst, string const& section, string const& entry) const {
-
+	uint return_value;
 	map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("segget.conf has no settings for "+entry+" in ["+section+"] section. Will be set to default:"+toString(dst));
+		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
+		log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 		return 1;
 	}
 	else{
-		dst=atoi(ci->second.c_str());
-		log("Settings: ["+section+"]."+entry+"="+toString(dst));
-		return 0;
+		return_value=atoi(ci->second.c_str());
+		if (return_value==0)
+			if (toString(return_value)!=ci->second){
+				log("! Settings: ["+section+"]."+entry
+						+" must have a boolean value: 0 or 1"
+						+". Can't convert "+ci->second
+						+" to 0 or 1. ");
+				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+				return 1;
+			}
+		if ((return_value==0) or (return_value==1)){
+			//everything is ok
+			log("Settings: ["+section+"]."+entry+"="+toString(return_value));
+			dst=return_value;
+			return 0;
+		}else{
+			log("! Settings: ["+section+"]."+entry
+				+" must have a boolean value: 0 or 1");
+			log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+			return 1;
+		}
 	}
 }
