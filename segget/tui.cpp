@@ -107,8 +107,7 @@ void log(string log_msg_text){
 	file.exceptions (ofstream::failbit | ofstream::badbit);
 	try{
 		file.open((settings.logs_dir+"/"+settings.general_log_file).c_str(), ios::app);
-	}
-	catch(...){
+	}catch(...){
 		error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+".");
 		return;
 	}
