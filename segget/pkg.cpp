@@ -25,24 +25,36 @@ class Tpkg{
 		void load_pkg_from_json(json_object* json_obj_pkg);
 };
 void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
-	distfile_count=json_object_array_length(json_array_distfile_list);
-	Pdistfile_list= new Tdistfile* [distfile_count];
-	for(uint distfile_array_item_num=0;distfile_array_item_num<distfile_count;distfile_array_item_num++){
-		Pdistfile_list[distfile_array_item_num]=new Tdistfile();
-		Pdistfile_list[distfile_array_item_num]->load_distfile_from_json(json_object_array_get_idx(json_array_distfile_list,distfile_array_item_num));
+	try{
+		distfile_count=json_object_array_length(json_array_distfile_list);
+		Pdistfile_list= new Tdistfile* [distfile_count];
+		for(uint distfile_array_item_num=0;distfile_array_item_num<distfile_count;distfile_array_item_num++){
+			Pdistfile_list[distfile_array_item_num]=new Tdistfile();
+			Pdistfile_list[distfile_array_item_num]->load_distfile_from_json(json_object_array_get_idx(json_array_distfile_list,distfile_array_item_num));
+		}
+	}catch(...){
+		error_log("Error in pkg.cpp: load_distfile_list()");
 	}
 }
 
 void Tpkg::load_pkg_from_json(json_object* json_obj_pkg){
-//	printf("\t%d %s\n",array_item_num, json_object_to_json_string(json_obj_pkg));
-	name=json_object_to_json_string(json_object_object_get(json_obj_pkg,"pkg_name"));
-	category=json_object_to_json_string(json_object_object_get(json_obj_pkg,"CATEGORY"));
-	load_distfile_list(json_object_object_get(json_obj_pkg,"distfile_list"));
+	try{
+		//	printf("\t%d %s\n",array_item_num, json_object_to_json_string(json_obj_pkg));
+		name=json_object_to_json_string(json_object_object_get(json_obj_pkg,"pkg_name"));
+		category=json_object_to_json_string(json_object_object_get(json_obj_pkg,"CATEGORY"));
+		load_distfile_list(json_object_object_get(json_obj_pkg,"distfile_list"));
+	}catch(...){
+		error_log("Error in pkg.cpp: load_pkg_from_json()");
+	}
 }
 
 Tpkg::~Tpkg(){
-	for (uint i=0;i<distfile_count;i++)
-		delete Pdistfile_list[i];
-	delete [] Pdistfile_list;
+	try{
+		for (uint i=0;i<distfile_count;i++)
+			delete Pdistfile_list[i];
+		delete [] Pdistfile_list;
+	}catch(...){
+		error_log("Error in pkg.cpp: ~Tpkg");
+	}
 }
 #endif
