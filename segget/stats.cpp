@@ -14,6 +14,15 @@ class Tstats{
 		ulong last_time_interval;
 		uint pkg_count;
 		uint distfiles_count;
+		Tstats():
+			dld_size(0),
+			dld_distfiles_count(0),
+			total_size(0),
+			total_bytes_per_last_interval(0),
+			last_time_interval(1),
+			pkg_count(0),
+			distfiles_count(0)
+			{};
 		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
 		ulong get_dld_size(){return dld_size;};
 		void inc_dld_distfiles_count(){ dld_distfiles_count++;};
@@ -25,14 +34,21 @@ class Tstats{
 
 void Tstats::show_totals(){
 	try{
+		ulong show_last_time_interval=1;
+		ulong show_total_size=1;
+		if (last_time_interval>1)
+			show_last_time_interval=last_time_interval;
+		if (total_size>1)
+			show_total_size=total_size;
 		msg_total("Total" 
 			+field(" PKGs:",          pkg_count,4)
 			+field(" = DFs:",         dld_distfiles_count,4)
 			+field(" / ",             distfiles_count,4)
 			+field(" = Size:",        dld_size/1000,7)
 			+field(" / ",             total_size/1000,7)+" Kb "
-			+field(" = ",             dld_size*100/total_size,3)+"%%"
-			+field(" Total speed: ",  (total_bytes_per_last_interval/1000/(1+last_time_interval)),7)+" Kb/s");
+			+field(" = ",             dld_size*100/(1+show_total_size),3)+"%%"
+			+field(" Total speed: ",  (total_bytes_per_last_interval/1000/(show_last_time_interval)),7)
+			+" Kb/s");
 	}
 	catch(...)
 	{
