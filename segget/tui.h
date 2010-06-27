@@ -19,4 +19,5 @@ void msg_total(string msg_text);
 void log(string log_msg_text);
 void debug(string debug_msg_text);
 void error_log(string error_msg_text);
+void error_log_no_msg(string error_msg_text);
 #endif

@@ -39,6 +39,7 @@ void Tsettings::load_from_conf_file(){
 		conf.set(proxy_off,							"proxy",			"proxy_off");
 		conf.set(proxy_user,						"proxy",			"proxy_user");
 		conf.set(proxy_password,					"proxy",			"proxy_password");
+	}
 	catch(...)
 	{
 		error_log_no_msg("Error calling msg() in settings.cpp: load_from_conf_file()");

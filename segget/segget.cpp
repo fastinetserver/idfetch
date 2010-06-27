@@ -146,7 +146,7 @@ int download_pkgs(){
 				string result_msg_text="RESULT:"+toString(result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
 				msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 				curl_multi_remove_handle(cm, e);
-				fclose(current_segment->segment_file);
+				current_segment->segment_file.close();
 				Tmirror *Pcurr_mirror=find_mirror(strip_mirror_name(current_segment->url));
 				time_t now_time = time((time_t *)NULL);
 				Tdistfile* prnt_distfile;

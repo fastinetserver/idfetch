@@ -2,8 +2,6 @@
 extern Tsettings settings;
 
 const uint CONNECTION_LINES=5;
-void msg(uint y, uint x, string msg_text);
-void error_log_no_msg(string error_msg_text);
 
 template<typename T> string toString(T t)
 {
