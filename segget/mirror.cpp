@@ -23,11 +23,11 @@ class Tmirror{
 			honesty(1){};
 		void	start();
 		void	stop(ulong time, uint size);
-		double mirror_mirror_on_the_wall();
+		double mirror_on_the_wall();
 		uint get_active_num(){return active_num;};
 };
 
-double Tmirror::mirror_mirror_on_the_wall(){
+double Tmirror::mirror_on_the_wall(){
 	double criterion=honesty*1000000000*dld_time/dld_size;
 	honesty=honesty*100/(100+settings.benchmark_oblivion);
 	return criterion;
@@ -63,11 +63,10 @@ Tmirror* find_mirror(string mirror_url){
 		debug("       time:"+toString(mirror_iterator->second->dld_time));
 		debug("       size:"+toString(mirror_iterator->second->dld_size));
 		debug("    honesty:"+toString(mirror_iterator->second->honesty));
-		debug("  criterion:"+toString(mirror_iterator->second->mirror_mirror_on_the_wall()));
+		debug("  criterion:"+toString(mirror_iterator->second->mirror_on_the_wall()));
 		return mirror_iterator->second;
 	}
 }
-
 
 string strip_mirror_name(string path){
 	string mirror_name;

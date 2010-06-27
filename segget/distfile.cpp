@@ -163,7 +163,7 @@ void Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	for (url_num=0; url_num<url_count; url_num++){
 		Pcurr_mirror=find_mirror(strip_mirror_name(url_list[url_num]));
 		if (Pcurr_mirror->get_active_num()<settings.max_connections_num_per_mirror){
-			curr_mirror_self_rating=Pcurr_mirror->mirror_mirror_on_the_wall();
+			curr_mirror_self_rating=Pcurr_mirror->mirror_on_the_wall();
 			if (curr_mirror_self_rating<best_mirror_self_rating){
 				best_mirror_num=url_num;
 				best_mirror_self_rating=curr_mirror_self_rating;
