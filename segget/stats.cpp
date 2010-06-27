@@ -24,14 +24,20 @@ class Tstats{
 };
 
 void Tstats::show_totals(){
-	msg_total("Total" 
-		+field(" PKGs:",          pkg_count,4)
-		+field(" = DFs:",         dld_distfiles_count,4)
-		+field(" / ",             distfiles_count,4)
-		+field(" = Size:",        dld_size/1000,7)
-		+field(" / ",             total_size/1000,7)+" Kb "
-		+field(" = ",             dld_size*100/total_size,3)+"%%"
-		+field(" Total speed: ",  (total_bytes_per_last_interval/1000/(1+last_time_interval)),7)+" Kb/s");
+	try{
+		msg_total("Total" 
+			+field(" PKGs:",          pkg_count,4)
+			+field(" = DFs:",         dld_distfiles_count,4)
+			+field(" / ",             distfiles_count,4)
+			+field(" = Size:",        dld_size/1000,7)
+			+field(" / ",             total_size/1000,7)+" Kb "
+			+field(" = ",             dld_size*100/total_size,3)+"%%"
+			+field(" Total speed: ",  (total_bytes_per_last_interval/1000/(1+last_time_interval)),7)+" Kb/s");
+	}
+	catch(...)
+	{
+		error_log_no_msg("Error in stats.cpp: show_totals()");
+	}
 }
 
 Tstats stats;
