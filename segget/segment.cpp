@@ -1,3 +1,29 @@
+/*
+* Copyright (C) 2010 Robin H.Johnson, Ovechko Kostyantyn <fastinetserver@gmail.com>.
+*
+* Project: IDFetch.
+* Developer: Ovechko Kostyantyn Olexandrovich (Kharkiv State Technical University of Construction and Architecture, Ukraine).
+* Mentor: Robin H. Johnson (Gentoo Linux: Developer, Trustee & Infrastructure Lead).
+* Mentoring organization: Gentoo Linux.
+* Sponsored by GSOC 2010.
+*
+* This file is part of Segget.
+*
+* Segget is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* Segget is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with Segget; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
 #ifndef __SEGMENT_H__
 #define __SEGMENT_H__
 #include <sstream> 
@@ -211,7 +237,7 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 		
 		double time_diff_msecs=(now_time.tv_sec-stats.previous_time.tv_sec)*1000+(now_time.tv_usec-stats.previous_time.tv_usec)/1000;
 //	debug(segment->file_name+"==="+toString((ulong)now_time)+"=="+toString(now_time));
-		if (time_diff_msecs >= 500){
+		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
 //		debug(segment->file_name+"--->"+toString((ulong)()));
 			show_progress(time_diff_msecs);
 			stats.previous_time=now_time;

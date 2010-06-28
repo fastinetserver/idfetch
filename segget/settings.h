@@ -1,3 +1,29 @@
+/*
+* Copyright (C) 2010 Robin H.Johnson, Ovechko Kostyantyn <fastinetserver@gmail.com>.
+*
+* Project: IDFetch.
+* Developer: Ovechko Kostyantyn Olexandrovich (Kharkiv State Technical University of Construction and Architecture, Ukraine).
+* Mentor: Robin H. Johnson (Gentoo Linux: Developer, Trustee & Infrastructure Lead).
+* Mentoring organization: Gentoo Linux.
+* Sponsored by GSOC 2010.
+*
+* This file is part of Segget.
+*
+* Segget is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* Segget is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with Segget; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
 #ifndef __SETTINGS_H__
 #define __SETTINGS_H__
 
@@ -14,28 +40,29 @@ class Tsettings{
 		string distfiles_dir;
 		string segments_dir;
 	//distfiles
-		uint max_connection_num_per_distfile;
+		ulong max_connection_num_per_distfile;
 	//segments
-		uint max_segment_size;
+		ulong max_segment_size;
 		bool resume_on;
-		uint max_tries;
+		ulong max_tries;
 	//connections
-		uint max_connections;
-		uint connection_timeout;
-		uint ftp_response_timeout;
-		uint time_out;
-		uint low_connection_speed_limit;
-		uint low_connection_speed_time;
-		uint max_connection_speed;
+		ulong max_connections;
+		ulong connection_timeout;
+		ulong ftp_response_timeout;
+		ulong time_out;
+		ulong low_connection_speed_limit;
+		ulong low_connection_speed_time;
+		ulong max_connection_speed;
+		ulong current_speed_time_interval_msecs;
 		string bind_interface;
 	//mirrors
-		uint max_connections_num_per_mirror;
-		uint benchmark_oblivion;
+		ulong max_connections_num_per_mirror;
+		ulong benchmark_oblivion;
 	//user-data
 		string user_agent;
 	//proxy
 		string proxy_ip_or_name;
-		uint proxy_port;
+		ulong proxy_port;
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
@@ -63,6 +90,7 @@ class Tsettings{
 			low_connection_speed_limit(1000),
 			low_connection_speed_time(10),
 			max_connection_speed(0),
+			current_speed_time_interval_msecs(1000),
 			bind_interface("none"),
 		//mirrors
 			max_connections_num_per_mirror(1),
