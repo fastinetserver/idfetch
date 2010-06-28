@@ -23,49 +23,10 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#include "connection.h"
 
-void Tconnection::start(){
-	try{
-		total_dld_bytes=0;
-		bytes_per_last_interval=0;
-		gettimeofday(&start_time,NULL);
-		active=true;
-	}catch(...){
-		error_log("Error in connection.cpp: start()");
-	}
-}
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
-void Tconnection::stop(){
-	try{
-		active=false;
-	}catch(...){
-		error_log("Error in connection.cpp: stop()");
-	}
-}
+ulong time_left_from(timeval from_time);
 
-void Tconnection::inc_bytes_per_last_interval(ulong new_bytes_count){
-	try{
-		total_dld_bytes+=new_bytes_count;
-		bytes_per_last_interval+=new_bytes_count;
-	}catch(...){
-		error_log("Error in connection.cpp: inc_bytes_per_last_interval()");
-	}
-}
-
-void Tconnection::show_connection_progress(ulong time_diff){
-	try{
-		if (active){
-			stats.total_bytes_per_last_interval+=bytes_per_last_interval;
-			msg_segment_progress(segment->connection_num,
-							segment->segment_num, segment->try_num,
-							segment->downloaded_bytes,
-							segment->segment_size,
-							(bytes_per_last_interval*1000)/time_diff,
-							(total_dld_bytes*1000)/time_left_from(start_time));
-			bytes_per_last_interval=0;
-		}
-	}catch(...){
-		error_log("Error in connection.cpp: show_connection_progress()");
-	}
-}
+#endif

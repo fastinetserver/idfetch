@@ -27,7 +27,7 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 
-#include "connection.cpp"
+#include "connection.h"
 #include "tui.h"
 #include <sys/time.h>
 using namespace std;
@@ -60,6 +60,7 @@ class Tstats{
 		void inc_total_size(ulong more_bytes){ total_size+=more_bytes;};
 		ulong get_total_size(){return total_size;};
 		void show_totals();
+		void reset_previous_time();
 };
 
 void Tstats::show_totals(){
@@ -93,5 +94,12 @@ void Tstats::show_totals(){
 	}
 }
 
+void Tstats::reset_previous_time(){
+	try{
+		gettimeofday(&previous_time,NULL);
+	}catch(...){
+		error_log_no_msg("Error in stats.cpp: reset_previous_time()");
+	}
+}
 Tstats stats;
 #endif

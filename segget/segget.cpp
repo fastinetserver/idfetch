@@ -31,6 +31,8 @@
 #include <json/json.h>
 #include <ncurses.h>
 #include "pkg.cpp"
+#include "connection.cpp"
+#include "utils.cpp"
 //#include "settings.cpp"
 
 using namespace std;
@@ -213,15 +215,17 @@ int download_pkgs(){
 					curl_multi_remove_handle(cm, e);
 					current_segment->segment_file.close();
 					Tmirror *Pcurr_mirror=find_mirror(strip_mirror_name(current_segment->url));
-					time_t now_time = time((time_t *)NULL);
+					timeval now_time;
+					gettimeofday(&now_time,NULL);
 					Tdistfile* prnt_distfile;
 					prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
+					connection_array[current_segment->connection_num].stop();
 					prnt_distfile->active_connections_num--;
 					if (result!=0){
 						// error -> start downloading again
 						msg_status2(current_segment->connection_num, toString(result)+"]- Failed download "+current_segment->file_name);
 						debug(toString(result)+"]- Failed download "+current_segment->url);
-						Pcurr_mirror->stop(now_time-connection_array[current_segment->connection_num].start_time,0);
+						Pcurr_mirror->stop(time_left_from(connection_array[current_segment->connection_num].start_time),0);
 						if (current_segment->try_num>=settings.max_tries){
 							current_segment->status=FAILED;
 							error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
@@ -234,7 +238,7 @@ int download_pkgs(){
 						// no error => count this one and start new
 						log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
 						debug(" Successful download "+current_segment->url);
-						Pcurr_mirror->stop(now_time-connection_array[current_segment->connection_num].start_time,current_segment->segment_size);
+						Pcurr_mirror->stop(time_left_from(connection_array[current_segment->connection_num].start_time),current_segment->segment_size);
 						current_segment->status=DOWNLOADED;
 						prnt_distfile->inc_dld_segments_count(current_segment);
 					};

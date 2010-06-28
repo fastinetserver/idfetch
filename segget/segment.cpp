@@ -24,69 +24,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGMENT_H__
-#define __SEGMENT_H__
-#include <sstream> 
-#include <fstream>
-#include <cstring>
-#include <string>
-#include <iostream>
-#include <stdio.h>
-#include <cstdio>
-#include <ncurses.h>
-#include <curl/curl.h>
-#include "settings.h"
-#include "stats.cpp"
-
-using namespace std;
-
-extern Tsettings settings;
-unsigned long downloaded_bytes=0;
-size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
-
-enum Tstatus{WAITING, DOWNLOADING, DOWNLOADED, FAILED};
-
-class Tsegment{
-	private:
-		CURL *easyhandle;
-		char* urllist;
-	public:
-		string file_name;
-		Tstatus status;
-		uint try_num;
-		void* parent_distfile;
-		uint connection_num;
-		uint segment_num;
-		uint segment_size;
-		unsigned long downloaded_bytes;
-		string url;
-		string range;
-		ofstream segment_file;
-		Tsegment():
-			easyhandle(0),
-			urllist(0),
-			file_name(""),
-			status(WAITING),
-			try_num(0),
-			parent_distfile(0),
-			connection_num(0),
-			segment_num(0),
-			segment_size(1000),
-			downloaded_bytes(0),
-			url(""),
-			range(""),
-			segment_file(0)
-			{};
-		Tsegment(const Tsegment &L);             // copy constructor
-		Tsegment & operator=(const Tsegment &L);
-		~Tsegment();
-		void set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end);
-		void prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url);
-		string get_file_name(){return file_name;};
-		int add_easy_handle_to_multi(CURLM *cm);
-};
-
-Tsegment *segments_in_progress[MAX_CONNECTS]={0};
+#include "segment.h"
 
 void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
 	try{
@@ -125,7 +63,7 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num
 		status=DOWNLOADING;
 		downloaded_bytes=0;
 		connection_num=con_num;
-		connection_array[con_num].start_time=time((time_t *)NULL);
+		connection_array[con_num].start();
 		url=segment_url;
 		try_num++;
 		add_easy_handle_to_multi(cm);
@@ -198,14 +136,7 @@ void show_progress(double time_diff){
 		for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
 			//    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
 			//if connection is not NULL
-			if (connection_array[con_num].segment){
-				Tsegment* segment=(Tsegment*)connection_array[con_num].segment;
-				stats.total_bytes_per_last_interval+=connection_array[con_num].get_bytes_per_last_interval();
-				msg_segment_progress(con_num,segment->segment_num, segment->try_num,
-					segment->downloaded_bytes,segment->segment_size,
-					(connection_array[con_num].get_bytes_per_last_interval()*1000)/time_diff);
-				connection_array[con_num].reset_bytes_per_last_interval();
-			}
+			connection_array[con_num].show_connection_progress(time_diff);
 		}
 		stats.last_time_interval=time_diff;
 		stats.show_totals();
@@ -221,7 +152,6 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 		Tsegment *segment;
 		segment =(Tsegment*)cur_segment;
 		segment->downloaded_bytes+=nmemb;
-
 		try{
 			segment->segment_file.write((char*)buffer,nmemb*size);
 		}
@@ -229,27 +159,14 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 			error_log("Can't write segment file:"+segment->file_name);
 		}
 		connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
-
-		timeval now_time;
-		gettimeofday(&now_time,NULL);
-//	ulong diff_sec = difftime(now_time.tv_sec, prev_time.tv_sec) * 1000000;
-//	ulong diff_milli = difftime(now_time.tv_usec, prev_time.tv_usec) + diff_sec;
-		
-		double time_diff_msecs=(now_time.tv_sec-stats.previous_time.tv_sec)*1000+(now_time.tv_usec-stats.previous_time.tv_usec)/1000;
-//	debug(segment->file_name+"==="+toString((ulong)now_time)+"=="+toString(now_time));
+		ulong time_diff_msecs=time_left_from(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
-//		debug(segment->file_name+"--->"+toString((ulong)()));
 			show_progress(time_diff_msecs);
-			stats.previous_time=now_time;
+			stats.reset_previous_time();
 		};
-//	else 
-//	debug(segment->file_name+"==="+toString(prev_time.tv_sec)+"=="+toString(prev_time.tv_usec)+"==="+toString((ulong)(diff_milli)));
-	      //toString(diff_milli));
-	//refresh();
 	}
 	catch(...){
 		error_log("Error in segment.cpp: write_data()");
 	}
 	return bytes_written;
 }
-#endif

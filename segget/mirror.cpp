@@ -77,7 +77,7 @@ void Tmirror::start(){
 
 void Tmirror::stop(ulong time, uint size){
 	try{
-		dld_time+=time;
+		dld_time+=time/1000;
 		dld_size+=size;
 		honesty=1;
 		debug(toString(time)+"---"+toString(size));

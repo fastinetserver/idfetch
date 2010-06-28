@@ -63,27 +63,28 @@ void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, st
 	}
 }
 
-void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed){
+void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
 	try{
-		int percent=dld_bytes*100/total_bytes;
+		string speed_str;
+		string avg_speed_str;
 		if (speed<1000)
-			  msg(connection_num*CONNECTION_LINES,0,
-			field("[",connection_num,2)+"]"
-			+field(" Segment:",segment_num, 5)
-			+field(" Try:",try_num,4)
-			+field(" Bytes:",dld_bytes,7)
-			+field(" / ",total_bytes,7)
-			+field(" = ",percent,3)+"%%"
-			+field(" Speed:",speed,7)+" b/s");
+			speed_str=field(" Speed:",speed,7)+" b/s";
 		else
-			msg(connection_num*CONNECTION_LINES,0,
+			speed_str=field(" Speed:",speed/1000,7)+" Kb/s";
+		if (avg_speed<1000)
+			avg_speed_str=field(" AVG speed:",avg_speed,7)+" b/s";
+		else
+			avg_speed_str=field(" AVG speed:",avg_speed/1000,7)+" Kb/s";
+		int percent=dld_bytes*100/total_bytes;
+		msg(connection_num*CONNECTION_LINES,0,
 			field("[",connection_num,2)+"]"
 			+field(" Segment:",segment_num, 5)
 			+field(" Try:",try_num,4)
 			+field(" Bytes:",dld_bytes,7)
 			+field(" / ",total_bytes,7)
 			+field(" = ",percent,3)+"%%"
-			+field(" Speed:",speed/1000,7)+" Kb/s");
+			+speed_str
+			+avg_speed_str);
 	}
 	catch(...)
 	{
