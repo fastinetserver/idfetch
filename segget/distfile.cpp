@@ -235,6 +235,7 @@ int Tdistfile::combine_segments(){
 	try{
 		debug("Combining distfile"+name);
 		ofstream distfile_file;
+		distfile_file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
 			distfile_file.open((settings.distfiles_dir+"/"+name).c_str(),ofstream::binary|ios::trunc);
 		}catch(...){
@@ -249,6 +250,7 @@ int Tdistfile::combine_segments(){
 			for (uint seg_num=0; seg_num < segments_count; seg_num++){
 				debug("Joining "+name+" segment "+toString(seg_num)+"          ");
 				ifstream segment_file;
+				segment_file.exceptions (ofstream::failbit | ofstream::badbit);
 				try{
 					segment_file.open((settings.segments_dir+"/"+dn_segments[seg_num].file_name).c_str(),ifstream::binary);
 				}catch(...){

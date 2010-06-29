@@ -43,18 +43,25 @@ CURLM *cm;
 
 int load_pkgs(){
 	try{
+		
 		ifstream json_pkg_list_file;
+		json_pkg_list_file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
-			json_pkg_list_file.open((settings.pkg_list_dir+"pkg.list").c_str());
+			json_pkg_list_file.open((settings.pkg_list_dir+"/pkg.list").c_str());
 		}catch(...){
-			error_log("Error: Can't open pkg.list file");
+			error_log("Error: Can't open "+settings.pkg_list_dir+"/pkg.list"+" file");
 			return 1;
 		}
 		string buff((std::istreambuf_iterator<char>(json_pkg_list_file)), std::istreambuf_iterator<char>());
 		try{
 			json_pkg_list_file>>buff;
+		}catch(std::ifstream::failure e){
+			if (!json_pkg_list_file.eof()){
+				error_log("Error: Can't read pkg.list file: "+(string)e.what());
+				return 1;
+			}
 		}catch(...){
-			error_log("Error: Can't read pkg.list file");
+			error_log("Unknown Error: Can't read pkg.list file");
 			return 1;
 		}
 		try{

@@ -78,11 +78,16 @@ Tsegment::~Tsegment(){
 }
 
 int Tsegment::add_easy_handle_to_multi(CURLM *cm){
+	segment_file.exceptions (ofstream::badbit);
 	try{
 		segment_file.open((settings.segments_dir+"/"+file_name).c_str(), ios::trunc|ios::binary );
-	}
-	catch(...){
-		error_log("Can't open segment file:"+settings.segments_dir+"/"+file_name);
+	}catch(std::ifstream::failure e){
+			if (!segment_file.eof()){
+					error_log("Can't open segment file:"+settings.segments_dir+"/"+file_name+": "+(string)e.what());
+				return 1;
+			}
+	}catch(...){
+		error_log("Unknown error: Can't open segment file:"+settings.segments_dir+"/"+file_name);
 		return 1;
 	}
 	try{

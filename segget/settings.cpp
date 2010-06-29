@@ -26,8 +26,6 @@
 
 #include "settings.h"
 
-Tsettings settings;
-
 void Tsettings::load_from_conf_file(){
 	try{
 		ConfigFile conf("segget.conf");
@@ -38,7 +36,9 @@ void Tsettings::load_from_conf_file(){
 
 		conf.set(distfiles_dir,						"folders",			"distfiles_dir");
 		conf.set(segments_dir,						"folders",			"segments_dir");
-		conf.set(pkg_list_dir,						"folders",			"pkg_list_dir");
+
+		conf.set(pkg_list_dir,						"pkg_list",			"pkg_list_dir");
+		conf.set(del_pkg_list_when_dld_finished,	"pkg_list",			"del_pkg_list_when_dld_finished");
 
 		conf.set(max_connection_num_per_distfile,	"distfiles",		"max_connection_num_per_distfile",1,20);
 

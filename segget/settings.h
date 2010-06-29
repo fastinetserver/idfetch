@@ -39,7 +39,9 @@ class Tsettings{
 	//folders
 		string distfiles_dir;
 		string segments_dir;
+	//pkg_list
 		string pkg_list_dir;
+		bool del_pkg_list_when_dld_finished;
 	//distfiles
 		ulong max_connection_num_per_distfile;
 	//segments
@@ -77,7 +79,9 @@ class Tsettings{
 		//folders
 			distfiles_dir("./distfiles"),
 			segments_dir("./tmp"),
+		//pkg_list
 			pkg_list_dir("./"),
+			del_pkg_list_when_dld_finished(1),
 		//distfiles
 			max_connection_num_per_distfile(3),
 		//segments
@@ -116,4 +120,5 @@ class Tsettings{
 		void load_from_conf_file();
 };
 
+Tsettings settings;
 #endif

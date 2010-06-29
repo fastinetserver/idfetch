@@ -27,9 +27,10 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 
+#include <sys/time.h>
 #include "connection.h"
 #include "tui.h"
-#include <sys/time.h>
+#include "settings.h"
 using namespace std;
 
 class Tstats{
@@ -55,13 +56,24 @@ class Tstats{
 			{};
 		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
 		ulong get_dld_size(){return dld_size;};
-		void inc_dld_distfiles_count(){ dld_distfiles_count++;};
+		void inc_dld_distfiles_count();
 		ulong get_dld_distfiles_count(){return dld_distfiles_count;};
 		void inc_total_size(ulong more_bytes){ total_size+=more_bytes;};
 		ulong get_total_size(){return total_size;};
 		void show_totals();
 		void reset_previous_time();
 };
+
+void Tstats::inc_dld_distfiles_count(){
+	dld_distfiles_count++;
+	if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>=distfiles_count)){
+		//delete pkg.list file;
+		if(remove((settings.pkg_list_dir+"/pkg.list").c_str()) != 0 )
+			error_log("Error in stats.cpp: inc_dld_distfiles_count(): Can't delete:"+settings.pkg_list_dir+"/pkg.list");
+		else
+			debug(settings.pkg_list_dir+"/pkg.list"+" deleted" );
+	}
+}
 
 void Tstats::show_totals(){
 	try{
@@ -71,10 +83,8 @@ void Tstats::show_totals(){
 			show_last_time_interval=last_time_interval;
 		if (total_size>1)
 			show_total_size=total_size;
-
 		struct timeval now_timee;
 		gettimeofday(&now_timee,NULL);
-
 		msg_total("Total" 
 			+field(" PKGs:",          pkg_count,4)
 			+field(" = DFs:",         dld_distfiles_count,4)
