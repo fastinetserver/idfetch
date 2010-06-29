@@ -39,6 +39,7 @@ class Tsettings{
 	//folders
 		string distfiles_dir;
 		string segments_dir;
+		string pkg_list_dir;
 	//distfiles
 		ulong max_connection_num_per_distfile;
 	//segments
@@ -76,6 +77,7 @@ class Tsettings{
 		//folders
 			distfiles_dir("./distfiles"),
 			segments_dir("./tmp"),
+			pkg_list_dir("./"),
 		//distfiles
 			max_connection_num_per_distfile(3),
 		//segments

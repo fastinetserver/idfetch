@@ -38,7 +38,7 @@ void Tsettings::load_from_conf_file(){
 
 		conf.set(distfiles_dir,						"folders",			"distfiles_dir");
 		conf.set(segments_dir,						"folders",			"segments_dir");
-	//	log("segments_dir set to:"+segments_dir);
+		conf.set(pkg_list_dir,						"folders",			"pkg_list_dir");
 
 		conf.set(max_connection_num_per_distfile,	"distfiles",		"max_connection_num_per_distfile",1,20);
 

@@ -45,7 +45,7 @@ int load_pkgs(){
 	try{
 		ifstream json_pkg_list_file;
 		try{
-			json_pkg_list_file.open("pkg.list");
+			json_pkg_list_file.open((settings.pkg_list_dir+"pkg.list").c_str());
 		}catch(...){
 			error_log("Error: Can't open pkg.list file");
 			return 1;
