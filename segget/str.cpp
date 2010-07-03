@@ -24,11 +24,25 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __STR_H__
-#define __STR_H__
-#include <string>
-#include <algorithm>
+#include "str.h"
 using namespace std;
+
+template<typename T> string toString(T t)
+{
+	stringstream s;
+	s << t;
+	return s.str();
+}
+
+template<typename T> string field(string prefix,T t, int width) 
+{
+	stringstream s1,s2;
+	s1 << t;
+	width=width+prefix.length();
+	s2.width(width);
+	s2 << prefix+s1.str();
+	return s2.str();
+}
 
 int lower_char(int c)
 {
@@ -39,4 +53,3 @@ string noupper(string s){
 	transform(s.begin(), s.end(), s.begin(), lower_char);
 	return s; 
 }
-#endif

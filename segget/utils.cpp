@@ -24,8 +24,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "utils.h"
-#include "sys/time.h"
 ulong time_left_from(timeval from_time){
 	try{
 		timeval now_time;

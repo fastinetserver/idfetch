@@ -28,7 +28,7 @@
 
 #include <string>
 #include <map>
-#include "str.cpp"
+#include "str.h"
 #include "tui.h"
 #include "settings.cpp"
 using namespace std;

@@ -31,7 +31,7 @@
 #include <fstream>
 #include <iostream>
 #include <json/json.h>
-#include "distfile.cpp"
+#include "distfile.h"
 
 using namespace std;
 typedef unsigned int uint;

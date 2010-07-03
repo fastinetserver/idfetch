@@ -36,14 +36,16 @@ using namespace std;
 map<string,string> content_;
 
 class ConfigFile {
-
-public:
-	
-	ConfigFile(std::string const& configFile);
-
-	int set(string &dst,string const& section, string const& entry) const;
-	int set(ulong &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
-	int set(bool &dst,string const& section, string const& entry) const;
+	private:
+		string config_file_name;
+	public:
+		ConfigFile(string const& file_name):
+			config_file_name("")
+			{config_file_name=file_name;load_settings_from_config_file();};
+		void load_settings_from_config_file();
+		int set(string &dst,string const& section, string const& entry) const;
+		int set(ulong &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
+		int set(bool &dst,string const& section, string const& entry) const;
 };
 
 #endif
@@ -63,14 +65,15 @@ string trim(std::string const& source, char const* delims = " \t\r\n") {
 	return result;
 }
 
-ConfigFile::ConfigFile(string const& configFile) {
+void ConfigFile::load_settings_from_config_file() {
+	;
 	ifstream file;
 	file.exceptions (ifstream::failbit | ifstream::badbit);
 	try{
-		file.open(configFile.c_str());
+		file.open(config_file_name.c_str());
 	}
 	catch(...){
-		error_log("Error opening settings file: "+configFile+". Default settings will be used. Check if config file exists and segget has rights to access it.");
+		error_log("Error opening settings file: "+config_file_name+". Default settings will be used. Check if config file: "+config_file_name+" exists and segget has rights to access it.");
 		return;
 	}
 	try{
@@ -96,11 +99,11 @@ ConfigFile::ConfigFile(string const& configFile) {
 			name  = trim(line.substr(0,posEqual));
 			value = trim(line.substr(posEqual+1));
 
-			content_[inSection+'/'+name]=value;
+			content_[inSection+'/'+name]=noupper(value);
 		}
 	}
 	catch(...){
-		error_log("Settings file: "+configFile+" was opened, but an error occured while reading settings from it.");
+		error_log("Settings file: "+config_file_name+" was opened, but an error occured while reading settings from it.");
 	}
 }
 
@@ -108,13 +111,13 @@ int ConfigFile::set(string &dst, string const& section, string const& entry) con
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
-		log("! Settings: ["+section+"]."+entry+"="+dst+". Default value forced.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has not been set.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+dst+". Default value forced.");
 		return 1;
 	}
 	else{
 		dst=ci->second;
-		log("Settings: ["+section+"]."+entry+"="+dst);
+		log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+dst);
 		return 0;
 	}
 }
@@ -123,32 +126,32 @@ int ConfigFile::set(ulong &dst, string const& section, string const& entry, uint
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
-		log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has not been set.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 		return 1;
 	}
 	else{
 		return_value=atoi(ci->second.c_str());
 		if (return_value==0)
 			if (toString(return_value)!=ci->second){
-				log("! Settings: ["+section+"]."+entry
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry
 						+" must have an integer value in range from "+toString(min_limit)
 						+" to "+toString(max_limit)
 						+". Can't convert "+ci->second
 						+" to integer. ");
-				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 				return 1;
 			}
 		if ((return_value>=min_limit) and (return_value<=max_limit)){
 			//everything is ok
-			log("Settings: ["+section+"]."+entry+"="+toString(return_value));
+			log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(return_value));
 			dst=return_value;
 			return 0;
 		}else{
-			log("! Settings: ["+section+"]."+entry
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry
 				+" must have an integer value in range from "+toString(min_limit)
 				+" to "+toString(max_limit)+".");
-				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 			return 1;
 		}
 	}
@@ -158,30 +161,30 @@ int ConfigFile::set(bool &dst, string const& section, string const& entry) const
 	map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
-		log("! Settings: ["+section+"]."+entry+" has not been set in segget.conf.");
-		log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has not been set.");
+		log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 		return 1;
 	}
 	else{
 		return_value=atoi(ci->second.c_str());
 		if (return_value==0)
 			if (toString(return_value)!=ci->second){
-				log("! Settings: ["+section+"]."+entry
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry
 						+" must have a boolean value: 0 or 1"
 						+". Can't convert "+ci->second
 						+" to 0 or 1. ");
-				log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 				return 1;
 			}
 		if ((return_value==0) or (return_value==1)){
 			//everything is ok
-			log("Settings: ["+section+"]."+entry+"="+toString(return_value));
+			log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(return_value));
 			dst=return_value;
 			return 0;
 		}else{
-			log("! Settings: ["+section+"]."+entry
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry
 				+" must have a boolean value: 0 or 1");
-			log("! Settings: ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+toString(dst)+". Default value forced.");
 			return 1;
 		}
 	}

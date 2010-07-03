@@ -37,7 +37,7 @@
 #include "cryptopp/files.h"
 #include "cryptopp/hex.h"
 #include "tui.cpp"
-#include "str.cpp"
+#include "str.h"
 
 bool rmd160_ok(string distfile_filename, string portage_hash){
 	try{

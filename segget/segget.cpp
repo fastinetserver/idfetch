@@ -31,8 +31,11 @@
 #include <json/json.h>
 #include <ncurses.h>
 #include "pkg.cpp"
+#include "distfile.cpp"
 #include "connection.cpp"
 #include "utils.cpp"
+#include "network.cpp"
+#include "networkbroker.cpp"
 //#include "settings.cpp"
 
 using namespace std;
@@ -132,7 +135,7 @@ int choose_segment(uint connection_num){
 									segment_num++; // segment already downloaded/downloading => go for the next one
 						}
 						else
-							debug("	distfile #"+toString(distfile_num)+" has "
+							debug("	distfile "+Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->name+" has "
 							+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num)
 							+" connections => choosing another distfile.");
 					segment_num=0;
@@ -173,7 +176,7 @@ int download_pkgs(){
 			return EXIT_FAILURE;
 		}
 
-		for (uint connection_num = 0; connection_num < MAX_CONNECTS; ++connection_num) {
+		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
 			if (choose_segment(connection_num))
 				break;
 		};
@@ -285,7 +288,7 @@ int main()
 		}
 		try{
 			//load settings
-				settings.load_from_conf_file();
+				settings.init();
 		}
 		catch(...)
 		{

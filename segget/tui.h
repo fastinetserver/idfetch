@@ -29,16 +29,14 @@
 #include "settings.h"
 
 using namespace std;
-template<typename T> string toString(T t);
-template<typename T> string field(string prefix,T t, int width);
-
 void msg_total(string msg_text);
 
 void msg(uint y, uint x, string msg_text);
 void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text);
-void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed);
+void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed);
 void msg_status1(uint connection_num, uint segment_num, string msg_text);
 void msg_status2(uint connection_num, string msg_text);
+void msg_clean_connection(uint connection_num);
 void msg_error(string error_text);
 void msg_total(string msg_text);
 

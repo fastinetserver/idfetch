@@ -23,65 +23,14 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __DISTFILE_H__
-#define __DISTFILE_H__
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#ifndef WIN32
-#  include <unistd.h>
-#endif
-#include <curl/multi.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include "segment.cpp"
-#include "mirror.cpp"
-#include "checksum.cpp"
+#include "distfile.h"
 
-using namespace std;
-
-typedef unsigned int uint;
-
-class Tdistfile{
-	private:
-		uint dld_segments_count;
-	public:
-		bool downloaded;
-		uint active_connections_num;
-		string *url_list;
-		uint url_num;
-		uint segment_num;
-		uint segments_count;
-		Tsegment *dn_segments;
-		string name;
-		uint num;
-		ulong size;
-		string RMD160;
-		string SHA1;
-		string SHA256;
-		uint url_count;
-		uint segment_size;
-		Tdistfile(): dld_segments_count(0), downloaded(0),
-			active_connections_num(0),
-			url_list(0),url_num(0),segment_num(0),segments_count(0),
-			dn_segments(0),name(""),num(0),size(0),
-			RMD160(""),SHA1(""),SHA256(""),url_count(0),segment_size(settings.max_segment_size){};
-		Tdistfile(const Tdistfile &L);             // copy constructor
-		Tdistfile & operator=(const Tdistfile &L);
-		~Tdistfile();
-		void load_distfile_from_json(json_object* json_obj_distfile);
-		void load_url_list(json_object* json_array_distfile_urllist);
-		void split_into_segments();
-		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
-		void inc_dld_segments_count(Tsegment * current_segment);
-		int combine_segments();
-		bool check_if_dld();
-};
-
+void Tdistfile::init(){
+	for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
+		networkbrokers_array[network_num].network_num=network_num;
+	}
+}
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
 	try{
 		url_count=json_object_array_length(json_array_distfile_urllist);
@@ -182,11 +131,7 @@ Tdistfile::~Tdistfile(){
 		error_log("Error: distfile.cpp: ~Tdistfile()");
 	}
 }
-
-int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
-	try{
-		active_connections_num++;
-
+bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
 		Tmirror *Pcurr_mirror;
 		Tmirror *Pbest_mirror=0;	// the best isn't set let's find it
 		uint best_mirror_num=-1;	// the best isn't set let's find it
@@ -211,11 +156,38 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 		if (Pbest_mirror){
 			debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
 			Pbest_mirror->start();
-			dn_segments[seg_num].prepare_for_connection(cm, connection_num, num, url_list[best_mirror_num]);
+			dn_segments[seg_num].prepare_for_connection(cm, connection_num, network_num, num, url_list[best_mirror_num]);
 			connection_array[connection_num].segment=&dn_segments[seg_num];
+			return 0;
 		}
-		else
+		else{
 			error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
+			return 1;
+		}
+}
+
+int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
+
+	try{
+		active_connections_num++;
+		//choose network
+		for (uint cur_network_priority=10; cur_network_priority>0; cur_network_priority--){
+			debug("cur_network_priority="+toString(cur_network_priority));
+			for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
+				debug("    network_num="+toString(network_num));
+				//if network priority set then it's active
+//				if (network_array[network_num].priority){
+					if (network_array[network_num].priority==cur_network_priority){
+						debug("        network_priority="+toString(network_array[network_num].priority));
+						if (networkbrokers_array[network_num].get_allowed_status()){
+						debug("             choose_best_mirror_for_network:"+toString(network_num));
+							//work with network
+							return choose_best_mirror(cm, connection_num, network_num, seg_num);
+						}
+					}
+				}
+//			}
+		}
 	}catch(...){
 		error_log("Error: distfile.cpp: provide_segment()");
 		return 1;
@@ -328,4 +300,3 @@ int Tdistfile::combine_segments(){
 	}
 	return 0;
 }
-#endif

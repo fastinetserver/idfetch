@@ -56,17 +56,17 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
 		error_log("Error in segment.cpp: prepare_for_connection()");
 	}
 }
-void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint distfile_num, string segment_url){
+void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string segment_url){
 	try{
 		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+segment_url);
 		segments_in_progress[con_num]=this;
 		status=DOWNLOADING;
 		downloaded_bytes=0;
 		connection_num=con_num;
-		connection_array[con_num].start();
+		connection_array[con_num].start(network_num);
 		url=segment_url;
 		try_num++;
-		add_easy_handle_to_multi(cm);
+		add_easy_handle_to_multi(cm, network_num);
 	}catch(...){
 		error_log("Error in segment.cpp: prepare_for_connection()");
 	}
@@ -77,7 +77,7 @@ Tsegment::~Tsegment(){
 		segment_file.close();
 }
 
-int Tsegment::add_easy_handle_to_multi(CURLM *cm){
+int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 	segment_file.exceptions (ofstream::badbit);
 	try{
 		segment_file.open((settings.segments_dir+"/"+file_name).c_str(), ios::trunc|ios::binary );
@@ -97,34 +97,38 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm){
 			curl_easy_setopt(easyhandle, CURLOPT_WRITEDATA, this);
 			curl_easy_setopt(easyhandle, CURLOPT_PRIVATE, this);
 			curl_easy_setopt(easyhandle, CURLOPT_RANGE, range.c_str());
-			curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, settings.time_out);
-			curl_easy_setopt(easyhandle, CURLOPT_FTP_RESPONSE_TIMEOUT, settings.ftp_response_timeout);
-			curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, settings.low_connection_speed_limit);
-			curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, settings.low_connection_speed_time);
-			curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, settings.max_connection_speed);
-			curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, settings.user_agent.c_str());
+			curl_easy_setopt(easyhandle, CURLOPT_TIMEOUT, network_array[network_num].time_out);
+			curl_easy_setopt(easyhandle, CURLOPT_FTP_RESPONSE_TIMEOUT, network_array[network_num].ftp_response_timeout);
+			if ((network_array[network_num].low_connection_speed_limit!=0) and (network_array[network_num].low_connection_speed_limit!=(ulong)-1)){
+				curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_LIMIT, network_array[network_num].low_connection_speed_limit);
+			}
+			curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, network_array[network_num].low_connection_speed_time);
 
-			if (settings.proxy_off)
+			if ((network_array[network_num].max_connection_speed!=0) and (network_array[network_num].max_connection_speed!=(ulong)-1)){
+				curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, network_array[network_num].max_connection_speed);
+			}
+			curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, network_array[network_num].user_agent.c_str());
+
+			if (network_array[network_num].proxy_off)
 				curl_easy_setopt(easyhandle, CURLOPT_NOPROXY, "*");
 			else{
-				if ((settings.proxy_ip_or_name!="none") and (settings.proxy_port!=0)){
-					curl_easy_setopt(easyhandle, CURLOPT_PROXY, settings.proxy_ip_or_name.c_str());
-					curl_easy_setopt(easyhandle, CURLOPT_PROXYPORT, settings.proxy_port);
-					debug("Using proxy:"+settings.proxy_ip_or_name+":"+toString(settings.proxy_port));
+				if ((network_array[network_num].proxy_ip_or_name!="none") and (network_array[network_num].proxy_port!=0)){
+					curl_easy_setopt(easyhandle, CURLOPT_PROXY, network_array[network_num].proxy_ip_or_name.c_str());
+					curl_easy_setopt(easyhandle, CURLOPT_PROXYPORT, network_array[network_num].proxy_port);
+					debug("Using proxy:"+network_array[network_num].proxy_ip_or_name+":"+toString(network_array[network_num].proxy_port));
 				}
-				if (settings.proxy_user!="none"){
-					curl_easy_setopt(easyhandle, CURLOPT_PROXYUSERNAME, settings.proxy_user.c_str());
-					if (settings.proxy_password!="none")
-						curl_easy_setopt(easyhandle, CURLOPT_PROXYPASSWORD, settings.proxy_password.c_str());
+				if (network_array[network_num].proxy_user!="none"){
+					curl_easy_setopt(easyhandle, CURLOPT_PROXYUSERNAME, network_array[network_num].proxy_user.c_str());
+					if (network_array[network_num].proxy_password!="none")
+						curl_easy_setopt(easyhandle, CURLOPT_PROXYPASSWORD, network_array[network_num].proxy_password.c_str());
 				}
 			}
 
-			if ((settings.bind_interface!="none") 
-					and (settings.bind_interface!="") 
-					and (settings.bind_interface!="NONE"))
-				curl_easy_setopt(easyhandle, CURLOPT_INTERFACE, settings.bind_interface.c_str());
+			if ((network_array[network_num].bind_interface!="none") 
+					and (network_array[network_num].bind_interface!=""))
+				curl_easy_setopt(easyhandle, CURLOPT_INTERFACE, network_array[network_num].bind_interface.c_str());
 			//set connection timeout
-			curl_easy_setopt(easyhandle, CURLOPT_CONNECTTIMEOUT, settings.connection_timeout);
+			curl_easy_setopt(easyhandle, CURLOPT_CONNECTTIMEOUT, network_array[network_num].connection_timeout);
 			curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, write_data);
 			curl_multi_add_handle(cm, easyhandle);
 			return 0;

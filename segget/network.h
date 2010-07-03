@@ -23,33 +23,26 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
+#ifndef __NETWORK_H__
+#define __NETWORK_H__
 
-#ifndef __SETTINGS_H__
-#define __SETTINGS_H__
-
-#include <string>
-#include "config.cpp"
-#include "network.h"
-//#include "tui.cpp"
-#define MAX_CONNECTS 20 /* number of simultaneous transfers */
-
+//#include <string>
+//#include <map>
+#include "str.h"
+//#include "tui.h"
+//#include "settings.cpp"
 using namespace std;
 
-class Tsettings{
+#define MAX_NETWORKS 10
+
+class Tnetwork{
+	static uint network_count;
 	private:
+		uint active_connections_num;
 	public:
-	//folders
-		string distfiles_dir;
-		string segments_dir;
-	//pkg_list
-		string pkg_list_dir;
-		bool del_pkg_list_when_dld_finished;
-	//distfiles
-		ulong max_connection_num_per_distfile;
-	//segments
-		ulong max_segment_size;
-		bool resume_on;
-		ulong max_tries;
+	//network
+		uint network_num;
+		uint priority;
 	//connections
 		ulong max_connections;
 		ulong connection_timeout;
@@ -71,25 +64,12 @@ class Tsettings{
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
-	//logs
-		string logs_dir;
-		string general_log_file;
-		string error_log_file;
-		string debug_log_file;
-
-	Tsettings():
-		//folders
-			distfiles_dir("./distfiles"),
-			segments_dir("./tmp"),
-		//pkg_list
-			pkg_list_dir("./"),
-			del_pkg_list_when_dld_finished(1),
-		//distfiles
-			max_connection_num_per_distfile(3),
-		//segments
-			max_segment_size(500000),
-			resume_on(1),
-			max_tries(10),
+	Tnetwork():
+		//private:
+			active_connections_num(0),
+		//network
+			network_num(network_count),
+			priority(0),
 		//connections
 			max_connections(6),
 			connection_timeout(15),
@@ -110,17 +90,14 @@ class Tsettings{
 			proxy_port(3128),
 			proxy_off(1),
 			proxy_user("none"),
-			proxy_password("none"),
-		//logs
-			logs_dir("./logs"),
-			general_log_file("segget.log"),
-			error_log_file("error.log"),
-			debug_log_file("debug.log")
-			{};
-		void set_resume(bool resume_setting){resume_on=resume_setting;};
-		bool get_resume(){return resume_on;};
-		void init();
+			proxy_password("none")
+			{network_count++;};
+		void init(uint priority_value);
+		bool get_busy_status();
+		bool connect();
+		void disconnect(){active_connections_num--;};
 };
 
-Tsettings settings;
+uint Tnetwork::network_count=0;
+Tnetwork network_array[MAX_NETWORKS];
 #endif

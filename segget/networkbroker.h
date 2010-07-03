@@ -23,43 +23,18 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
+#ifndef __NETWORKBROKER_H__
+#define __NETWORKBROKER_H__
 
-#ifndef __CONNECTION_H__
-#define __CONNECTION_H__
-
-#include <time.h>
-class Tsegment;
-#include "segment.h"
-#include "utils.h"
-
-using namespace std;
-
-class Tconnection{
-	static uint total_connections;
-	private:
-		uint connection_num;
-		uint network_num;
-		bool active;
-		ulong total_dld_bytes;
-		ulong bytes_per_last_interval;
+class Tnetworkbroker{
 	public:
-		timeval start_time;
-		Tsegment *segment;
-		Tconnection():
-			connection_num(total_connections),
+		ulong network_num;
+		bool local_mirrors;
+		bool get_allowed_status();
+		Tnetworkbroker():
 			network_num(0),
-			active(0),
-			total_dld_bytes(0),
-			bytes_per_last_interval(0),
-			start_time(),
-			segment(0){total_connections++;};
-		void start(uint network_number);
-		void stop();
-		void inc_bytes_per_last_interval(ulong new_bytes_count);
-		void show_connection_progress(ulong time_diff);
+			local_mirrors(0)
+			{};
 };
 
-time_t prev_time;
-uint Tconnection::total_connections=0;
-Tconnection connection_array[MAX_CONNECTS];
 #endif

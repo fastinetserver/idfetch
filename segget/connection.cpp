@@ -25,12 +25,14 @@
 */
 #include "connection.h"
 
-void Tconnection::start(){
+void Tconnection::start(uint network_number){
 	try{
+		network_num=network_number;
 		total_dld_bytes=0;
 		bytes_per_last_interval=0;
 		gettimeofday(&start_time,NULL);
 		active=true;
+		network_array[network_num].connect();
 	}catch(...){
 		error_log("Error in connection.cpp: start()");
 	}
@@ -38,7 +40,9 @@ void Tconnection::start(){
 
 void Tconnection::stop(){
 	try{
+		msg_clean_connection(connection_num);
 		active=false;
+		network_array[network_num].disconnect();
 	}catch(...){
 		error_log("Error in connection.cpp: stop()");
 	}
@@ -57,7 +61,7 @@ void Tconnection::show_connection_progress(ulong time_diff){
 	try{
 		if (active){
 			stats.total_bytes_per_last_interval+=bytes_per_last_interval;
-			msg_segment_progress(segment->connection_num,
+			msg_segment_progress(segment->connection_num, network_num,
 							segment->segment_num, segment->try_num,
 							segment->downloaded_bytes,
 							segment->segment_size,

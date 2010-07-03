@@ -27,6 +27,9 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include "utils.h"
+#include "sys/time.h"
+
 ulong time_left_from(timeval from_time);
 
 #endif

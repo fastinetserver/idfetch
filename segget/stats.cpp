@@ -66,7 +66,7 @@ class Tstats{
 
 void Tstats::inc_dld_distfiles_count(){
 	dld_distfiles_count++;
-	if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>=distfiles_count)){
+	if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>distfiles_count)){
 		//delete pkg.list file;
 		if(remove((settings.pkg_list_dir+"/pkg.list").c_str()) != 0 )
 			error_log("Error in stats.cpp: inc_dld_distfiles_count(): Can't delete:"+settings.pkg_list_dir+"/pkg.list");

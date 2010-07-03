@@ -29,23 +29,6 @@ extern Tsettings settings;
 
 const uint CONNECTION_LINES=5;
 
-template<typename T> string toString(T t)
-{
-	stringstream s;
-	s << t;
-	return s.str();
-}
-
-template<typename T> string field(string prefix,T t, int width) 
-{
-	stringstream s1,s2;
-	s1 << t;
-	width=width+prefix.length();
-	s2.width(width);
-	s2 << prefix+s1.str();
-	return s2.str();
-}
-
 void msg(uint y, uint x, string msg_text){
 		move(y,x);
 		string ready_msg_text=msg_text+"                        ";
@@ -63,7 +46,7 @@ void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, st
 	}
 }
 
-void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
+void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
 	try{
 		string speed_str;
 		string avg_speed_str;
@@ -78,6 +61,7 @@ void msg_segment_progress(uint connection_num, uint segment_num, uint try_num, u
 		int percent=dld_bytes*100/total_bytes;
 		msg(connection_num*CONNECTION_LINES,0,
 			field("[",connection_num,2)+"]"
+			+field(" Net",network_num,1)
 			+field(" Segment:",segment_num, 5)
 			+field(" Try:",try_num,4)
 			+field(" Bytes:",dld_bytes,7)
@@ -110,6 +94,12 @@ void msg_status2(uint connection_num, string msg_text){
 		error_log_no_msg("Error in tui.cpp: msg_status2()");
 	}
 }
+void msg_clean_connection(uint connection_num){
+	msg(connection_num*CONNECTION_LINES,0,"                                                                                                                  ");
+	msg(connection_num*CONNECTION_LINES+1,0,"                                                                                                                  ");
+	msg(connection_num*CONNECTION_LINES+2,0,"                                                                                                                  ");
+	msg(connection_num*CONNECTION_LINES+3,0,"                                                                                                                  ");
+}
 void msg_error(string error_text){
 	try{
 		msg(20,0, error_text);
@@ -121,7 +111,7 @@ void msg_error(string error_text){
 }
 void msg_total(string msg_text){
 	try{
-		msg(30,0,msg_text);
+		msg(settings.max_connections*CONNECTION_LINES,0,msg_text);
 	}
 	catch(...)
 	{
@@ -129,7 +119,7 @@ void msg_total(string msg_text){
 	}
 }
 void log(string log_msg_text){
-	msg(31,0, "LOG:"+log_msg_text);
+	msg(settings.max_connections*CONNECTION_LINES+1,0, "LOG:"+log_msg_text);
 	ofstream file;
 	file.exceptions (ofstream::failbit | ofstream::badbit);
 	try{
@@ -148,7 +138,7 @@ void log(string log_msg_text){
 	}
 }
 void debug(string debug_msg_text){
-	msg(32,0, "DEBUG:"+debug_msg_text);
+	msg(settings.max_connections*CONNECTION_LINES+2,0, "DEBUG:"+debug_msg_text);
 	ofstream file;
 	file.exceptions (ofstream::failbit | ofstream::badbit);
 	try{
@@ -179,7 +169,7 @@ void error_log(string error_msg_text){
 	file << error_msg_text << endl;
 	file.close();
 	try{
-		msg(33,0, "ERROR:"+error_msg_text);
+		msg(settings.max_connections*CONNECTION_LINES+3,0, "ERROR:"+error_msg_text);
 		}
 	catch(...)
 	{

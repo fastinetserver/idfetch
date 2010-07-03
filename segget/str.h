@@ -1,4 +1,4 @@
-/*
+ /*
 * Copyright (C) 2010 Robin H.Johnson, Ovechko Kostyantyn <fastinetserver@gmail.com>.
 *
 * Project: IDFetch.
@@ -24,42 +24,15 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CONNECTION_H__
-#define __CONNECTION_H__
-
-#include <time.h>
-class Tsegment;
-#include "segment.h"
-#include "utils.h"
-
+#ifndef __STR_H__
+#define __STR_H__
+#include <string>
+#include <algorithm>
 using namespace std;
 
-class Tconnection{
-	static uint total_connections;
-	private:
-		uint connection_num;
-		uint network_num;
-		bool active;
-		ulong total_dld_bytes;
-		ulong bytes_per_last_interval;
-	public:
-		timeval start_time;
-		Tsegment *segment;
-		Tconnection():
-			connection_num(total_connections),
-			network_num(0),
-			active(0),
-			total_dld_bytes(0),
-			bytes_per_last_interval(0),
-			start_time(),
-			segment(0){total_connections++;};
-		void start(uint network_number);
-		void stop();
-		void inc_bytes_per_last_interval(ulong new_bytes_count);
-		void show_connection_progress(ulong time_diff);
-};
+template<typename T> string toString(T t);
+template<typename T> string field(string prefix,T t, int width);
 
-time_t prev_time;
-uint Tconnection::total_connections=0;
-Tconnection connection_array[MAX_CONNECTS];
+int lower_char(int c);
+string noupper(string s);
 #endif
