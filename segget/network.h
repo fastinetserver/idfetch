@@ -38,8 +38,8 @@ using namespace std;
 class Tnetwork{
 	static uint network_count;
 	private:
-		uint active_connections_num;
 	public:
+		uint active_connections_num;
 	//network
 		uint network_num;
 		uint priority;

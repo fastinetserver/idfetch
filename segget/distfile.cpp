@@ -173,20 +173,39 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 		//choose network
 		for (uint cur_network_priority=10; cur_network_priority>0; cur_network_priority--){
 			debug("cur_network_priority="+toString(cur_network_priority));
+//----------------------------------------------------------------------------------------------------------
+//
+//       Several criterions can be used here to choose among networks with equal priority:
+// min_active_connection, min_ratio_active_to_max_connection, best_speed_accocding_to_stats, etc
+// add these options to segget.conf file
+//
+//----------------------------------------------------------------------------------------------------------
+			int best_network_num=-1;
 			for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 				debug("    network_num="+toString(network_num));
 				//if network priority set then it's active
-//				if (network_array[network_num].priority){
+				if (network_array[network_num].priority){
 					if (network_array[network_num].priority==cur_network_priority){
 						debug("        network_priority="+toString(network_array[network_num].priority));
 						if (networkbrokers_array[network_num].get_allowed_status()){
-						debug("             choose_best_mirror_for_network:"+toString(network_num));
+							debug("             Allowed network#:"+toString(network_num));
+							if 
+								((best_network_num==-1)
+								or
+								(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+									best_network_num=network_num;
+									debug("             Replace best network to network#:"+toString(network_num));
+							}
 							//work with network
-							return choose_best_mirror(cm, connection_num, network_num, seg_num);
 						}
 					}
 				}
-//			}
+			}
+			if (best_network_num!=-1){
+				//best network has been found
+				debug("             So best network is network#:"+toString(best_network_num));
+				return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+			}
 		}
 	}catch(...){
 		error_log("Error: distfile.cpp: provide_segment()");

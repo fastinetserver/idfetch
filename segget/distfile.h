@@ -53,6 +53,7 @@ class Tdistfile{
 	private:
 		uint dld_segments_count;
 		Tnetworkbroker networkbrokers_array[MAX_NETWORKS];
+		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 	public:
 		bool downloaded;
 		uint active_connections_num;
@@ -94,7 +95,6 @@ class Tdistfile{
 		void load_distfile_from_json(json_object* json_obj_distfile);
 		void load_url_list(json_object* json_array_distfile_urllist);
 		void split_into_segments();
-		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
 		void inc_dld_segments_count(Tsegment * current_segment);
 		int combine_segments();
