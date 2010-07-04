@@ -29,14 +29,14 @@
 class Tnetwork_distfile_broker{
 	public:
 //		map<string,Tmirror *> benchmarked_mirror_list;
+		vector<bool> mirror_fails_vector;
 		ulong network_num;
-		bool local;
 		Tnetwork_distfile_broker():
-			network_num(0),
-			local(0)
+			mirror_fails_vector(),
+			network_num(0)
 			{};
-		bool get_allowed_status();
-		Tmirror* find_mirror(string mirror_url);
+		void init(ulong network_number);
+		bool have_all_mirrors_failed();
 };
 
 #endif

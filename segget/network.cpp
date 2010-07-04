@@ -46,6 +46,15 @@ void Tnetwork::load_mirror_list(){
 			if (mirror_line[0] == ';') continue;
 			mirror_list.push_back(mirror_line);
 			debug("LOCAL_MIRROR_ADDED:"+mirror_line);
+//=======================================================================================================
+//
+//      You don't need mirror_list, you have everything in benchmarked_mirror_list
+//
+//
+			Tmirror cur_mirror;
+			cur_mirror.url=mirror_line;
+			benchmarked_mirror_list.push_back(cur_mirror);
+
 		}
 	}
 	catch(...){
@@ -56,7 +65,7 @@ void Tnetwork::load_mirror_list(){
 void Tnetwork::init(uint priority_value){
 	try{
 		priority=priority_value;
-		ConfigFile conf("network"+toString(network_num)+".conf");
+		Tconfig conf("network"+toString(network_num)+".conf");
 		conf.set(bind_interface,					"network_bind",		"bind_interface");
 		conf.set(max_connections,					"network_connections",		"max_connections",1,MAX_CONNECTS);
 		conf.set(connection_timeout,				"network_connections",		"connection_timeout",1,1000);
@@ -77,9 +86,11 @@ void Tnetwork::init(uint priority_value){
 		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
 
 		if (use_own_mirror_list_only_on){
+			conf.set(only_local_when_possible,			"network_mirrors",			"only_local_when_possible");
 			load_mirror_list();
-			log("Network#"+toString(network_num)+" LOCAL_MIRROR_LIST size:"+toString(mirror_list.size()));
+			log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));
 		}
+		conf.clear();
 	}
 	catch(...)
 	{
@@ -87,7 +98,7 @@ void Tnetwork::init(uint priority_value){
 	}
 }
 
-bool Tnetwork::get_busy_status(){
+bool Tnetwork::has_free_connections(){
 	if (active_connections_num<max_connections){
 		return true;
 	}else{

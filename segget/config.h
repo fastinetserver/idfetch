@@ -24,46 +24,30 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+#include <string>
+#include <map>
+#include <fstream>
 #include "str.h"
+#include "tui.h"
 using namespace std;
 
-template<typename T> string toString(T t)
-{
-	stringstream s;
-	s << t;
-	return s.str();
-}
+class Tconfig {
+	private:
+		map<string,string> content_;
+		string config_file_name;
+	public:
+		Tconfig(string const& file_name):
+			content_(),
+			config_file_name("")
+			{config_file_name=file_name;load_settings_from_config_file();};
+		void load_settings_from_config_file();
+		int set(string &dst,string const& section, string const& entry) const;
+		int set(ulong &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
+		int set(bool &dst,string const& section, string const& entry) const;
+		void clear();
+};
 
-template<typename T> string field(string prefix,T t, int width) 
-{
-	stringstream s1,s2;
-	s1 << t;
-	width=width+prefix.length();
-	s2.width(width);
-	s2 << prefix+s1.str();
-	return s2.str();
-}
-
-int lower_char(int c)
-{
-	return tolower((unsigned char)c);
-}
-
-string noupper(string s){ 
-	transform(s.begin(), s.end(), s.begin(), lower_char);
-	return s; 
-}
-
-string trim(std::string const& source, char const* delims) {
-	string result(source);
-	string::size_type index = result.find_last_not_of(delims);
-	if(index != string::npos)
-		result.erase(++index);
-
-	index = result.find_first_not_of(delims);
-	if(index != string::npos)
-		result.erase(0, index);
-	else
-		result.erase();
-	return result;
-}
+#endif

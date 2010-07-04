@@ -30,17 +30,18 @@
 #include <iostream>
 #include <json/json.h>
 #include <ncurses.h>
-#include "pkg.cpp"
+#include "config.cpp"
+#include "connection.cpp"
 #include "distfile.cpp"
 #include "mirror.cpp"
-#include "segment.cpp"
-#include "connection.cpp"
-#include "utils.cpp"
 #include "network.cpp"
 #include "networkbroker.cpp"
+#include "pkg.cpp"
+#include "segment.cpp"
+#include "settings.cpp"
 #include "str.cpp"
 #include "tui.cpp"
-#include "settings.cpp"
+#include "utils.cpp"
 //#include "settings.cpp"
 
 using namespace std;

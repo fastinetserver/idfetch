@@ -25,32 +25,15 @@
 */
 
 #include "networkbroker.h"
-
-bool Tnetwork_distfile_broker::get_allowed_status(){
-	debug("        get_allowed_status_for_network_num="+toString(network_num));
-	return network_array[network_num].get_busy_status();
+void Tnetwork_distfile_broker::init(ulong network_number){
+	network_num=network_number;
+	if (network_array[network_num].use_own_mirror_list_only_on){
+		// create flags for each mirror from this network
+		mirror_fails_vector.insert(mirror_fails_vector.begin(),network_array[network_num].mirror_list.size(),false);
+	}
 }
 
-Tmirror* Tnetwork_distfile_broker::find_mirror(string mirror_url){
-	try{
-		map<string,Tmirror*>::const_iterator mirror_iterator = mirror_list.find(mirror_url);
-		if (mirror_iterator==mirror_list.end()){
-			Tmirror * Pnew_mirror=new Tmirror;
-			debug("Cant find mirror:"+mirror_url+" - creating new record");
-			mirror_list[mirror_url]=Pnew_mirror;
-			return Pnew_mirror;
-		}
-		else{
-			debug("Found mirror:"+mirror_url);
-			debug("==================>>");
-			debug("       time:"+toString(mirror_iterator->second->dld_time));
-			debug("       size:"+toString(mirror_iterator->second->dld_size));
-			debug("    honesty:"+toString(mirror_iterator->second->honesty));
-			debug("  criterion:"+toString(mirror_iterator->second->mirror_on_the_wall()));
-			return mirror_iterator->second;
-		}
-	}catch(...){
-		error_log("Error in mirror.cpp: find_mirror()");
-		return 0;
-	}
+bool Tnetwork_distfile_broker::have_all_mirrors_failed(){
+	debug("        get_allowed_status_for_network_num="+toString(network_num));
+	return network_array[network_num].has_free_connections();
 }

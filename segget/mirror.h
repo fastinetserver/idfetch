@@ -37,15 +37,15 @@ using namespace std;
 
 class Tmirror{
 	private:
-		string url;
 		uint active_num;
 	public:
+		string url;
 		ulong	dld_time;
 		ulong	dld_size;
 		double	honesty;
 		Tmirror():
-			url(""),
 			active_num(0),
+			url(""),
 			dld_time(0),
 			dld_size(1),
 			honesty(1){};

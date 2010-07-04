@@ -33,6 +33,7 @@ using namespace std;
 template<typename T> string toString(T t);
 template<typename T> string field(string prefix,T t, int width);
 
+string trim(std::string const& source, char const* delims = " \t\r\n");
 int lower_char(int c);
 string noupper(string s);
 #endif

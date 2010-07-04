@@ -24,48 +24,9 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#include "config.h"
 
-#include <string>
-#include <map>
-#include "str.h"
-#include "tui.h"
-using namespace std;
-
-map<string,string> content_;
-
-class ConfigFile {
-	private:
-		string config_file_name;
-	public:
-		ConfigFile(string const& file_name):
-			config_file_name("")
-			{config_file_name=file_name;load_settings_from_config_file();};
-		void load_settings_from_config_file();
-		int set(string &dst,string const& section, string const& entry) const;
-		int set(ulong &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
-		int set(bool &dst,string const& section, string const& entry) const;
-};
-
-#endif
-#include <fstream>
-
-string trim(std::string const& source, char const* delims = " \t\r\n") {
-	string result(source);
-	string::size_type index = result.find_last_not_of(delims);
-	if(index != string::npos)
-		result.erase(++index);
-
-	index = result.find_first_not_of(delims);
-	if(index != string::npos)
-		result.erase(0, index);
-	else
-		result.erase();
-	return result;
-}
-
-void ConfigFile::load_settings_from_config_file() {
+void Tconfig::load_settings_from_config_file() {
 
 	ifstream file;
 	file.exceptions (ifstream::failbit | ifstream::badbit);
@@ -101,13 +62,17 @@ void ConfigFile::load_settings_from_config_file() {
 
 			content_[inSection+'/'+name]=noupper(value);
 		}
-	}
-	catch(...){
+	}catch(ifstream::failure e){
+		if (!file.eof()){
+			error_log("Settings file: "+config_file_name+" was opened, but an error occured while reading it.");
+			return;
+		}
+	}catch(...){
 		error_log("Settings file: "+config_file_name+" was opened, but an error occured while reading settings from it.");
 	}
 }
 
-int ConfigFile::set(string &dst, string const& section, string const& entry) const {
+int Tconfig::set(string &dst, string const& section, string const& entry) const {
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
 	if (ci == content_.end()){
@@ -121,7 +86,7 @@ int ConfigFile::set(string &dst, string const& section, string const& entry) con
 		return 0;
 	}
 }
-int ConfigFile::set(ulong &dst, string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const {
+int Tconfig::set(ulong &dst, string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const {
 	uint return_value;
 	map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
@@ -156,7 +121,7 @@ int ConfigFile::set(ulong &dst, string const& section, string const& entry, uint
 		}
 	}
 }
-int ConfigFile::set(bool &dst, string const& section, string const& entry) const {
+int Tconfig::set(bool &dst, string const& section, string const& entry) const {
 	uint return_value;
 	map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);
 
@@ -188,4 +153,8 @@ int ConfigFile::set(bool &dst, string const& section, string const& entry) const
 			return 1;
 		}
 	}
+}
+
+void Tconfig::clear(){
+	content_.clear();
 }

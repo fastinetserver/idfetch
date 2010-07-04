@@ -58,18 +58,13 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, uint mirror_num){
 	try{
-		string url__;
-		debug("==========NETWORK:"+toString(network_num));
-		debug("==========local_on:"+toString(network_array[network_num].use_own_mirror_list_only_on));
+		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
 		if (network_array[network_num].use_own_mirror_list_only_on){
 			url=network_array[network_num].mirror_list[mirror_num]+parent_distfile->name;
-			url__=network_array[network_num].mirror_list[mirror_num]+parent_distfile->name;
-			debug("URL:"+url);
-			debug("URL___________________:"+url__);
+			debug("  URL:"+url);
 		}else{
 			url=parent_distfile->url_list[mirror_num];
 		}
-		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
 		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
 		segments_in_progress[con_num]=this;
 		status=DOWNLOADING;

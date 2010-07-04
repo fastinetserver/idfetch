@@ -28,7 +28,7 @@
 
 void Tsettings::init(){
 	try{
-		ConfigFile conf("segget.conf");
+		Tconfig conf("segget.conf");
 		conf.set(general_log_file,					"logs",				"general_log_file");
 		conf.set(logs_dir,							"logs",				"logs_dir");
 		conf.set(error_log_file,					"logs",				"error_log_file");
@@ -66,8 +66,8 @@ void Tsettings::init(){
 				network_array[network_num].init(cur_network_priority);
 			}
 		}
-	}
-	catch(...)
+		conf.clear();
+	}catch(...)
 	{
 		error_log_no_msg("Error calling msg() in settings.cpp: load_from_conf_file()");
 	}

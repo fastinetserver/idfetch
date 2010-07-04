@@ -28,7 +28,7 @@
 #define __SETTINGS_H__
 
 #include <string>
-#include "config.cpp"
+#include "config.h"
 #include "network.h"
 //#include "tui.cpp"
 #define MAX_CONNECTS 20 /* number of simultaneous transfers */

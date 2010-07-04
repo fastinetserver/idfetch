@@ -28,9 +28,7 @@
 
 void Tdistfile::init(){
 	for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
-		network_distfile_brokers_array[network_num].network_num=network_num;
-		Tmirror cur_mirror;
-		network_array[network_num].benchmarked_mirror_list.push_back(cur_mirror);
+		network_distfile_brokers_array[network_num].init(network_num);
 	}
 }
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -211,46 +209,60 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 //----------------------------------------------------------------------------------------------------------
 			int best_local_network_num=-1;
 			int best_network_num=-1;
+			bool allow_remote_mirrors=true;
 			for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 				//if network priority set then it's active
 				if (network_array[network_num].priority){
 					if (network_array[network_num].priority==cur_network_priority){
-						debug("        network_priority="+toString(network_array[network_num].priority));
-							if (network_distfile_brokers_array[network_num].get_allowed_status()){
-							debug("             Allowed network#:"+toString(network_num));
-								if (network_array[network_num].use_own_mirror_list_only_on){
+							debug("        network_priority="+toString(network_array[network_num].priority));
+							if (network_array[network_num].use_own_mirror_list_only_on){
+								if (network_array[network_num].has_free_connections()){
+//									debug("             Allowed network#:"+toString(network_num));
 									if ((best_local_network_num==-1)
 									or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
 											best_local_network_num=network_num;
 											debug("             Replace best LOCAL network to network#:"+toString(network_num));
 									}
 								}else{
-									if 
-									((best_network_num==-1)
-										or
-									(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
-										best_network_num=network_num;
-										debug("             Replace best network to network to network#:"+toString(network_num));
+									if (network_array[network_num].only_local_when_possible){
+										if (!network_distfile_brokers_array[network_num].have_all_mirrors_failed()){
+											allow_remote_mirrors=false;
+											debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
+										}
 									}
 								}
+							}else{
+									if (network_array[network_num].has_free_connections()){
+										if 
+										((best_network_num==-1)
+											or
+										(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+											best_network_num=network_num;
+											debug("             Replace best network to network to network#:"+toString(network_num));
+										}
+									}
+							}
 							//work with network
-						}
 					}
 				}
 			}
 			if (best_local_network_num!=-1){
 				//best network has been found
 									//work with network
-			debug("             So best LOCAL network is network#:"+toString(best_local_network_num));
-			 int resultik=choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
-					return resultik;
+				debug("             So best LOCAL network is network#:"+toString(best_local_network_num));
+				int res=choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
+				return res;
 			}else{
-				// remote_mirrors_go_second
-				if (best_network_num!=-1){
-					//best network has been found
-									//work with network
-					debug("             So best network is network#:"+toString(best_network_num));
-					return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+				if (allow_remote_mirrors){ //since all local failed, go to remote
+					// remote_mirrors_go_second
+					if (best_network_num!=-1){
+						//best network has been found
+										//work with network
+						debug("             So best network is network#:"+toString(best_network_num));
+						return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+					}
+				}else{
+					debug("Restricted to local mirrors only when possible");
 				}
 			}
 		}

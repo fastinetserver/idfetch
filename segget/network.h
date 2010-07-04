@@ -31,6 +31,7 @@
 #include "str.h"
 #include <vector>
 #include "mirror.h"
+#include "config.h"
 //#include "tui.h"
 //#include "settings.cpp"
 using namespace std;
@@ -58,9 +59,6 @@ class Tnetwork{
 		ulong max_connection_speed;
 		ulong current_speed_time_interval_msecs;
 		string bind_interface;
-	//mirrors
-		ulong max_connections_num_per_mirror;
-		ulong benchmark_oblivion;
 	//user-data
 		string user_agent;
 	//proxy
@@ -69,8 +67,10 @@ class Tnetwork{
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
+	//mirrors
 		bool use_own_mirror_list_only_on;
-	Tnetwork():
+		bool only_local_when_possible;
+		Tnetwork():
 			mirror_list(),
 			benchmarked_mirror_list(),
 			active_connections_num(0),
@@ -87,9 +87,6 @@ class Tnetwork{
 			max_connection_speed(0),
 			current_speed_time_interval_msecs(1000),
 			bind_interface("none"),
-		//mirrors
-			max_connections_num_per_mirror(1),
-			benchmark_oblivion(5),
 		//user-data
 			user_agent("segget"),
 		//proxy
@@ -98,10 +95,12 @@ class Tnetwork{
 			proxy_off(1),
 			proxy_user("none"),
 			proxy_password("none"),
-			use_own_mirror_list_only_on(0)
+		//mirrors
+			use_own_mirror_list_only_on(0),
+			only_local_when_possible(1)
 			{network_count++;};
 		void init(uint priority_value);
-		bool get_busy_status();
+		bool has_free_connections();
 		bool connect();
 		void disconnect(){active_connections_num--;};
 };
