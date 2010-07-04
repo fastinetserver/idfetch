@@ -282,6 +282,14 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	}
 }
 void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
+	for(ulong pattern_num=0; pattern_num<settings.provide_mirror_files_restricted_patterns_vector.size(); pattern_num++){
+		if (name.find(settings.provide_mirror_files_restricted_patterns_vector[pattern_num],0)!=name.npos){
+			log("Symlink to distfile:"+name+" was restricted by pattern <"
+				+settings.provide_mirror_files_restricted_patterns_vector[pattern_num]
+				+"> from line "+toString(pattern_num+1)+" of restrict.conf file");
+			return;
+		}
+	}
 	string new_mirror_name;
 	string old_distfile_name;
 	try{
@@ -426,7 +434,9 @@ int Tdistfile::combine_segments(){
 				error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
 				return 12;
 			}
-			symlink_distfile_to_provide_mirror_dir();
+			if (settings.provide_mirror_dir!="none"){
+				symlink_distfile_to_provide_mirror_dir();
+			}
 		}catch(...){
 			error_log("Error: distfile.cpp: combine_segments() for segment:"+settings.distfiles_dir+"/"+name+" while checking checksums.");
 			return 30;

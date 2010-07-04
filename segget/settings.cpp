@@ -25,6 +25,38 @@
 */
 
 #include "settings.h"
+void Tsettings::load_provide_mirror_files_restricted_patterns_vector(){
+	ifstream file;
+	file.exceptions (ifstream::failbit | ifstream::badbit);
+	try{
+		file.open("restrict.conf");
+	}
+	catch(...){
+		error_log("Can NOT open pattern list file restrict.conf. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
+		provide_mirror_files_restrict_list_on=0;
+		return;
+	}
+	try{
+		//processing file
+		string restricted_pattern_line;
+		while (not(file.eof())) {
+			getline(file,restricted_pattern_line);
+			if (! restricted_pattern_line.length()) continue;
+			if (restricted_pattern_line[0] == '#') continue;
+			if (restricted_pattern_line[0] == ';') continue;
+			provide_mirror_files_restricted_patterns_vector.push_back(restricted_pattern_line);
+			debug("restricted_pattern_line added:"+restricted_pattern_line);
+		}
+		log(toString(provide_mirror_files_restricted_patterns_vector.size())+" pattern(s) was(were) read from restrict.conf");
+		if (! provide_mirror_files_restricted_patterns_vector.size()){
+			error_log("No patterns were read from restrict.conf file. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
+			provide_mirror_files_restrict_list_on=0;
+		}
+	}
+	catch(...){
+		error_log("Restricted pattern list file restrict.conf was opened, but an error occured while reading it.");
+	}
+}
 
 void Tsettings::init(){
 	try{
@@ -52,7 +84,12 @@ void Tsettings::init(){
 		conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror",1,10);
 		conf.set(benchmark_oblivion,				"mirrors",			"benchmark_oblivion",0,1000);
 
-		conf.set(provide_mirror_dir,		"provide_mirror_to_others",		"provide_mirror_dir");
+		conf.set(provide_mirror_dir,						"provide_mirror_to_others",		"provide_mirror_dir");
+		if (provide_mirror_dir!="none"){
+			conf.set(provide_mirror_files_restrict_list_on,		"provide_mirror_to_others",		"provide_mirror_files_restrict_list_on");
+			if (provide_mirror_files_restrict_list_on)
+				load_provide_mirror_files_restricted_patterns_vector();
+		}
 
 		ulong cur_network_priority;
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){

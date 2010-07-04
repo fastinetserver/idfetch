@@ -37,6 +37,7 @@ using namespace std;
 
 class Tsettings{
 	private:
+		void load_provide_mirror_files_restricted_patterns_vector();
 	public:
 	//folders
 		string distfiles_dir;
@@ -65,6 +66,8 @@ class Tsettings{
 		ulong benchmark_oblivion;
 	//provide_mirror_to_others
 		string provide_mirror_dir;
+		bool provide_mirror_files_restrict_list_on;
+		vector<string> provide_mirror_files_restricted_patterns_vector;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -98,7 +101,9 @@ class Tsettings{
 			max_connections_num_per_mirror(1),
 			benchmark_oblivion(5),
 		//provide_mirror_to_others
-			provide_mirror_dir("./provide_mirror_dir"),
+			provide_mirror_dir("none"),
+			provide_mirror_files_restrict_list_on(0),
+			provide_mirror_files_restricted_patterns_vector(),
 		//logs
 			logs_dir("./logs"),
 			general_log_file("segget.log"),
