@@ -26,14 +26,27 @@
 
 #include "networkbroker.h"
 void Tnetwork_distfile_broker::init(ulong network_number){
-	network_num=network_number;
-	if (network_array[network_num].use_own_mirror_list_only_on){
-		// create flags for each mirror from this network
-		mirror_fails_vector.insert(mirror_fails_vector.begin(),network_array[network_num].benchmarked_mirror_list.size(),false);
+	try{
+		network_num=network_number;
+		if (network_array[network_num].use_own_mirror_list_only_on){
+			// create flags for each mirror from this network
+			mirror_fails_vector.insert(mirror_fails_vector.begin(),network_array[network_num].benchmarked_mirror_list.size(),false);
+		}
+	}catch(...){
+		error_log("Error in networkbroker.cpp: init()");
 	}
 }
 
-bool Tnetwork_distfile_broker::have_all_mirrors_failed(){
-	debug("        get_allowed_status_for_network_num="+toString(network_num));
-	return network_array[network_num].has_free_connections();
+bool Tnetwork_distfile_broker::some_mirrors_have_NOT_failed_yet(){
+	try{
+		for (ulong cur_mirror_num=0; cur_mirror_num<mirror_fails_vector.size();cur_mirror_num++){
+			if (! mirror_fails_vector[cur_mirror_num]){
+				return true;
+			}
+		}
+		return false;
+	}catch(...){
+		error_log("Error in networkbroker.cpp: init()");
+		return false;
+	}
 }

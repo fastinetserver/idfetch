@@ -54,6 +54,7 @@ void Tconnection::stop(uint connection_result){
 		Tmirror *Pcurr_mirror;
 		if (network_array[network_num].use_own_mirror_list_only_on){
 			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+			prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
 //			find_mirror(strip_mirror_name(segment->url));
 		}else{
 			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));

@@ -217,15 +217,17 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 							debug("        network_priority="+toString(network_array[network_num].priority));
 							if (network_array[network_num].use_own_mirror_list_only_on){
 								if (network_array[network_num].has_free_connections()){
+									if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
 //									debug("             Allowed network#:"+toString(network_num));
-									if ((best_local_network_num==-1)
-									or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
-											best_local_network_num=network_num;
-											debug("             Replace best LOCAL network to network#:"+toString(network_num));
+										if ((best_local_network_num==-1)
+										or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+												best_local_network_num=network_num;
+												debug("             Replace best LOCAL network to network#:"+toString(network_num));
+										}
 									}
 								}else{
 									if (network_array[network_num].only_local_when_possible){
-										if (!network_distfile_brokers_array[network_num].have_all_mirrors_failed()){
+										if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
 											allow_remote_mirrors=false;
 											debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
 										}

@@ -36,7 +36,7 @@ class Tnetwork_distfile_broker{
 			network_num(0)
 			{};
 		void init(ulong network_number);
-		bool have_all_mirrors_failed();
+		bool some_mirrors_have_NOT_failed_yet();
 };
 
 #endif
