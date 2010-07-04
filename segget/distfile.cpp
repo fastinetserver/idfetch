@@ -170,7 +170,7 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 		ulong best_mirror_self_rating=-1;
 		ulong curr_mirror_self_rating;
 
-		for (ulong mirror_num=0; mirror_num<network_array[network_num].mirror_list.size(); mirror_num++){
+		for (ulong mirror_num=0; mirror_num<network_array[network_num].benchmarked_mirror_list.size(); mirror_num++){
 			if (network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num()<settings.max_connections_num_per_mirror){
 				curr_mirror_self_rating=network_array[network_num].benchmarked_mirror_list[mirror_num].mirror_on_the_wall();
 				if (curr_mirror_self_rating<best_mirror_self_rating){
@@ -183,7 +183,7 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 			}
 		}
 		if (best_mirror_num!=-1){
-			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].mirror_list[best_mirror_num]);
+			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].benchmarked_mirror_list[best_mirror_num].url);
 			network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return 0;

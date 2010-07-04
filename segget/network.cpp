@@ -44,17 +44,10 @@ void Tnetwork::load_mirror_list(){
 			if (! mirror_line.length()) continue;
 			if (mirror_line[0] == '#') continue;
 			if (mirror_line[0] == ';') continue;
-			mirror_list.push_back(mirror_line);
-			debug("LOCAL_MIRROR_ADDED:"+mirror_line);
-//=======================================================================================================
-//
-//      You don't need mirror_list, you have everything in benchmarked_mirror_list
-//
-//
 			Tmirror cur_mirror;
 			cur_mirror.url=mirror_line;
 			benchmarked_mirror_list.push_back(cur_mirror);
-
+			debug("LOCAL_MIRROR_ADDED:"+mirror_line);
 		}
 	}
 	catch(...){

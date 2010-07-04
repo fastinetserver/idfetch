@@ -43,7 +43,6 @@ class Tnetwork{
 	private:
 		void load_mirror_list();
 	public:
-		vector<string> mirror_list;
 		vector<Tmirror> benchmarked_mirror_list;
 		uint active_connections_num;
 	//network
@@ -71,7 +70,6 @@ class Tnetwork{
 		bool use_own_mirror_list_only_on;
 		bool only_local_when_possible;
 		Tnetwork():
-			mirror_list(),
 			benchmarked_mirror_list(),
 			active_connections_num(0),
 		//network

@@ -60,7 +60,7 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num,
 	try{
 		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
 		if (network_array[network_num].use_own_mirror_list_only_on){
-			url=network_array[network_num].mirror_list[mirror_num]+parent_distfile->name;
+			url=network_array[network_num].benchmarked_mirror_list[mirror_num].url+parent_distfile->name;
 			debug("  URL:"+url);
 		}else{
 			url=parent_distfile->url_list[mirror_num];
