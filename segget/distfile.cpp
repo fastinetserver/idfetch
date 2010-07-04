@@ -28,7 +28,9 @@
 
 void Tdistfile::init(){
 	for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
-		networkbrokers_array[network_num].network_num=network_num;
+		network_distfile_brokers_array[network_num].network_num=network_num;
+		Tmirror cur_mirror;
+		network_array[network_num].benchmarked_mirror_list.push_back(cur_mirror);
 	}
 }
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -156,8 +158,7 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 		if (Pbest_mirror){
 			debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
 			Pbest_mirror->start();
-			dn_segments[seg_num].prepare_for_connection(cm, connection_num, network_num, num, url_list[best_mirror_num]);
-			connection_array[connection_num].segment=&dn_segments[seg_num];
+			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return 0;
 		}
 		else{
@@ -165,14 +166,42 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			return 1;
 		}
 }
+bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
+		long best_mirror_num=-1;	// the best isn't set let's find it
+
+		ulong best_mirror_self_rating=-1;
+		ulong curr_mirror_self_rating;
+
+		for (ulong mirror_num=0; mirror_num<network_array[network_num].mirror_list.size(); mirror_num++){
+			if (network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num()<settings.max_connections_num_per_mirror){
+				curr_mirror_self_rating=network_array[network_num].benchmarked_mirror_list[mirror_num].mirror_on_the_wall();
+				if (curr_mirror_self_rating<best_mirror_self_rating){
+					best_mirror_num=mirror_num;
+					best_mirror_self_rating=curr_mirror_self_rating;
+				}
+				if (best_mirror_self_rating==0)
+					// 0 can not be improved - it's one of the best
+					break;
+			}
+		}
+		if (best_mirror_num!=-1){
+			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].mirror_list[best_mirror_num]);
+			network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
+			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
+			return 0;
+		}
+		else{
+			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
+			return 1;
+		}
+}
 
 int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
-
 	try{
 		active_connections_num++;
-		//choose network
 		for (uint cur_network_priority=10; cur_network_priority>0; cur_network_priority--){
 			debug("cur_network_priority="+toString(cur_network_priority));
+			//choose network
 //----------------------------------------------------------------------------------------------------------
 //
 //       Several criterions can be used here to choose among networks with equal priority:
@@ -180,31 +209,49 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 // add these options to segget.conf file
 //
 //----------------------------------------------------------------------------------------------------------
+			int best_local_network_num=-1;
 			int best_network_num=-1;
 			for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
-				debug("    network_num="+toString(network_num));
 				//if network priority set then it's active
 				if (network_array[network_num].priority){
 					if (network_array[network_num].priority==cur_network_priority){
 						debug("        network_priority="+toString(network_array[network_num].priority));
-						if (networkbrokers_array[network_num].get_allowed_status()){
+							if (network_distfile_brokers_array[network_num].get_allowed_status()){
 							debug("             Allowed network#:"+toString(network_num));
-							if 
-								((best_network_num==-1)
-								or
-								(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
-									best_network_num=network_num;
-									debug("             Replace best network to network#:"+toString(network_num));
-							}
+								if (network_array[network_num].use_own_mirror_list_only_on){
+									if ((best_local_network_num==-1)
+									or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+											best_local_network_num=network_num;
+											debug("             Replace best LOCAL network to network#:"+toString(network_num));
+									}
+								}else{
+									if 
+									((best_network_num==-1)
+										or
+									(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+										best_network_num=network_num;
+										debug("             Replace best network to network to network#:"+toString(network_num));
+									}
+								}
 							//work with network
 						}
 					}
 				}
 			}
-			if (best_network_num!=-1){
+			if (best_local_network_num!=-1){
 				//best network has been found
-				debug("             So best network is network#:"+toString(best_network_num));
-				return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+									//work with network
+			debug("             So best LOCAL network is network#:"+toString(best_local_network_num));
+			 int resultik=choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
+					return resultik;
+			}else{
+				// remote_mirrors_go_second
+				if (best_network_num!=-1){
+					//best network has been found
+									//work with network
+					debug("             So best network is network#:"+toString(best_network_num));
+					return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+				}
 			}
 		}
 	}catch(...){

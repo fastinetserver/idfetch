@@ -39,6 +39,7 @@ class Tconnection{
 	private:
 		uint connection_num;
 		uint network_num;
+		uint mirror_num;
 		bool active;
 		ulong total_dld_bytes;
 		ulong bytes_per_last_interval;
@@ -48,13 +49,14 @@ class Tconnection{
 		Tconnection():
 			connection_num(total_connections),
 			network_num(0),
+			mirror_num(0),
 			active(0),
 			total_dld_bytes(0),
 			bytes_per_last_interval(0),
 			start_time(),
 			segment(0){total_connections++;};
-		void start(uint network_number);
-		void stop();
+		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
+		void stop(uint connection_result);
 		void inc_bytes_per_last_interval(ulong new_bytes_count);
 		void show_connection_progress(ulong time_diff);
 };

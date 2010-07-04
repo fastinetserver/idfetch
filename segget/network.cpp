@@ -24,6 +24,34 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include "network.h"
+void Tnetwork::load_mirror_list(){
+	ifstream file;
+	string mirror_list_file_name="network"+toString(network_num)+"_mirrors.conf";
+	file.exceptions (ifstream::failbit | ifstream::badbit);
+	try{
+		file.open(mirror_list_file_name.c_str());
+	}
+	catch(...){
+		error_log("Can NOT open mirror list file: "+mirror_list_file_name+". Network will be disabled");
+		priority=0;
+		return;
+	}
+	try{
+		//processing file
+		string mirror_line;
+		while (not(file.eof())) {
+			getline(file,mirror_line);
+			if (! mirror_line.length()) continue;
+			if (mirror_line[0] == '#') continue;
+			if (mirror_line[0] == ';') continue;
+			mirror_list.push_back(mirror_line);
+			debug("LOCAL_MIRROR_ADDED:"+mirror_line);
+		}
+	}
+	catch(...){
+		error_log("Mirror list file: "+mirror_list_file_name+" was opened, but an error occured while reading from it.");
+	}
+}
 
 void Tnetwork::init(uint priority_value){
 	try{
@@ -45,6 +73,13 @@ void Tnetwork::init(uint priority_value){
 		conf.set(proxy_off,							"network_proxy",			"proxy_off");
 		conf.set(proxy_user,						"network_proxy",			"proxy_user");
 		conf.set(proxy_password,					"network_proxy",			"proxy_password");
+
+		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
+
+		if (use_own_mirror_list_only_on){
+			load_mirror_list();
+			log("Network#"+toString(network_num)+" LOCAL_MIRROR_LIST size:"+toString(mirror_list.size()));
+		}
 	}
 	catch(...)
 	{

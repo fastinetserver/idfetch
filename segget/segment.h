@@ -26,6 +26,8 @@
 
 #ifndef __SEGMENT_H__
 #define __SEGMENT_H__
+using namespace std;
+
 #include <sstream> 
 #include <fstream>
 #include <cstring>
@@ -36,9 +38,11 @@
 #include <ncurses.h>
 #include <curl/curl.h>
 #include "settings.h"
+
+#include "distfile.h"
+class Tdistfile;
 #include "stats.cpp"
 
-using namespace std;
 
 extern Tsettings settings;
 unsigned long downloaded_bytes=0;
@@ -54,7 +58,7 @@ class Tsegment{
 		string file_name;
 		Tstatus status;
 		uint try_num;
-		void* parent_distfile;
+		Tdistfile* parent_distfile;
 		uint connection_num;
 		uint segment_num;
 		uint segment_size;
@@ -80,8 +84,8 @@ class Tsegment{
 		Tsegment(const Tsegment &L);             // copy constructor
 		Tsegment & operator=(const Tsegment &L);
 		~Tsegment();
-		void set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end);
-		void prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string segment_url);
+		void set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end);
+		void prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, uint mirror_num);
 		string get_file_name(){return file_name;};
 		int add_easy_handle_to_multi(CURLM *cm, uint network_num);
 };

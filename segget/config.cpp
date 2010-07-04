@@ -29,7 +29,7 @@
 
 #include <string>
 #include <map>
-#include "str.cpp"
+#include "str.h"
 #include "tui.h"
 using namespace std;
 
@@ -66,7 +66,7 @@ string trim(std::string const& source, char const* delims = " \t\r\n") {
 }
 
 void ConfigFile::load_settings_from_config_file() {
-	;
+
 	ifstream file;
 	file.exceptions (ifstream::failbit | ifstream::badbit);
 	try{

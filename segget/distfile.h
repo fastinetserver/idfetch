@@ -39,8 +39,8 @@
 #include <fstream>
 #include <iostream>
 #include <json/json.h>
-#include "segment.cpp"
-#include "mirror.cpp"
+#include "segment.h"
+#include "mirror.h"
 #include "checksum.cpp"
 #include "network.h"
 #include "networkbroker.h"
@@ -52,9 +52,10 @@ typedef unsigned int uint;
 class Tdistfile{
 	private:
 		uint dld_segments_count;
-		Tnetworkbroker networkbrokers_array[MAX_NETWORKS];
+		bool choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 	public:
+		Tnetwork_distfile_broker network_distfile_brokers_array[MAX_NETWORKS];
 		bool downloaded;
 		uint active_connections_num;
 		string *url_list;

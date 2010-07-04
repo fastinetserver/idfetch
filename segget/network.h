@@ -29,6 +29,8 @@
 //#include <string>
 //#include <map>
 #include "str.h"
+#include <vector>
+#include "mirror.h"
 //#include "tui.h"
 //#include "settings.cpp"
 using namespace std;
@@ -38,7 +40,10 @@ using namespace std;
 class Tnetwork{
 	static uint network_count;
 	private:
+		void load_mirror_list();
 	public:
+		vector<string> mirror_list;
+		vector<Tmirror> benchmarked_mirror_list;
 		uint active_connections_num;
 	//network
 		uint network_num;
@@ -64,8 +69,10 @@ class Tnetwork{
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
+		bool use_own_mirror_list_only_on;
 	Tnetwork():
-		//private:
+			mirror_list(),
+			benchmarked_mirror_list(),
 			active_connections_num(0),
 		//network
 			network_num(network_count),
@@ -90,7 +97,8 @@ class Tnetwork{
 			proxy_port(3128),
 			proxy_off(1),
 			proxy_user("none"),
-			proxy_password("none")
+			proxy_password("none"),
+			use_own_mirror_list_only_on(0)
 			{network_count++;};
 		void init(uint priority_value);
 		bool get_busy_status();

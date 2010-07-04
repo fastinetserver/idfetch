@@ -23,20 +23,39 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __NETWORK_DISTFILE_BROKER_H__
-#define __NETWORK_DISTFILE_BROKER_H__
+#ifndef __MIRROR_BENCHMARKER_H__
+#define __MIRROR_BENCHMARKER_H__
 
-class Tnetwork_distfile_broker{
+#include <string>
+#include <map>
+#include "str.h"
+#include "tui.h"
+#include "settings.h"
+using namespace std;
+
+//extern Tsettings settings;
+
+class Tmirror{
+	private:
+		string url;
+		uint active_num;
 	public:
-//		map<string,Tmirror *> benchmarked_mirror_list;
-		ulong network_num;
-		bool local;
-		Tnetwork_distfile_broker():
-			network_num(0),
-			local(0)
-			{};
-		bool get_allowed_status();
-		Tmirror* find_mirror(string mirror_url);
+		ulong	dld_time;
+		ulong	dld_size;
+		double	honesty;
+		Tmirror():
+			url(""),
+			active_num(0),
+			dld_time(0),
+			dld_size(1),
+			honesty(1){};
+		void	start();
+		void	stop(ulong time, uint size);
+		double mirror_on_the_wall();
+		uint get_active_num(){return active_num;};
 };
 
+map<string,Tmirror *> mirror_list;
+string strip_mirror_name(string path);
+Tmirror* find_mirror(string mirror_url);
 #endif

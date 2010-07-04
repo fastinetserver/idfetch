@@ -26,7 +26,7 @@
 
 #include "segment.h"
 
-void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
+void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
 	try{
 		parent_distfile=prnt_distfile;
 		segment_num=seg_num;
@@ -56,15 +56,26 @@ void Tsegment::set_segment(void *prnt_distfile, uint seg_num, string distfile_na
 		error_log("Error in segment.cpp: prepare_for_connection()");
 	}
 }
-void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string segment_url){
+void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, uint mirror_num){
 	try{
-		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+segment_url);
+		string url__;
+		debug("==========NETWORK:"+toString(network_num));
+		debug("==========local_on:"+toString(network_array[network_num].use_own_mirror_list_only_on));
+		if (network_array[network_num].use_own_mirror_list_only_on){
+			url=network_array[network_num].mirror_list[mirror_num]+parent_distfile->name;
+			url__=network_array[network_num].mirror_list[mirror_num]+parent_distfile->name;
+			debug("URL:"+url);
+			debug("URL___________________:"+url__);
+		}else{
+			url=parent_distfile->url_list[mirror_num];
+		}
+		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
+		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
 		segments_in_progress[con_num]=this;
 		status=DOWNLOADING;
 		downloaded_bytes=0;
 		connection_num=con_num;
-		connection_array[con_num].start(network_num);
-		url=segment_url;
+//		connection_array[con_num].start(network_num);
 		try_num++;
 		add_easy_handle_to_multi(cm, network_num);
 	}catch(...){

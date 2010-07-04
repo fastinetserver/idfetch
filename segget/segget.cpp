@@ -32,10 +32,15 @@
 #include <ncurses.h>
 #include "pkg.cpp"
 #include "distfile.cpp"
+#include "mirror.cpp"
+#include "segment.cpp"
 #include "connection.cpp"
 #include "utils.cpp"
 #include "network.cpp"
 #include "networkbroker.cpp"
+#include "str.cpp"
+#include "tui.cpp"
+#include "settings.cpp"
 //#include "settings.cpp"
 
 using namespace std;
@@ -219,39 +224,13 @@ int download_pkgs(){
 					Tsegment *current_segment;
 					CURL *e = msg->easy_handle;
 					curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-					uint result=msg->data.result;
-					string result_msg_text="RESULT:"+toString(result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
+					uint connection_result=msg->data.result;
+					string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
 					msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 					curl_multi_remove_handle(cm, e);
-					current_segment->segment_file.close();
-					Tmirror *Pcurr_mirror=find_mirror(strip_mirror_name(current_segment->url));
-					timeval now_time;
-					gettimeofday(&now_time,NULL);
-					Tdistfile* prnt_distfile;
-					prnt_distfile=(Tdistfile*)current_segment->parent_distfile;
-					connection_array[current_segment->connection_num].stop();
-					prnt_distfile->active_connections_num--;
-					if (result!=0){
-						// error -> start downloading again
-						msg_status2(current_segment->connection_num, toString(result)+"]- Failed download "+current_segment->file_name);
-						debug(toString(result)+"]- Failed download "+current_segment->url);
-						Pcurr_mirror->stop(time_left_from(connection_array[current_segment->connection_num].start_time),0);
-						if (current_segment->try_num>=settings.max_tries){
-							current_segment->status=FAILED;
-							error_log("Segment:"+current_segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
-						}
-						else current_segment->status=WAITING;
-							//log("Restarting "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
-							//prnt_distfile->provide_segment(cm,current_segment->connection_num,current_segment->segment_num);
-							//U++;
-					}else{
-						// no error => count this one and start new
-						log("Succesfully downloaded "+current_segment->file_name+" on connection#"+toString(current_segment->connection_num));
-						debug(" Successful download "+current_segment->url);
-						Pcurr_mirror->stop(time_left_from(connection_array[current_segment->connection_num].start_time),current_segment->segment_size);
-						current_segment->status=DOWNLOADED;
-						prnt_distfile->inc_dld_segments_count(current_segment);
-					};
+
+					connection_array[current_segment->connection_num].stop(connection_result);
+
 					if (not choose_segment(current_segment->connection_num)) {
 						U++; // just to prevent it from remaining at 0 if there are more URLs to get
 					};
