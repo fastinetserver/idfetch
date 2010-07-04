@@ -281,21 +281,77 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 		error_log("Error: distfile.cpp: inc_dld_segments_count()");
 	}
 }
+void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
+	string new_mirror_name;
+	string old_distfile_name;
+	try{
+		string old_distfile_path;
+		char current_path[FILENAME_MAX];
+		if (!GetCurrentDir(current_path, sizeof(current_path)))
+		{
+			return;
+		}
+		if (settings.distfiles_dir.find("./",0)==0){
+			old_distfile_path=current_path+settings.distfiles_dir.substr(1,settings.distfiles_dir.npos);
+		}else{
+			old_distfile_path=settings.distfiles_dir;
+		}
+		new_mirror_name=settings.provide_mirror_dir+"/"+name;
+		old_distfile_name=old_distfile_path+"/"+name;
+		try{
+			if (!symlink(old_distfile_name.c_str(), new_mirror_name.c_str())){
+				log("Distfile:"+old_distfile_path+" was symlinked to the mirror dir:");
+			};
+		}catch(uint errno){
+			switch (errno){
+				case EACCES			: error_log("Write access to the directory containing "+settings.provide_mirror_dir+" is denied, or one of the directories in the path prefix of "+settings.provide_mirror_dir+" did not allow search permission.  (See also path_resolution(7).");
+										break;
+				case EEXIST			: error_log("There is already an existing file named "+new_mirror_name+".");
+										break;
+				case EFAULT			: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" points outside your accessible address space.");
+										break;
+				case EIO			: error_log("A hardware error occurred while reading or writing data on the disk.");
+										break;
+				case ELOOP			: error_log("Too many symbolic links were encountered in resolving "+settings.provide_mirror_dir+".");
+										break;
+				case ENAMETOOLONG	: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" was too long.");
+										break;
+				case ENOENT			: error_log("A directory component in "+settings.provide_mirror_dir+" does not exist or is a dangling symbolic link, or "+old_distfile_path+" is the empty string.");
+										break;
+				case ENOMEM			: error_log("Insufficient kernel memory was available.");
+										break;
+				case ENOSPC			: error_log("The device containing the file has no room for the new directory entry.");
+										break;
+				case ENOTDIR		: error_log("A component used as a directory in "+settings.provide_mirror_dir+" is not, in fact, a directory.");
+										break;
+				case EPERM			: error_log("The file system containing "+settings.provide_mirror_dir+" does not support the creation of symbolic links.");
+										break;
+				case EROFS			: error_log("The file "+new_mirror_name+" would exist on a read-only file system.");
+										break;
+			default:
+				error_log("Undocumented error while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+			}
+		}catch(...){
+			error_log("Undocumented error (error description is not an integer) while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+		}
+	}catch(...){
+			error_log("Error in distfile.cpp :: symlink_distfile_to_provide_mirror_dir() while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+	}
+}
 int Tdistfile::combine_segments(){
 	try{
 		debug("Combining distfile"+name);
 		ofstream distfile_file;
 		distfile_file.exceptions (ofstream::failbit | ofstream::badbit);
+		string distfile_path=settings.distfiles_dir+"/"+name;
 		try{
-			distfile_file.open((settings.distfiles_dir+"/"+name).c_str(),ofstream::binary|ios::trunc);
+			distfile_file.open(distfile_path.c_str(),ofstream::binary|ios::trunc);
 		}catch(...){
-			error_log("Error: distfile.cpp: combine_segments(): opening distfile:"+settings.distfiles_dir+"/"+name);
+			error_log("Error: distfile.cpp: combine_segments(): opening distfile:"+distfile_path);
 			return 1;
 		}
 		char * buffer;
 		ulong cur_seg_size;
-	//  char * buffer;
-	//  buffer = new char [size];
 		try{
 			for (uint seg_num=0; seg_num < segments_count; seg_num++){
 				debug("Joining "+name+" segment "+toString(seg_num)+"          ");
@@ -346,13 +402,13 @@ int Tdistfile::combine_segments(){
 			error_log("Error in distfile.cpp: combine_segments() for distfile:"+settings.distfiles_dir+"/"+name);
 			return 5;
 		}
-		
 		try{
 			if (rmd160_ok(settings.distfiles_dir+"/"+name,RMD160))
 				log("RMD160 checksum for distfile:"+name+" is [OK]");
 			else{
 				log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
+				return 10;
 			}
 	
 			if (sha1_ok(settings.distfiles_dir+"/"+name,SHA1))
@@ -360,6 +416,7 @@ int Tdistfile::combine_segments(){
 			else{
 				log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
+				return 11;
 			}
 	
 			if (sha256_ok(settings.distfiles_dir+"/"+name,SHA256))
@@ -367,14 +424,16 @@ int Tdistfile::combine_segments(){
 			else{
 				log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
+				return 12;
 			}
+			symlink_distfile_to_provide_mirror_dir();
 		}catch(...){
 			error_log("Error: distfile.cpp: combine_segments() for segment:"+settings.distfiles_dir+"/"+name+" while checking checksums.");
-			return 6;
+			return 30;
 		}
 	}catch(...){
 		error_log("Error: distfile.cpp: combine_segments() for segment:"+settings.distfiles_dir+"/"+name+" during procedure.");
-		return 7;
+		return 31;
 	}
 	return 0;
 }

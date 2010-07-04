@@ -52,6 +52,8 @@ void Tsettings::init(){
 		conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror",1,10);
 		conf.set(benchmark_oblivion,				"mirrors",			"benchmark_oblivion",0,1000);
 
+		conf.set(provide_mirror_dir,		"provide_mirror_to_others",		"provide_mirror_dir");
+
 		ulong cur_network_priority;
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 			//set default values, in case segget.conf doesn't have these settings

@@ -39,6 +39,13 @@
 #include <fstream>
 #include <iostream>
 #include <json/json.h>
+#ifdef WINDOWS
+	#include <direct.h>
+	#define GetCurrentDir _getcwd
+#else
+	#include <unistd.h>
+	#define GetCurrentDir getcwd
+#endif
 #include "segment.h"
 #include "mirror.h"
 #include "checksum.cpp"
@@ -98,6 +105,7 @@ class Tdistfile{
 		void split_into_segments();
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
 		void inc_dld_segments_count(Tsegment * current_segment);
+		void symlink_distfile_to_provide_mirror_dir();
 		int combine_segments();
 		bool check_if_dld();
 };

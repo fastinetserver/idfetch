@@ -99,7 +99,6 @@ bool Tnetwork::has_free_connections(){
 	}
 }
 
-
 bool Tnetwork::connect(){
 	if (active_connections_num<max_connections){
 		active_connections_num++;

@@ -63,14 +63,8 @@ class Tsettings{
 	//mirrors
 		ulong max_connections_num_per_mirror;
 		ulong benchmark_oblivion;
-	//user-data
-		string user_agent;
-	//proxy
-		string proxy_ip_or_name;
-		ulong proxy_port;
-		bool proxy_off;
-		string proxy_user;
-		string proxy_password;
+	//provide_mirror_to_others
+		string provide_mirror_dir;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -103,14 +97,8 @@ class Tsettings{
 		//mirrors
 			max_connections_num_per_mirror(1),
 			benchmark_oblivion(5),
-		//user-data
-			user_agent("segget"),
-		//proxy
-			proxy_ip_or_name("none"),
-			proxy_port(3128),
-			proxy_off(1),
-			proxy_user("none"),
-			proxy_password("none"),
+		//provide_mirror_to_others
+			provide_mirror_dir("./provide_mirror_dir"),
 		//logs
 			logs_dir("./logs"),
 			general_log_file("segget.log"),
