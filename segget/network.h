@@ -28,8 +28,8 @@
 
 //#include <string>
 //#include <map>
-#include "str.h"
 #include <vector>
+#include "str.h"
 #include "mirror.h"
 #include "config.h"
 //#include "tui.h"

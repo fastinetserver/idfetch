@@ -48,7 +48,7 @@
 #endif
 #include "segment.h"
 #include "mirror.h"
-#include "checksum.cpp"
+#include "checksum.h"
 #include "network.h"
 #include "networkbroker.h"
 

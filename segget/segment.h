@@ -41,7 +41,7 @@ using namespace std;
 
 #include "distfile.h"
 class Tdistfile;
-#include "stats.cpp"
+#include "stats.h"
 
 
 extern Tsettings settings;

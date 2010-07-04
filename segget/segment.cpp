@@ -79,13 +79,16 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num,
 }
 
 Tsegment::~Tsegment(){
-	//try
+	try{
 		segment_file.close();
+	}catch(...){
+		error_log("Error in segment.cpp: ~Tsegment()");
+	}
 }
 
 int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
-	segment_file.exceptions (ofstream::badbit);
 	try{
+		segment_file.exceptions (ofstream::badbit);
 		segment_file.open((settings.segments_dir+"/"+file_name).c_str(), ios::trunc|ios::binary );
 	}catch(std::ifstream::failure e){
 			if (!segment_file.eof()){
@@ -179,9 +182,9 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 			show_progress(time_diff_msecs);
 			stats.reset_previous_time();
 		};
-	}
-	catch(...){
+	}catch(...){
 		error_log("Error in segment.cpp: write_data()");
+		return 0;
 	}
 	return bytes_written;
 }

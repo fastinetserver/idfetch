@@ -25,33 +25,37 @@
 */
 #include "network.h"
 void Tnetwork::load_mirror_list(){
-	ifstream file;
-	string mirror_list_file_name="network"+toString(network_num)+"_mirrors.conf";
-	file.exceptions (ifstream::failbit | ifstream::badbit);
 	try{
-		file.open(mirror_list_file_name.c_str());
-	}
-	catch(...){
-		error_log("Can NOT open mirror list file: "+mirror_list_file_name+". Network will be disabled");
-		priority=0;
-		return;
-	}
-	try{
-		//processing file
-		string mirror_line;
-		while (not(file.eof())) {
-			getline(file,mirror_line);
-			if (! mirror_line.length()) continue;
-			if (mirror_line[0] == '#') continue;
-			if (mirror_line[0] == ';') continue;
-			Tmirror cur_mirror;
-			cur_mirror.url=mirror_line;
-			benchmarked_mirror_list.push_back(cur_mirror);
-			debug("LOCAL_MIRROR_ADDED:"+mirror_line);
+		ifstream file;
+		string mirror_list_file_name="network"+toString(network_num)+"_mirrors.conf";
+		file.exceptions (ifstream::failbit | ifstream::badbit);
+		try{
+			file.open(mirror_list_file_name.c_str());
 		}
-	}
-	catch(...){
-		error_log("Mirror list file: "+mirror_list_file_name+" was opened, but an error occured while reading from it.");
+		catch(...){
+			error_log("Can NOT open mirror list file: "+mirror_list_file_name+". Network will be disabled");
+			priority=0;
+			return;
+		}
+		try{
+			//processing file
+			string mirror_line;
+			while (not(file.eof())) {
+				getline(file,mirror_line);
+				if (! mirror_line.length()) continue;
+				if (mirror_line[0] == '#') continue;
+				if (mirror_line[0] == ';') continue;
+				Tmirror cur_mirror;
+				cur_mirror.url=mirror_line;
+				benchmarked_mirror_list.push_back(cur_mirror);
+				debug("LOCAL_MIRROR_ADDED:"+mirror_line);
+			}
+		}
+		catch(...){
+			error_log("Mirror list file: "+mirror_list_file_name+" was opened, but an error occured while reading from it.");
+		}
+	}catch(...){
+		error_log_no_msg("Error in network.cpp: load_mirror_list()");
 	}
 }
 
@@ -84,26 +88,34 @@ void Tnetwork::init(uint priority_value){
 			log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));
 		}
 		conf.clear();
-	}
-	catch(...)
-	{
-		error_log_no_msg("Error calling msg() in settings.cpp: load_from_conf_file()");
+	}catch(...){
+		error_log("Error in network.cpp: init()");
 	}
 }
 
 bool Tnetwork::has_free_connections(){
-	if (active_connections_num<max_connections){
-		return true;
-	}else{
+	try{
+		if (active_connections_num<max_connections){
+			return true;
+		}else{
+			return false;
+		}
+	}catch(...){
+		error_log_no_msg("Error in network.cpp: has_free_connections()");
 		return false;
 	}
 }
 
 bool Tnetwork::connect(){
-	if (active_connections_num<max_connections){
-		active_connections_num++;
-		return true;
-	}else{
+	try{
+		if (active_connections_num<max_connections){
+			active_connections_num++;
+			return true;
+		}else{
+			return false;
+		}
+	}catch(...){
+		error_log_no_msg("Error in network.cpp: connect()");
 		return false;
 	}
 }

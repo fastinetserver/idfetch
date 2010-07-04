@@ -24,31 +24,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include "config.cpp"
-#include "connection.cpp"
-#include "distfile.cpp"
-#include "mirror.cpp"
-#include "network.cpp"
-#include "networkbroker.cpp"
-#include "pkg.cpp"
-#include "segment.cpp"
-#include "settings.cpp"
-#include "str.cpp"
-#include "tui.cpp"
-#include "utils.cpp"
-//#include "settings.cpp"
-
-using namespace std;
-
-Tpkg **Ppkg_array;
-
-CURLM *cm;
+#include "segget.h"
 
 int load_pkgs(){
 	try{

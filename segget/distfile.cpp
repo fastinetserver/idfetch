@@ -27,8 +27,12 @@
 #include "distfile.h"
 
 void Tdistfile::init(){
-	for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
-		network_distfile_brokers_array[network_num].init(network_num);
+	try{
+		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
+			network_distfile_brokers_array[network_num].init(network_num);
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: init()");
 	}
 }
 void Tdistfile::load_url_list(json_object* json_array_distfile_urllist){
@@ -132,6 +136,7 @@ Tdistfile::~Tdistfile(){
 	}
 }
 bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
+	try{
 		Tmirror *Pcurr_mirror;
 		Tmirror *Pbest_mirror=0;	// the best isn't set let's find it
 		uint best_mirror_num=-1;	// the best isn't set let's find it
@@ -163,13 +168,16 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
 			return 1;
 		}
+	}catch(...){
+		error_log("Error: distfile.cpp: choose_best_mirror()");
+		return 1;
+	}
 }
 bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
+	try{
 		long best_mirror_num=-1;	// the best isn't set let's find it
-
 		ulong best_mirror_self_rating=-1;
 		ulong curr_mirror_self_rating;
-
 		for (ulong mirror_num=0; mirror_num<network_array[network_num].benchmarked_mirror_list.size(); mirror_num++){
 			if (network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num()<settings.max_connections_num_per_mirror){
 				curr_mirror_self_rating=network_array[network_num].benchmarked_mirror_list[mirror_num].mirror_on_the_wall();
@@ -192,6 +200,10 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
 			return 1;
 		}
+	}catch(...){
+		error_log("Error: distfile.cpp: choose_best_local_mirror()");
+		return 1;
+	}
 }
 
 int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
@@ -268,11 +280,11 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 				}
 			}
 		}
+		return 0;
 	}catch(...){
 		error_log("Error: distfile.cpp: provide_segment()");
 		return 1;
 	}
-	return 0;
 }
 void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	try{
@@ -284,68 +296,72 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	}
 }
 void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
-	for(ulong pattern_num=0; pattern_num<settings.provide_mirror_files_restricted_patterns_vector.size(); pattern_num++){
-		if (name.find(settings.provide_mirror_files_restricted_patterns_vector[pattern_num],0)!=name.npos){
-			log("Symlink to distfile:"+name+" was restricted by pattern <"
-				+settings.provide_mirror_files_restricted_patterns_vector[pattern_num]
-				+"> from line "+toString(pattern_num+1)+" of restrict.conf file");
-			return;
-		}
-	}
-	string new_mirror_name;
-	string old_distfile_name;
 	try{
-		string old_distfile_path;
-		char current_path[FILENAME_MAX];
-		if (!GetCurrentDir(current_path, sizeof(current_path)))
-		{
-			return;
+		for(ulong pattern_num=0; pattern_num<settings.provide_mirror_files_restricted_patterns_vector.size(); pattern_num++){
+			if (name.find(settings.provide_mirror_files_restricted_patterns_vector[pattern_num],0)!=name.npos){
+				log("Symlink to distfile:"+name+" was restricted by pattern <"
+					+settings.provide_mirror_files_restricted_patterns_vector[pattern_num]
+					+"> from line "+toString(pattern_num+1)+" of restrict.conf file");
+				return;
+			}
 		}
-		if (settings.distfiles_dir.find("./",0)==0){
-			old_distfile_path=current_path+settings.distfiles_dir.substr(1,settings.distfiles_dir.npos);
-		}else{
-			old_distfile_path=settings.distfiles_dir;
-		}
-		new_mirror_name=settings.provide_mirror_dir+"/"+name;
-		old_distfile_name=old_distfile_path+"/"+name;
+		string new_mirror_name;
+		string old_distfile_name;
 		try{
-			if (!symlink(old_distfile_name.c_str(), new_mirror_name.c_str())){
-				log("Distfile:"+old_distfile_path+" was symlinked to the mirror dir:");
-			};
-		}catch(uint errno){
-			switch (errno){
-				case EACCES			: error_log("Write access to the directory containing "+settings.provide_mirror_dir+" is denied, or one of the directories in the path prefix of "+settings.provide_mirror_dir+" did not allow search permission.  (See also path_resolution(7).");
-										break;
-				case EEXIST			: error_log("There is already an existing file named "+new_mirror_name+".");
-										break;
-				case EFAULT			: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" points outside your accessible address space.");
-										break;
-				case EIO			: error_log("A hardware error occurred while reading or writing data on the disk.");
-										break;
-				case ELOOP			: error_log("Too many symbolic links were encountered in resolving "+settings.provide_mirror_dir+".");
-										break;
-				case ENAMETOOLONG	: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" was too long.");
-										break;
-				case ENOENT			: error_log("A directory component in "+settings.provide_mirror_dir+" does not exist or is a dangling symbolic link, or "+old_distfile_path+" is the empty string.");
-										break;
-				case ENOMEM			: error_log("Insufficient kernel memory was available.");
-										break;
-				case ENOSPC			: error_log("The device containing the file has no room for the new directory entry.");
-										break;
-				case ENOTDIR		: error_log("A component used as a directory in "+settings.provide_mirror_dir+" is not, in fact, a directory.");
-										break;
-				case EPERM			: error_log("The file system containing "+settings.provide_mirror_dir+" does not support the creation of symbolic links.");
-										break;
-				case EROFS			: error_log("The file "+new_mirror_name+" would exist on a read-only file system.");
-										break;
-			default:
-				error_log("Undocumented error while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+			string old_distfile_path;
+			char current_path[FILENAME_MAX];
+			if (!GetCurrentDir(current_path, sizeof(current_path)))
+			{
+				return;
+			}
+			if (settings.distfiles_dir.find("./",0)==0){
+				old_distfile_path=current_path+settings.distfiles_dir.substr(1,settings.distfiles_dir.npos);
+			}else{
+				old_distfile_path=settings.distfiles_dir;
+			}
+			new_mirror_name=settings.provide_mirror_dir+"/"+name;
+			old_distfile_name=old_distfile_path+"/"+name;
+			try{
+				if (!symlink(old_distfile_name.c_str(), new_mirror_name.c_str())){
+					log("Distfile:"+old_distfile_path+" was symlinked to the mirror dir:");
+				};
+			}catch(uint errno){
+				switch (errno){
+					case EACCES			: error_log("Write access to the directory containing "+settings.provide_mirror_dir+" is denied, or one of the directories in the path prefix of "+settings.provide_mirror_dir+" did not allow search permission.  (See also path_resolution(7).");
+											break;
+					case EEXIST			: error_log("There is already an existing file named "+new_mirror_name+".");
+											break;
+					case EFAULT			: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" points outside your accessible address space.");
+											break;
+					case EIO			: error_log("A hardware error occurred while reading or writing data on the disk.");
+											break;
+					case ELOOP			: error_log("Too many symbolic links were encountered in resolving "+settings.provide_mirror_dir+".");
+											break;
+					case ENAMETOOLONG	: error_log(old_distfile_path+" or "+settings.provide_mirror_dir+" was too long.");
+											break;
+					case ENOENT			: error_log("A directory component in "+settings.provide_mirror_dir+" does not exist or is a dangling symbolic link, or "+old_distfile_path+" is the empty string.");
+											break;
+					case ENOMEM			: error_log("Insufficient kernel memory was available.");
+											break;
+					case ENOSPC			: error_log("The device containing the file has no room for the new directory entry.");
+											break;
+					case ENOTDIR		: error_log("A component used as a directory in "+settings.provide_mirror_dir+" is not, in fact, a directory.");
+											break;
+					case EPERM			: error_log("The file system containing "+settings.provide_mirror_dir+" does not support the creation of symbolic links.");
+											break;
+					case EROFS			: error_log("The file "+new_mirror_name+" would exist on a read-only file system.");
+											break;
+				default:
+					error_log("Undocumented error while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+				}
+			}catch(...){
+				error_log("Undocumented error (error description is not an integer) while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
 			}
 		}catch(...){
-			error_log("Undocumented error (error description is not an integer) while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+				error_log("Error in distfile.cpp :: symlink_distfile_to_provide_mirror_dir() while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
 		}
 	}catch(...){
-			error_log("Error in distfile.cpp :: symlink_distfile_to_provide_mirror_dir() while trying to symlink "+old_distfile_name+" to "+new_mirror_name);
+		error_log("Error: distfile.cpp: symlink_distfile_to_provide_mirror_dir()");
 	}
 }
 int Tdistfile::combine_segments(){

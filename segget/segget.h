@@ -24,19 +24,40 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "utils.h"
+#ifndef __SEGGET_H__
+#define __SEGGET_H__
 
-ulong time_left_from(timeval from_time){
-	try{
-		timeval now_time;
-		gettimeofday(&now_time,NULL);
-		ulong timeleft=(now_time.tv_sec-from_time.tv_sec)*1000+(now_time.tv_usec-from_time.tv_usec)/1000;
-		if (timeleft<1)
-			timeleft=1;
-		return timeleft;
-	}catch(...){
-		error_log("Error in utils.cpp: time_left_from()");
-		return 1;
-	}
-}
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <json/json.h>
+#include <ncurses.h>
+#include "checksum.cpp"
+#include "config.cpp"
+#include "connection.cpp"
+#include "distfile.cpp"
+#include "mirror.cpp"
+#include "network.cpp"
+#include "networkbroker.cpp"
+#include "pkg.cpp"
+#include "segment.cpp"
+#include "settings.cpp"
+#include "stats.cpp"
+#include "str.cpp"
+#include "tui.cpp"
+#include "utils.cpp"
 
+using namespace std;
+
+Tpkg **Ppkg_array;
+
+CURLM *cm;
+
+int load_pkgs();
+void show_pkgs();
+int choose_segment(uint connection_num);
+int download_pkgs();
+int main();
+
+#endif

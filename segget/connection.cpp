@@ -81,7 +81,6 @@ void Tconnection::stop(uint connection_result){
 			segment->status=DOWNLOADED;
 			prnt_distfile->inc_dld_segments_count(segment);
 		};
-
 	}catch(...){
 		error_log("Error in connection.cpp: stop()");
 	}

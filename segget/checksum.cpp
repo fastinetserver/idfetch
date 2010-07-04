@@ -24,20 +24,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CHECKSUM_H__
-#define __CHECKSUM_H__
-
-#include <string>
-#include "cryptopp/crc.h"
-#include "cryptopp/sha.h"
-#include "cryptopp/whrlpool.h"
-#include "cryptopp/ripemd.h"
-#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
-#include "cryptopp/md5.h"
-#include "cryptopp/files.h"
-#include "cryptopp/hex.h"
-#include "tui.h"
-#include "str.h"
+#include "checksum.h"
 
 bool rmd160_ok(string distfile_filename, string portage_hash){
 	try{
@@ -164,4 +151,3 @@ bool crc32_ok(string distfile_filename, string portage_hash){
 		return false;
 	}
 }
-#endif

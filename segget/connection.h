@@ -28,6 +28,7 @@
 #define __CONNECTION_H__
 
 #include <time.h>
+#include <curl/curl.h>
 class Tsegment;
 #include "segment.h"
 #include "utils.h"

@@ -26,35 +26,39 @@
 
 #include "settings.h"
 void Tsettings::load_provide_mirror_files_restricted_patterns_vector(){
-	ifstream file;
-	file.exceptions (ifstream::failbit | ifstream::badbit);
 	try{
-		file.open("restrict.conf");
-	}
-	catch(...){
-		error_log("Can NOT open pattern list file restrict.conf. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
-		provide_mirror_files_restrict_list_on=0;
-		return;
-	}
-	try{
-		//processing file
-		string restricted_pattern_line;
-		while (not(file.eof())) {
-			getline(file,restricted_pattern_line);
-			if (! restricted_pattern_line.length()) continue;
-			if (restricted_pattern_line[0] == '#') continue;
-			if (restricted_pattern_line[0] == ';') continue;
-			provide_mirror_files_restricted_patterns_vector.push_back(restricted_pattern_line);
-			debug("restricted_pattern_line added:"+restricted_pattern_line);
+		ifstream file;
+		file.exceptions (ifstream::failbit | ifstream::badbit);
+		try{
+			file.open("restrict.conf");
 		}
-		log(toString(provide_mirror_files_restricted_patterns_vector.size())+" pattern(s) was(were) read from restrict.conf");
-		if (! provide_mirror_files_restricted_patterns_vector.size()){
-			error_log("No patterns were read from restrict.conf file. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
+		catch(...){
+			error_log("Can NOT open pattern list file restrict.conf. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
 			provide_mirror_files_restrict_list_on=0;
+			return;
 		}
-	}
-	catch(...){
-		error_log("Restricted pattern list file restrict.conf was opened, but an error occured while reading it.");
+		try{
+			//processing file
+			string restricted_pattern_line;
+			while (not(file.eof())) {
+				getline(file,restricted_pattern_line);
+				if (! restricted_pattern_line.length()) continue;
+				if (restricted_pattern_line[0] == '#') continue;
+				if (restricted_pattern_line[0] == ';') continue;
+				provide_mirror_files_restricted_patterns_vector.push_back(restricted_pattern_line);
+				debug("restricted_pattern_line added:"+restricted_pattern_line);
+			}
+			log(toString(provide_mirror_files_restricted_patterns_vector.size())+" pattern(s) was(were) read from restrict.conf");
+			if (! provide_mirror_files_restricted_patterns_vector.size()){
+				error_log("No patterns were read from restrict.conf file. Setting provide_mirror_files_restrict_list_on=0 will be forced.");
+				provide_mirror_files_restrict_list_on=0;
+			}
+		}
+		catch(...){
+			error_log("Restricted pattern list file restrict.conf was opened, but an error occured while reading it.");
+		}
+	}catch(...){
+		error_log("Error in settings.cpp: load_provide_mirror_files_restricted_patterns_vector()");
 	}
 }
 
@@ -106,9 +110,7 @@ void Tsettings::init(){
 			}
 		}
 		conf.clear();
-	}catch(...)
-	{
-		error_log_no_msg("Error calling msg() in settings.cpp: load_from_conf_file()");
+	}catch(...){
+		error_log_no_msg("Error in settings.cpp: init()");
 	}
-
 }

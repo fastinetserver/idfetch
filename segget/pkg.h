@@ -23,20 +23,30 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
+#ifndef __PKG_H__
+#define __PKG_H__
 
-#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <json/json.h>
+#include "distfile.h"
 
-ulong time_left_from(timeval from_time){
-	try{
-		timeval now_time;
-		gettimeofday(&now_time,NULL);
-		ulong timeleft=(now_time.tv_sec-from_time.tv_sec)*1000+(now_time.tv_usec-from_time.tv_usec)/1000;
-		if (timeleft<1)
-			timeleft=1;
-		return timeleft;
-	}catch(...){
-		error_log("Error in utils.cpp: time_left_from()");
-		return 1;
-	}
-}
+using namespace std;
+typedef unsigned int uint;
 
+class Tpkg{
+	public:
+		Tdistfile **Pdistfile_list;
+		string name;
+		string category;
+		uint distfile_count;
+		void load_distfile_list(json_object* json_array_distfile_list);
+		Tpkg(): Pdistfile_list(0),name(""),category(""), distfile_count(0){};
+		Tpkg(const Tpkg &L);             // copy constructor
+		Tpkg & operator=(const Tpkg &L);
+		~Tpkg();
+		void load_pkg_from_json(json_object* json_obj_pkg);
+};
+#endif

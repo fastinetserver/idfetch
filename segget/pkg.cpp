@@ -23,32 +23,9 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __PKG_H__
-#define __PKG_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include "distfile.h"
+#include "pkg.h"
 
-using namespace std;
-typedef unsigned int uint;
-
-class Tpkg{
-	public:
-		Tdistfile **Pdistfile_list;
-		string name;
-		string category;
-		uint distfile_count;
-		void load_distfile_list(json_object* json_array_distfile_list);
-		Tpkg(): Pdistfile_list(0),name(""),category(""), distfile_count(0){};
-		Tpkg(const Tpkg &L);             // copy constructor
-		Tpkg & operator=(const Tpkg &L);
-		~Tpkg();
-		void load_pkg_from_json(json_object* json_obj_pkg);
-};
 void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
 	try{
 		distfile_count=json_object_array_length(json_array_distfile_list);
@@ -82,4 +59,3 @@ Tpkg::~Tpkg(){
 		error_log("Error in pkg.cpp: ~Tpkg");
 	}
 }
-#endif

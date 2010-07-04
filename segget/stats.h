@@ -24,19 +24,45 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "utils.h"
+#ifndef __STATS_H__
+#define __STATS_H__
 
-ulong time_left_from(timeval from_time){
-	try{
-		timeval now_time;
-		gettimeofday(&now_time,NULL);
-		ulong timeleft=(now_time.tv_sec-from_time.tv_sec)*1000+(now_time.tv_usec-from_time.tv_usec)/1000;
-		if (timeleft<1)
-			timeleft=1;
-		return timeleft;
-	}catch(...){
-		error_log("Error in utils.cpp: time_left_from()");
-		return 1;
-	}
-}
+#include <sys/time.h>
+#include "connection.h"
+#include "tui.h"
+#include "settings.h"
+using namespace std;
 
+class Tstats{
+	private:
+		ulong dld_size;
+		ulong dld_distfiles_count;
+		uint total_size;
+	public:
+		ulong total_bytes_per_last_interval;
+		struct timeval previous_time;
+		double last_time_interval;
+		uint pkg_count;
+		uint distfiles_count;
+		Tstats():
+			dld_size(0),
+			dld_distfiles_count(0),
+			total_size(0),
+			total_bytes_per_last_interval(0),
+			previous_time(),
+			last_time_interval(1),
+			pkg_count(0),
+			distfiles_count(0)
+			{};
+		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
+		ulong get_dld_size(){return dld_size;};
+		void inc_dld_distfiles_count();
+		ulong get_dld_distfiles_count(){return dld_distfiles_count;};
+		void inc_total_size(ulong more_bytes){ total_size+=more_bytes;};
+		ulong get_total_size(){return total_size;};
+		void show_totals();
+		void reset_previous_time();
+};
+
+Tstats stats;
+#endif

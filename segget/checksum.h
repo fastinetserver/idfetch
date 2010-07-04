@@ -24,19 +24,26 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "utils.h"
+#ifndef __CHECKSUM_H__
+#define __CHECKSUM_H__
 
-ulong time_left_from(timeval from_time){
-	try{
-		timeval now_time;
-		gettimeofday(&now_time,NULL);
-		ulong timeleft=(now_time.tv_sec-from_time.tv_sec)*1000+(now_time.tv_usec-from_time.tv_usec)/1000;
-		if (timeleft<1)
-			timeleft=1;
-		return timeleft;
-	}catch(...){
-		error_log("Error in utils.cpp: time_left_from()");
-		return 1;
-	}
-}
+#include <string>
+#include "cryptopp/crc.h"
+#include "cryptopp/sha.h"
+#include "cryptopp/whrlpool.h"
+#include "cryptopp/ripemd.h"
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include "cryptopp/md5.h"
+#include "cryptopp/files.h"
+#include "cryptopp/hex.h"
+#include "tui.h"
+#include "str.h"
 
+bool rmd160_ok(string distfile_filename, string portage_hash);
+bool sha1_ok(string distfile_filename, string portage_hash);
+bool sha256_ok(string distfile_filename, string portage_hash);
+bool sha512_ok(string distfile_filename, string portage_hash);
+bool whirlpool_ok(string distfile_filename, string portage_hash);
+bool md5_ok(string distfile_filename, string portage_hash);
+bool crc32_ok(string distfile_filename, string portage_hash);
+#endif

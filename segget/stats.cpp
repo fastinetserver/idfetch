@@ -24,54 +24,20 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __STATS_H__
-#define __STATS_H__
-
-#include <sys/time.h>
-#include "connection.h"
-#include "tui.h"
-#include "settings.h"
-using namespace std;
-
-class Tstats{
-	private:
-		ulong dld_size;
-		ulong dld_distfiles_count;
-		uint total_size;
-	public:
-		ulong total_bytes_per_last_interval;
-		struct timeval previous_time;
-		double last_time_interval;
-		uint pkg_count;
-		uint distfiles_count;
-		Tstats():
-			dld_size(0),
-			dld_distfiles_count(0),
-			total_size(0),
-			total_bytes_per_last_interval(0),
-			previous_time(),
-			last_time_interval(1),
-			pkg_count(0),
-			distfiles_count(0)
-			{};
-		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
-		ulong get_dld_size(){return dld_size;};
-		void inc_dld_distfiles_count();
-		ulong get_dld_distfiles_count(){return dld_distfiles_count;};
-		void inc_total_size(ulong more_bytes){ total_size+=more_bytes;};
-		ulong get_total_size(){return total_size;};
-		void show_totals();
-		void reset_previous_time();
-};
+#include "stats.h"
 
 void Tstats::inc_dld_distfiles_count(){
-	dld_distfiles_count++;
-	if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>distfiles_count)){
-		//delete pkg.list file;
-		if(remove((settings.pkg_list_dir+"/pkg.list").c_str()) != 0 )
-			error_log("Error in stats.cpp: inc_dld_distfiles_count(): Can't delete:"+settings.pkg_list_dir+"/pkg.list");
-		else
-			debug(settings.pkg_list_dir+"/pkg.list"+" deleted" );
+	try{
+		dld_distfiles_count++;
+		if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>distfiles_count)){
+			//delete pkg.list file;
+			if(remove((settings.pkg_list_dir+"/pkg.list").c_str()) != 0 )
+				error_log("Error in stats.cpp: inc_dld_distfiles_count(): Can't delete:"+settings.pkg_list_dir+"/pkg.list");
+			else
+				debug(settings.pkg_list_dir+"/pkg.list"+" deleted" );
+		}
+	}catch(...){
+		error_log("Error in stats.cpp: show_totals()");
 	}
 }
 
@@ -97,10 +63,8 @@ void Tstats::show_totals(){
 //			+" Secs:"+toString(now_timee.tv_sec)
 //			+" usecs:"+toString(now_timee.tv_usec)
 			);
-	}
-	catch(...)
-	{
-		error_log_no_msg("Error in stats.cpp: show_totals()");
+	}catch(...){
+		error_log("Error in stats.cpp: show_totals()");
 	}
 }
 
@@ -108,8 +72,6 @@ void Tstats::reset_previous_time(){
 	try{
 		gettimeofday(&previous_time,NULL);
 	}catch(...){
-		error_log_no_msg("Error in stats.cpp: reset_previous_time()");
+		error_log("Error in stats.cpp: reset_previous_time()");
 	}
 }
-Tstats stats;
-#endif
