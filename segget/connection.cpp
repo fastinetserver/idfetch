@@ -28,6 +28,7 @@
 void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
 	try{
 		segment=started_segment;
+		debug("Started connection for distfile"+segment->parent_distfile->name);
 		mirror_num=best_mirror_num;
 		network_num=network_number;
 		total_dld_bytes=0;
@@ -43,6 +44,7 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 
 void Tconnection::stop(uint connection_result){
 	try{
+		debug("Finished connection for distfile"+segment->parent_distfile->name+" Status"+toString(connection_result));
 		msg_clean_connection(connection_num);
 		active=false;
 		network_array[network_num].disconnect();
@@ -52,7 +54,7 @@ void Tconnection::stop(uint connection_result){
 		prnt_distfile->active_connections_num--;
 
 		Tmirror *Pcurr_mirror;
-		if (network_array[network_num].use_own_mirror_list_only_on){
+		if (network_array[network_num].network_mode==MODE_LOCAL){
 			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
 			prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
 //			find_mirror(strip_mirror_name(segment->url));
@@ -69,16 +71,16 @@ void Tconnection::stop(uint connection_result){
 			debug(toString(connection_result)+"]- Failed download "+segment->url);
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 			if (segment->try_num>=settings.max_tries){
-				segment->status=FAILED;
+				segment->status=SFAILED;
 				error_log("Segment:"+segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
 			}
-			else segment->status=WAITING;
+			else segment->status=SWAITING;
 		}else{
 			// no error => count this one and start new
 			log("Succesfully downloaded "+segment->file_name+" on connection#"+toString(connection_num));
 			debug(" Successful download "+segment->url);
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
-			segment->status=DOWNLOADED;
+			segment->status=SDOWNLOADED;
 			prnt_distfile->inc_dld_segments_count(segment);
 		};
 	}catch(...){

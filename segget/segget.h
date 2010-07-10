@@ -47,6 +47,7 @@
 #include "str.cpp"
 #include "tui.cpp"
 #include "utils.cpp"
+#include <pthread.h>
 
 using namespace std;
 

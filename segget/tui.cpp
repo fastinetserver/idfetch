@@ -29,14 +29,19 @@ extern Tsettings settings;
 
 const uint CONNECTION_LINES=5;
 
+bool msg_idle=true;
 void msg(uint y, uint x, string msg_text){
-	try{
-		move(y,x);
-		string ready_msg_text=msg_text+"                        ";
-		printw(ready_msg_text.c_str());
-		refresh();
-	}catch(...){
-		error_log_no_msg("Error in tui.cpp: msg()");
+	if (msg_idle){
+		msg_idle=false;
+		try{
+			move(y,x);
+			string ready_msg_text=msg_text+"                        ";
+			printw(ready_msg_text.c_str());
+			refresh();
+		}catch(...){
+			error_log_no_msg("Error in tui.cpp: msg()");
+		}
+		msg_idle=true;
 	}
 }
 

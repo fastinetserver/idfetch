@@ -26,6 +26,80 @@
 
 #include "distfile.h"
 
+//Make the necessary includes and set up the variables:
+using namespace std;
+
+Tdistfile_status Tdistfile::request(string msg)
+{
+	int sockfd;
+	int len;
+	struct sockaddr_in address;
+	int result;
+	//Create a socket for the client:
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+	//Name the socket, as agreed with the server:
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = inet_addr("127.0.0.1");
+	address.sin_port = htons(9797);
+	len = sizeof(address);
+
+	//Connect your socket to the server’s socket:
+	result = connect(sockfd, (struct sockaddr *)&address, len);
+	if(result == -1) {
+		error_log("Can't connect to proxy-fetcher");
+		return DPROXY_FAILED;
+	}
+	if (msg.length()>90000){return DPROXY_REJECTED;};
+	char send_buffer[100000];
+//	char recv_buffer[256];
+	strcpy(send_buffer,msg.c_str());
+	//You can now read and write via sockfd:
+	int i=write(sockfd, send_buffer, strlen(send_buffer));
+	i++;
+/*
+	fd_set readfds, testfds;
+	FD_ZERO(&readfds);
+	FD_SET(sockfd, &readfds);
+	testfds = readfds;
+
+	result = select(FD_SETSIZE, &testfds, (fd_set *)0,
+	(fd_set *)0, (struct timeval *) 0);
+
+	int nread;
+	ioctl(sockfd, FIONREAD, &nread);
+
+	if(nread == 0) {
+		close(sockfd);
+	//                       FD_CLR(sockfd, &readfds);
+	///                       printf("removing client on fd %d\n", sockfd);
+	}else{
+		read(sockfd, recv_buffer, nread);
+	}
+*/
+	close(sockfd);
+	return DPROXY_QUEUED;
+}
+
+bool Tdistfile::allows_new_actions(){
+//	if (downloaded) return false;
+//	else return true;
+//	int time_left=0;
+	if (status==DDOWNLOADED) return false;
+//	if (((status==DPROXY_QUEUED) || (status==DPROXY_DOWNLOADING)) && (time_left<100)) return false;
+//oterwise allow connections
+//	DNEW,
+//	D_NOT_PROXY_REQUESTED,
+//	DPROXY_REJECTED,
+//	DPROXY_FAILED,
+//	DPROXY_DOWNLOADED,
+//	DWAITING,
+//	DDOWNLOADING,
+//	DDOWNLOADED,
+//	DFAILED
+	return true;
+}
+
 void Tdistfile::init(){
 	try{
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
@@ -62,8 +136,10 @@ bool Tdistfile::check_if_dld(){
 		//debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
 		filec.close();
 		if (d_size==size){
-			downloaded=true;
+			status=DDOWNLOADED;
+//			downloaded=true;
 			num=++stats.distfiles_count;
+			stats.inc_total_size(size);
 			stats.inc_dld_distfiles_count();
 			stats.inc_dld_size(size);
 			debug("Distfile:"+name+" already downloaded");
@@ -86,8 +162,8 @@ void Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
 		RMD160=json_object_get_string(json_object_object_get(json_obj_distfile,"RMD160"));
 		SHA1=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA1"));
 		SHA256=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA256"));
-
 		if (not(check_if_dld())){
+			json_data=json_object_to_json_string(json_obj_distfile);
 			split_into_segments();
 			load_url_list(json_object_object_get(json_obj_distfile,"url_list"));
 		}
@@ -120,7 +196,7 @@ void Tdistfile::split_into_segments(){
 				debug("segment_range:"+toString(range_end));
 		};
 		dn_segments[segment_num].set_segment(this, segment_num, name, segment_size, range_end);
-		if (dn_segments[segment_num].status==DOWNLOADED)
+		if (dn_segments[segment_num].status==SDOWNLOADED)
 			inc_dld_segments_count(&dn_segments[segment_num]);
 		}
 	}catch(...){
@@ -161,6 +237,7 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 		if (Pbest_mirror){
 			debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
 			Pbest_mirror->start();
+			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return 0;
 		}
@@ -193,6 +270,7 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 		if (best_mirror_num!=-1){
 			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].benchmarked_mirror_list[best_mirror_num].url);
 			network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
+			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return 0;
 		}
@@ -208,7 +286,6 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 
 int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	try{
-		active_connections_num++;
 		for (uint cur_network_priority=10; cur_network_priority>0; cur_network_priority--){
 			debug("cur_network_priority="+toString(cur_network_priority));
 			//choose network
@@ -220,41 +297,62 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 //
 //----------------------------------------------------------------------------------------------------------
 			int best_local_network_num=-1;
-			int best_network_num=-1;
+			int best_proxy_fetcher_network_num=-1;
+			int best_remote_network_num=-1;
 			bool allow_remote_mirrors=true;
 			for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 				//if network priority set then it's active
 				if (network_array[network_num].priority){
 					if (network_array[network_num].priority==cur_network_priority){
 							debug("        network_priority="+toString(network_array[network_num].priority));
-							if (network_array[network_num].use_own_mirror_list_only_on){
-								if (network_array[network_num].has_free_connections()){
-									if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
-//									debug("             Allowed network#:"+toString(network_num));
-										if ((best_local_network_num==-1)
-										or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
-												best_local_network_num=network_num;
-												debug("             Replace best LOCAL network to network#:"+toString(network_num));
-										}
-									}
-								}else{
-									if (network_array[network_num].only_local_when_possible){
+							switch (network_array[network_num].network_mode){
+								case MODE_LOCAL:{
+									if (network_array[network_num].has_free_connections()){
 										if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
-											allow_remote_mirrors=false;
-											debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
+//										debug("             Allowed network#:"+toString(network_num));
+											if ((best_local_network_num==-1)
+											or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+													best_local_network_num=network_num;
+													debug("             Replace best LOCAL network to network#:"+toString(network_num));
+											}
+										}
+									}else{
+										if (network_array[network_num].only_local_when_possible){
+											if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
+												allow_remote_mirrors=false;
+												debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
+											}
 										}
 									}
+									break;
 								}
-							}else{
+								case MODE_PROXY_FETCHER:{
+									//replace this one by does_not_reject_connections
+//									if (network_array[network_num].has_free_connections()){
+										if 
+										((best_proxy_fetcher_network_num==-1)
+//											or
+//										(network_array[best_proxy_fetcher_network_num].active_connections_num>network_array[network_num].active_connections_num)
+										 ){
+											best_proxy_fetcher_network_num=network_num;
+											debug("             Replace best_proxy_fetcher_network_num to network#:"+toString(network_num));
+											debug("             Replace best_proxy_fetcher_network_num to network#:"+toString(best_proxy_fetcher_network_num));
+										}
+//									}
+									break;
+								}
+								case MODE_REMOTE:{
 									if (network_array[network_num].has_free_connections()){
 										if 
-										((best_network_num==-1)
+										((best_remote_network_num==-1)
 											or
-										(network_array[best_network_num].active_connections_num>network_array[network_num].active_connections_num)){
-											best_network_num=network_num;
-											debug("             Replace best network to network to network#:"+toString(network_num));
+										(network_array[best_remote_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+											best_remote_network_num=network_num;
+											debug("             Replace best_remote_network_num to network#:"+toString(network_num));
 										}
 									}
+									break;
+								}
 							}
 							//work with network
 					}
@@ -264,23 +362,57 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 				//best network has been found
 									//work with network
 				debug("             So best LOCAL network is network#:"+toString(best_local_network_num));
-				int res=choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
-				return res;
+				return choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
 			}else{
-				if (allow_remote_mirrors){ //since all local failed, go to remote
-					// remote_mirrors_go_second
-					if (best_network_num!=-1){
-						//best network has been found
-										//work with network
-						debug("             So best network is network#:"+toString(best_network_num));
-						return choose_best_mirror(cm, connection_num, best_network_num, seg_num);
+//DDOWNLOADED) return false;
+//DPROXY_QUEUED) || (status==DPROXY_DOWNLOADING)) && (time_left<100)) return false;
+	//oterwise allow connections
+//	DNEW,
+//	D_NOT_PROXY_REQUESTED,
+//	DPROXY_REJECTED,
+//	DPROXY_FAILED,
+//	DWAITING,
+//	DDOWNLOADING,
+//	DDOWNLOADED,
+//	DFAILED
+				if (allow_remote_mirrors){ //since all local failed, go to proxy_fetcher
+					debug("Remote mirrors are allowed");
+					if (best_proxy_fetcher_network_num != -1){
+						if (status == DPROXY_QUEUED){
+							return 1;
+						}else{
+							// request from proxy fethcer
+							status=request(json_data);
+							debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
+							if (status==DPROXY_DOWNLOADED){
+								// start download from the proxy_fetcher
+								debug("             So best proxy_fetcher_network is network#:"+toString(best_proxy_fetcher_network_num));
+// BEWARE -- CORRECT FOLLOWING LINES !!!!!!!!!!!
+							// start download from proxy_fether mirrors
+//							return choose_best_mirror(cm, connection_num, best_remote_network_num, seg_num);
+							}
+						//return - don't switch to low priority networks
+							return 0;
+						}
+					}else{
+						// remote_mirrors_go_third
+						if (best_remote_network_num!=-1){
+							//best network has been found
+											//work with network
+							debug("             So best_proxy_fetcher_failed num="+toString(best_proxy_fetcher_network_num));
+							debug("             So best network is network#:"+toString(best_remote_network_num));
+							return choose_best_mirror(cm, connection_num, best_remote_network_num, seg_num);
+						}
 					}
 				}else{
-					debug("Restricted to local mirrors only when possible");
+					debug("NOT all local mirrors have failed - restricted to local mirrors only.");
+					//return - don't switch to low priority networks
+					return 100;
 				}
 			}
 		}
-		return 0;
+		// haven't found anything suitable
+		return 120;
 	}catch(...){
 		error_log("Error: distfile.cpp: provide_segment()");
 		return 1;
@@ -374,6 +506,7 @@ int Tdistfile::combine_segments(){
 			distfile_file.open(distfile_path.c_str(),ofstream::binary|ios::trunc);
 		}catch(...){
 			error_log("Error: distfile.cpp: combine_segments(): opening distfile:"+distfile_path);
+			status=DFAILED;
 			return 1;
 		}
 		char * buffer;
@@ -387,6 +520,7 @@ int Tdistfile::combine_segments(){
 					segment_file.open((settings.segments_dir+"/"+dn_segments[seg_num].file_name).c_str(),ifstream::binary);
 				}catch(...){
 					error_log("Error: distfile.cpp: combine_segments(): opening segment:"+settings.segments_dir+"/"+dn_segments[seg_num].file_name);
+					status=DFAILED;
 					return 2;
 				}
 				try{
@@ -404,13 +538,15 @@ int Tdistfile::combine_segments(){
 					segment_file.close();
 				}catch(...){
 					error_log("Error: distfile.cpp: combine_segments(): segment is open, but error occured while reading it:"+settings.segments_dir+"/"+dn_segments[seg_num].file_name);
-						return 3;
+					status=DFAILED;
+					return 3;
 				}
 				try{
 					// write to outfile
 					distfile_file.write (buffer,cur_seg_size);
 				}catch(...){
 					error_log("Error: distfile.cpp: combine_segments(): distfile is open, but error occured while writing into it:"+settings.distfiles_dir+"/"+name);
+					status=DFAILED;
 					return 4;
 				}
 				// release dynamically-allocated memory
@@ -426,6 +562,7 @@ int Tdistfile::combine_segments(){
 			log("Distfile "+name+" has been combined");
 		}catch(...){
 			error_log("Error in distfile.cpp: combine_segments() for distfile:"+settings.distfiles_dir+"/"+name);
+			status=DFAILED;
 			return 5;
 		}
 		try{
@@ -434,6 +571,7 @@ int Tdistfile::combine_segments(){
 			else{
 				log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
+				status=DFAILED;
 				return 10;
 			}
 	
@@ -442,6 +580,7 @@ int Tdistfile::combine_segments(){
 			else{
 				log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
+				status=DFAILED;
 				return 11;
 			}
 	
@@ -450,8 +589,10 @@ int Tdistfile::combine_segments(){
 			else{
 				log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
 				error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
+				status=DFAILED;
 				return 12;
 			}
+			status=DDOWNLOADED;
 			if (settings.provide_mirror_dir!="none"){
 				symlink_distfile_to_provide_mirror_dir();
 			}

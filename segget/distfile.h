@@ -52,9 +52,38 @@
 #include "network.h"
 #include "networkbroker.h"
 
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string>
+#include <string.h>
+
+
+//#include "client.cpp"
+
 using namespace std;
 
 typedef unsigned int uint;
+
+enum Tdistfile_status{
+	DNEW,
+	D_NOT_PROXY_REQUESTED,
+	DPROXY_REJECTED,
+	DPROXY_QUEUED,
+	DPROXY_DOWNLOADING,
+	DPROXY_DOWNLOADED,
+	DPROXY_FAILED,
+	DWAITING,
+	DDOWNLOADING,
+	DDOWNLOADED,
+	DFAILED
+};
 
 class Tdistfile{
 	private:
@@ -63,7 +92,9 @@ class Tdistfile{
 		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 	public:
 		Tnetwork_distfile_broker network_distfile_brokers_array[MAX_NETWORKS];
-		bool downloaded;
+		string json_data;
+//		bool downloaded;
+		Tdistfile_status status;
 		uint active_connections_num;
 		string *url_list;
 		uint url_num;
@@ -80,7 +111,9 @@ class Tdistfile{
 		uint segment_size;
 		Tdistfile():
 			dld_segments_count(0),
-			downloaded(0),
+			json_data(""),
+//			downloaded(0),
+			status(DNEW),
 			active_connections_num(0),
 			url_list(0),
 			url_num(0),
@@ -99,7 +132,9 @@ class Tdistfile{
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
 		~Tdistfile();
+		Tdistfile_status request(string msg);
 		void init();
+		bool allows_new_actions();
 		void load_distfile_from_json(json_object* json_obj_distfile);
 		void load_url_list(json_object* json_array_distfile_urllist);
 		void split_into_segments();

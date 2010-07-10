@@ -38,6 +38,10 @@ using namespace std;
 
 #define MAX_NETWORKS 10
 
+#define MODE_REMOTE 0
+#define MODE_PROXY_FETCHER 1
+#define MODE_LOCAL 2
+
 class Tnetwork{
 	static uint network_count;
 	private:
@@ -48,6 +52,10 @@ class Tnetwork{
 	//network
 		uint network_num;
 		uint priority;
+	//mode
+		ulong network_mode;
+	//network_bind
+		string bind_interface;
 	//connections
 		ulong max_connections;
 		ulong connection_timeout;
@@ -57,7 +65,6 @@ class Tnetwork{
 		ulong low_connection_speed_time;
 		ulong max_connection_speed;
 		ulong current_speed_time_interval_msecs;
-		string bind_interface;
 	//user-data
 		string user_agent;
 	//proxy
@@ -67,7 +74,7 @@ class Tnetwork{
 		string proxy_user;
 		string proxy_password;
 	//mirrors
-		bool use_own_mirror_list_only_on;
+//		bool use_own_mirror_list_only_on;
 		bool only_local_when_possible;
 		Tnetwork():
 			benchmarked_mirror_list(),
@@ -75,6 +82,10 @@ class Tnetwork{
 		//network
 			network_num(network_count),
 			priority(0),
+		//mode
+			network_mode(0),
+		//network_bind
+			bind_interface("none"),
 		//connections
 			max_connections(6),
 			connection_timeout(15),
@@ -84,7 +95,6 @@ class Tnetwork{
 			low_connection_speed_time(10),
 			max_connection_speed(0),
 			current_speed_time_interval_msecs(1000),
-			bind_interface("none"),
 		//user-data
 			user_agent("segget"),
 		//proxy
@@ -94,7 +104,7 @@ class Tnetwork{
 			proxy_user("none"),
 			proxy_password("none"),
 		//mirrors
-			use_own_mirror_list_only_on(0),
+//			use_own_mirror_list_only_on(0),
 			only_local_when_possible(1)
 			{network_count++;};
 		void init(uint priority_value);

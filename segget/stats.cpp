@@ -63,6 +63,7 @@ void Tstats::show_totals(){
 //			+" Secs:"+toString(now_timee.tv_sec)
 //			+" usecs:"+toString(now_timee.tv_usec)
 			);
+		reset_previous_time();
 	}catch(...){
 		error_log("Error in stats.cpp: show_totals()");
 	}

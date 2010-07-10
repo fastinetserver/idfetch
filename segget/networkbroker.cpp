@@ -28,7 +28,7 @@
 void Tnetwork_distfile_broker::init(ulong network_number){
 	try{
 		network_num=network_number;
-		if (network_array[network_num].use_own_mirror_list_only_on){
+		if (network_array[network_num].network_mode==MODE_LOCAL){
 			// create flags for each mirror from this network
 			mirror_fails_vector.insert(mirror_fails_vector.begin(),network_array[network_num].benchmarked_mirror_list.size(),false);
 		}

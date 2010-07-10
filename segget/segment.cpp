@@ -26,6 +26,15 @@
 
 #include "segment.h"
 
+string statusToString(Tsegment_status the_status){
+	switch (the_status){
+		case SWAITING:return "SWAITING";
+		case SDOWNLOADING:return "SDOWNLOADING";
+		case SDOWNLOADED:return "SDOWNLOADED";
+		case SFAILED:return "SFAILED";
+		default :return "UNKNOWN STATUS";
+	}
+}
 void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
 	try{
 		parent_distfile=prnt_distfile;
@@ -44,7 +53,7 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 			debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
 			file.close();
 			if (downloaded_size==segment_size){
-				status=DOWNLOADED;
+				status=SDOWNLOADED;
 				debug("seg:"+toString(seg_num)+" Downloaded");
 			}
 			else{
@@ -58,8 +67,8 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 }
 void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, uint mirror_num){
 	try{
-		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
-		if (network_array[network_num].use_own_mirror_list_only_on){
+//		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
+		if (network_array[network_num].network_mode==MODE_LOCAL){
 			url=network_array[network_num].benchmarked_mirror_list[mirror_num].url+parent_distfile->name;
 			debug("  URL:"+url);
 		}else{
@@ -67,7 +76,7 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num,
 		}
 		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
 		segments_in_progress[con_num]=this;
-		status=DOWNLOADING;
+		status=SDOWNLOADING;
 		downloaded_bytes=0;
 		connection_num=con_num;
 //		connection_array[con_num].start(network_num);
@@ -177,11 +186,10 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 			error_log("Can't write segment file:"+segment->file_name);
 		}
 		connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
-		ulong time_diff_msecs=time_left_from(stats.previous_time);
-		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
-			show_progress(time_diff_msecs);
-			stats.reset_previous_time();
-		};
+//		ulong time_diff_msecs=time_left_from(stats.previous_time);
+//		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
+//			show_progress(time_diff_msecs);
+//		};
 	}catch(...){
 		error_log("Error in segment.cpp: write_data()");
 		return 0;

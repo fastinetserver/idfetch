@@ -27,6 +27,7 @@
 #include "segget.h"
 
 int load_pkgs(){
+	debug("uuuuuuuuuuuuuummmmmmmmmmmmmmmm");
 	try{
 		
 		ifstream json_pkg_list_file;
@@ -102,27 +103,37 @@ int choose_segment(uint connection_num){
 		while (pkg_num<stats.pkg_count){
 //			debug("pkg_num:"+toString(pkg_num));
 			while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
-				if (not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->downloaded)){
+				if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->allows_new_actions()){
+					debug("Distfile "+Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->name+" allows new connections");
 //					debug("	distfile_num:"+toString(distfile_num));
-					if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile)
+					if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile){
+						debug("max_connection limit has not been reached");
+						debug("segment_num:"+toString(segment_num));
+						debug("segment_count:"+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count));
 						while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
+							debug("segment_num:"+toString(segment_num));
 //							debug("		segment_num:"+toString(segment_num));
 							//	segments_in_progress[connection_num]=
 							//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-							if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==WAITING){
-								Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num);
-								return 0; // success segment.max_tries has not been reached
+							debug("Let's get segment status"+statusToString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
+							if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
+								if ( ! Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+									return 0; // success
+								};
+							}else{
+								debug("status is not SWAITING - go for the next segment");
 							}
-							else
-									segment_num++; // segment already downloaded/downloading => go for the next one
+							// haven't managed to provide this segment, go for the next one
+							segment_num++;
 						}
-						else
+					}else{
 							debug("	distfile "+Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->name+" has "
 							+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num)
 							+" connections => choosing another distfile.");
-					segment_num=0;
+					}
 				}
 				distfile_num++;
+				segment_num=0;
 			}
 			distfile_num=0;
 			pkg_num++;
@@ -158,65 +169,90 @@ int download_pkgs(){
 			return EXIT_FAILURE;
 		}
 
-		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
-			if (choose_segment(connection_num))
-				break;
-		};
-		while (U) {
-			while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
-			if (U) {
-				FD_ZERO(&R);
-				FD_ZERO(&W);
-				FD_ZERO(&E);
-				if (curl_multi_fdset(cm, &R, &W, &E, &M)) {
-					error_log("Error: curl_multi_fdset");
-//					fprintf(stderr, "E: curl_multi_fdset\n");
-					return EXIT_FAILURE;
-				}
-				if (curl_multi_timeout(cm, &L)) {
-					error_log("Error: curl_multi_timeout");
-//					fprintf(stderr, "E: curl_multi_timeout\n");
-					return EXIT_FAILURE;
-				}
-				if (L == -1)
-					L = 100;
-				if (M == -1) {
-					#ifdef WIN32
-					Sleep(L);
-					#else
-						sleep(L / 1000);
-					#endif
-				} else {
-					T.tv_sec = L/1000;
-					T.tv_usec = (L%1000)*1000;
-					if (0 > select(M+1, &R, &W, &E, &T)) {
-//						fprintf(stderr, "E: select(%i,,,,%li): %i: %s\n",
-						error_log("Error: select ("+toString(M+1)+","+toString(L)+"):"+toString(errno)+": "+strerror(errno));
+//		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
+//			if ( ! connection_array[connection_num].active){
+//				if (choose_segment(connection_num))
+//					break;
+//			}
+//		};
+		bool keep_running_flag=true;
+		while (keep_running_flag){
+			U=1;
+			while (U) {
+				// Use free connections to download segments connections
+				for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
+					debug("connection_num:"+toString(connection_num));
+					if ( ! connection_array[connection_num].active){
+//						if (
+						debug("connection is not active - choosing segment");
+						choose_segment(connection_num);
+//						    )
+//							break;
+					}
+					else{
+						debug("connection is active");
+					}
+				};
+				while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
+				if (U) {
+					FD_ZERO(&R);
+					FD_ZERO(&W);
+					FD_ZERO(&E);
+					if (curl_multi_fdset(cm, &R, &W, &E, &M)) {
+						error_log("Error: curl_multi_fdset");
+//						fprintf(stderr, "E: curl_multi_fdset\n");
 						return EXIT_FAILURE;
+					}
+					if (curl_multi_timeout(cm, &L)) {
+						error_log("Error: curl_multi_timeout");
+//						fprintf(stderr, "E: curl_multi_timeout\n");
+						return EXIT_FAILURE;
+					}
+					if (L == -1)
+						L = 100;
+					if (M == -1) {
+						#ifdef WIN32
+						Sleep(L);
+						#else
+							sleep(L / 1000);
+						#endif
+					} else {
+						T.tv_sec = L/1000;
+						T.tv_usec = (L%1000)*1000;
+						if (0 > select(M+1, &R, &W, &E, &T)) {
+//							fprintf(stderr, "E: select(%i,,,,%li): %i: %s\n",
+							error_log("Error: select ("+toString(M+1)+","+toString(L)+"):"+toString(errno)+": "+strerror(errno));
+							return EXIT_FAILURE;
+						}
+					}
+				}
+				while ((msg = curl_multi_info_read(cm, &Q))) {
+					if (msg->msg == CURLMSG_DONE) {
+						Tsegment *current_segment;
+						CURL *e = msg->easy_handle;
+						curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
+						uint connection_result=msg->data.result;
+						string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
+						msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
+						curl_multi_remove_handle(cm, e);
+	
+						connection_array[current_segment->connection_num].stop(connection_result);
+	
+						if (not choose_segment(current_segment->connection_num)) {
+							U++; // just to prevent it from remaining at 0 if there are more URLs to get
+						};
+						stats.show_totals();
+						curl_easy_cleanup(e);
+					}else {
+						error_log("ERROR: CURLMsg: "+msg->msg);
 					}
 				}
 			}
-			while ((msg = curl_multi_info_read(cm, &Q))) {
-				if (msg->msg == CURLMSG_DONE) {
-					Tsegment *current_segment;
-					CURL *e = msg->easy_handle;
-					curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-					uint connection_result=msg->data.result;
-					string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
-					msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
-					curl_multi_remove_handle(cm, e);
-
-					connection_array[current_segment->connection_num].stop(connection_result);
-
-					if (not choose_segment(current_segment->connection_num)) {
-						U++; // just to prevent it from remaining at 0 if there are more URLs to get
-					};
-					stats.show_totals();
-					curl_easy_cleanup(e);
-				}else {
-					msg_error("ERROR: CURLMsg: "+msg->msg);
-				}
-			}
+			debug("bbbbbblllllllllllllaaaaaaaaaaaaa");
+			// nothing to download - wait 5 secs and check upper_proxy_fetchers again
+			// later will be replaced by server_waiting_for_incoming connections and new tasks
+			// with timeout to check downloads from upper proxy fetcher
+			sleep(1);
 		}
 		curl_multi_cleanup(cm);
 		curl_global_cleanup();
@@ -227,6 +263,8 @@ int download_pkgs(){
 		return EXIT_FAILURE;
 	}
 }
+
+void *print_message_function( void *ptr );
 
 int main()
 {
@@ -263,6 +301,31 @@ int main()
 		catch(...){
 			//error while showing stats
 		}
+		pthread_t thread1;
+//			, thread2;
+//		char *message1 = "Thread 1";
+//		char *message2 = "Thread 2";
+		int iret1;
+//		int iret2;
+
+    /* Create independent threads each of which will execute function */
+
+		iret1 = pthread_create( &thread1, NULL, print_message_function, (void*) NULL);
+//		iret2 = pthread_create( &thread2, NULL, print_message_function, (void*) message2);
+
+		/* Wait till threads are complete before main continues. Unless we  */
+		/* wait we run the risk of executing an exit which will terminate   */
+		/* the process and all threads before the threads have completed.   */
+
+	debug("oooooooooooooo111111111111111111");
+//		pthread_join( thread1, NULL);
+	debug("oooooooooooooo2222222222222222222222");
+//		pthread_join( thread2, NULL); 
+
+//     printf("Thread 1 returns: %d\n",iret1);
+//     printf("Thread 2 returns: %d\n",iret2);
+
+		
 		try{
 			download_pkgs();
 		}
@@ -282,4 +345,24 @@ int main()
 		//error while ending curses
 	}
 	return 0;
+}
+
+void *print_message_function(void *ptr){
+//	char *message;
+	char * args;
+	args = (char *) ptr;
+	ulong i=0;
+	while (true){
+		ulong time_diff_msecs=time_left_from(stats.previous_time);
+		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
+			show_progress(time_diff_msecs);
+		};
+		log("Thread:"+toString(i));
+			//haven't downloaded anything - anyway, show totals
+			stats.show_totals();
+		sleep(1);
+		i++;
+	}
+	return 0;
+//     printf("%s \n", message);
 }

@@ -41,19 +41,19 @@ class Tconnection{
 		uint connection_num;
 		uint network_num;
 		uint mirror_num;
-		bool active;
 		ulong total_dld_bytes;
 		ulong bytes_per_last_interval;
 	public:
+		bool active;
 		timeval start_time;
 		Tsegment *segment;
 		Tconnection():
 			connection_num(total_connections),
 			network_num(0),
 			mirror_num(0),
-			active(0),
 			total_dld_bytes(0),
 			bytes_per_last_interval(0),
+			active(0),
 			start_time(),
 			segment(0){total_connections++;};
 		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);

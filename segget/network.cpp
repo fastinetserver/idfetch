@@ -63,6 +63,7 @@ void Tnetwork::init(uint priority_value){
 	try{
 		priority=priority_value;
 		Tconfig conf("network"+toString(network_num)+".conf");
+		conf.set(network_mode,						"mode",				"network_mode",0,2);
 		conf.set(bind_interface,					"network_bind",		"bind_interface");
 		conf.set(max_connections,					"network_connections",		"max_connections",1,MAX_CONNECTS);
 		conf.set(connection_timeout,				"network_connections",		"connection_timeout",1,1000);
@@ -80,9 +81,9 @@ void Tnetwork::init(uint priority_value){
 		conf.set(proxy_user,						"network_proxy",			"proxy_user");
 		conf.set(proxy_password,					"network_proxy",			"proxy_password");
 
-		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
+//		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
 
-		if (use_own_mirror_list_only_on){
+		if (network_mode==MODE_LOCAL){
 			conf.set(only_local_when_possible,			"network_mirrors",			"only_local_when_possible");
 			load_mirror_list();
 			log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));

@@ -48,7 +48,7 @@ extern Tsettings settings;
 unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
-enum Tstatus{WAITING, DOWNLOADING, DOWNLOADED, FAILED};
+enum Tsegment_status{SWAITING, SDOWNLOADING, SDOWNLOADED, SFAILED};
 
 class Tsegment{
 	private:
@@ -56,7 +56,7 @@ class Tsegment{
 		char* urllist;
 	public:
 		string file_name;
-		Tstatus status;
+		Tsegment_status status;
 		uint try_num;
 		Tdistfile* parent_distfile;
 		uint connection_num;
@@ -70,7 +70,7 @@ class Tsegment{
 			easyhandle(0),
 			urllist(0),
 			file_name(""),
-			status(WAITING),
+			status(SWAITING),
 			try_num(0),
 			parent_distfile(0),
 			connection_num(0),
