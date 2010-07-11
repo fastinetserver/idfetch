@@ -10,22 +10,105 @@
 #include <string>
 #include <string.h>
 #include <ncurses.h>
-#include "tui.h"
-#include "tui.cpp"
 #include "str.cpp"
 
 #define BUFFER_SIZE 1000
 
 using namespace std;
 
+WINDOW * screen;
+int max_x, max_y;
+int mx;
+
+
+void show_lines();
+
+const uint CONNECTION_LINES=5;
+const uint MAX_LINES=200;
+string screenlines[MAX_LINES];
+string status_str;
+bool msg_idle=true;
+void msg_line(uint y, string msg_text){
+	if (msg_idle){
+		msg_idle=false;
+		try{
+			msg_text=msg_text+"                                                                                                                                                         ";
+			mvaddstr(y,1,msg_text.substr(0,max_x-2).c_str());
+//			mvwprintw(screen,y,1,ready_msg_text.c_str());
+			wrefresh(screen);
+		}catch(...){
+//			error_log_no_msg("Error in tui.cpp: msg()");
+		}
+		msg_idle=true;
+	}
+}
+void msg_short(uint y, uint x, string msg_text){
+	if (msg_idle){
+		msg_idle=false;
+		try{
+			mvaddstr(y,x,msg_text.c_str());
+			wrefresh(screen);
+		}catch(...){
+//			error_log_no_msg("Error in tui.cpp: msg()");
+		}
+		msg_idle=true;
+	}
+}
+void set_status(string str){
+ status_str=str; 
+ show_lines();
+}
+
+void msg_status(){
+	if(has_colors())
+	{
+		start_color();			/* Start color 			*/
+		init_pair(1, COLOR_WHITE, COLOR_BLUE);
+		init_pair(2, COLOR_RED, COLOR_BLUE);
+		attron(COLOR_PAIR(2));
+		msg_short(max_y-1,2,status_str);
+//		attroff(COLOR_PAIR(2));
+		attron(COLOR_PAIR(1));
+	}else{
+		msg_short(max_y-1,2,status_str);
+	}
+}
+
+void show_lines(){
+	clear();
+	box(screen, ACS_VLINE, ACS_HLINE);
+	for (int y=1; y<max_y-1; y++){
+		msg_line(y,screenlines[y]);
+	}
+	msg_status();
+}
+
+void set_line(uint y, string msg_text){
+  screenlines[y]=msg_text;
+}
+
 int main()
 {
 	try{
 		try{
 			//init curses
-			initscr();
+			screen=initscr();
 			curs_set(0);
+			noecho();
 			refresh();
+//			WINDOW * spad;
+//			spad=newpad(100,100);
+//			box(spad, ACS_VLINE, ACS_HLINE);
+//			mvwprintw(spad,1,1,"--wwwwwwwwwwwooooooooooowowwwwwwwwww --------");
+//			wrefresh(spad);
+
+			
+			
+//			getch();
+			
+//			screen = newwin(max_y, 0, 0, 0);
+			getmaxyx(screen,max_y,max_x);
+			wrefresh(screen);
 		}catch(...)
 		{
 			//error while init curses
@@ -52,14 +135,14 @@ int main()
 				//Connect your socket to the server’s socket:
 				result = connect(sockfd, (struct sockaddr *)&address, len);
 				if(result == -1) {
-				      msg(0,0,"Error connectin to segget daemon. Attempt:"+toString(attempt_num)+" Result:"+toString(result)+" Waiting for 1 sec, before reconnect");
+				      set_status("[Connecting... Attempt:"+toString(attempt_num)+". Waiting for 1 sec, before next reconnect.]");
 				      close(sockfd);
 				      attempt_num++;
 				      sleep(1);
 				}
 			      }
 			      
-			      msg(35,70,"Connected");
+			      set_status("[Connected]");
 			      fd_set readfds, testfds;
 
 			      FD_ZERO(&readfds);
@@ -86,10 +169,10 @@ int main()
 						      first_part=recv_msg.substr(0,recv_msg.find("<.>"));
 						      
 						      recv_msg=recv_msg.substr(recv_msg.find("<.>")+3,recv_msg.npos);
-						      uint x=0;
 						      uint y=atoi(first_part.substr(0,first_part.find("<s>")).c_str());
 						      msg_text=first_part.substr(first_part.find("<s>")+3,first_part.npos);
-						      msg(y, x, msg_text);
+						      set_line(y+1, msg_text);
+						      show_lines();
 					      }
 				      };
 			      }
