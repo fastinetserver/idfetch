@@ -24,43 +24,35 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
+#ifndef __UI_SERVER_H__
+#define __UI_SERVER_H__
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
-#include <signal.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include "checksum.cpp"
-#include "config.cpp"
-#include "connection.cpp"
-#include "distfile.cpp"
-#include "mirror.cpp"
-#include "network.cpp"
-#include "networkbroker.cpp"
-#include "pkg.cpp"
-#include "segment.cpp"
-#include "settings.cpp"
-#include "stats.cpp"
-#include "str.cpp"
-#include "tui.cpp"
-#include "utils.cpp"
-#include <pthread.h>
-#include "ui_server.cpp"
+#include <string.h>
 
 using namespace std;
 
-Tpkg **Ppkg_array;
+#define MAX_BIND_ATTEMPTS 5
 
-CURLM *cm;
+class Tui_server{
+	public:
+		uint server_sockfd;
+		uint max_fd_num;
+		fd_set readfds, testfds;
+		void init();
+		ulong send(uint y, string msg);
+};
 
-int load_pkgs();
-void show_pkgs();
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main();
+Tui_server ui_server;
+
+void *run_ui_server(void * ptr);
 
 #endif

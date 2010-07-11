@@ -24,43 +24,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
-
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include "checksum.cpp"
-#include "config.cpp"
-#include "connection.cpp"
-#include "distfile.cpp"
-#include "mirror.cpp"
-#include "network.cpp"
-#include "networkbroker.cpp"
-#include "pkg.cpp"
-#include "segment.cpp"
-#include "settings.cpp"
-#include "stats.cpp"
-#include "str.cpp"
-#include "tui.cpp"
-#include "utils.cpp"
-#include <pthread.h>
-#include "ui_server.cpp"
+#ifndef __TUI_H__
+#define __TUI_H__
 
 using namespace std;
 
-Tpkg **Ppkg_array;
-
-CURLM *cm;
-
-int load_pkgs();
-void show_pkgs();
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main();
-
+void msg_total(string msg_text);
 #endif

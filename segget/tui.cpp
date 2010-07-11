@@ -34,6 +34,7 @@ void msg(uint y, uint x, string msg_text){
 	if (msg_idle){
 		msg_idle=false;
 		try{
+			ui_server.send(y,msg_text);
 			move(y,x);
 			string ready_msg_text=msg_text+"                        ";
 			printw(ready_msg_text.c_str());
@@ -144,7 +145,15 @@ void log(string log_msg_text){
 }
 void debug(string debug_msg_text){
 	try{
-		msg(settings.max_connections*CONNECTION_LINES+2,0, "DEBUG:"+debug_msg_text);
+//		msg(settings.max_connections*CONNECTION_LINES+2,0, "DEBUG:"+debug_msg_text);
+		debug_no_msg(debug_msg_text);
+	}catch(...){
+		error_log("Error in tui.cpp: debug()");
+	}
+}
+
+void debug_no_msg(string debug_msg_text){
+	try{
 		ofstream file;
 		file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{

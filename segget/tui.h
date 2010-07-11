@@ -27,10 +27,11 @@
 #ifndef __TUI_H__
 #define __TUI_H__
 #include "settings.h"
+#include "ui_server.h"
 
 using namespace std;
-void msg_total(string msg_text);
 
+void msg_total(string msg_text);
 void msg(uint y, uint x, string msg_text);
 void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text);
 void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed);
@@ -41,6 +42,7 @@ void msg_error(string error_text);
 void msg_total(string msg_text);
 
 void log(string log_msg_text);
+void debug_no_msg(string debug_msg_text);
 void debug(string debug_msg_text);
 void error_log(string error_msg_text);
 void error_log_no_msg(string error_msg_text);

@@ -266,41 +266,7 @@ int download_pkgs(){
 
 void *print_message_function( void *ptr );
 
-int main()
-{
-	try{
-		prev_time=time((time_t *)NULL);
-		try{
-			//init curses
-			initscr();
-			curs_set(0);
-			refresh();
-		}
-		catch(...)
-		{
-			//error while init curses
-		}
-		try{
-			//load settings
-				settings.init();
-		}
-		catch(...)
-		{
-			//error while loading settings
-		}
-		try{
-			load_pkgs();
-		}
-		catch(...){
-			//error while loading pkgs
-		}
-		try{
-			//show_pkgs();
-			stats.show_totals();
-		}
-		catch(...){
-			//error while showing stats
-		}
+void launch_tui_thread(){
 		pthread_t thread1;
 //			, thread2;
 //		char *message1 = "Thread 1";
@@ -324,8 +290,107 @@ int main()
 
 //     printf("Thread 1 returns: %d\n",iret1);
 //     printf("Thread 2 returns: %d\n",iret2);
+}
 
-		
+void launch_ui_server_thread(){
+		pthread_t thread1;
+//			, thread2;
+//		char *message1 = "Thread 1";
+//		char *message2 = "Thread 2";
+		int iret1;
+//		int iret2;
+
+    /* Create independent threads each of which will execute function */
+
+		debug_no_msg("Creating ui_server_thread.");
+		ui_server.init();
+
+		iret1 = pthread_create( &thread1, NULL, run_ui_server, (void*) NULL);
+//		iret2 = pthread_create( &thread2, NULL, print_message_function, (void*) message2);
+		debug_no_msg("ui_server_lanched");
+		/* Wait till threads are complete before main continues. Unless we  */
+		/* wait we run the risk of executing an exit which will terminate   */
+		/* the process and all threads before the threads have completed.   */
+
+//	debug("oooooooooooooo111111111111111111");
+//		pthread_join( thread1, NULL);
+//	debug("oooooooooooooo2222222222222222222222");
+//		pthread_join( thread2, NULL); 
+
+//     printf("Thread 1 returns: %d\n",iret1);
+//     printf("Thread 2 returns: %d\n",iret2);
+}
+
+void segget_exit(int sig){
+	try{
+		endwin();
+	}
+	catch(...)
+	{
+		//error while ending curses
+	}
+	try{
+		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++) {
+			close(fd);
+		}
+	}
+	catch(...)
+	{
+		//error while clossing server_sockfd
+	}
+	error_log_no_msg("Segget exits because cought signal:"+toString(sig));
+	cout<<"Bye!\n\n";
+	exit(0);
+}
+
+int main()
+{
+	try{
+		signal(SIGABRT,segget_exit);//If program aborts go to assigned function "segget_exit".
+		signal(SIGTERM,segget_exit);//If program terminates go to assigned function "segget_exit".
+		signal(SIGINT,segget_exit);//If program terminates go to assigned function "segget_exit".
+		prev_time=time((time_t *)NULL);
+		try{
+			//init curses
+			initscr();
+			curs_set(0);
+			refresh();
+		}
+		catch(...)
+		{
+			//error while init curses
+		}
+		try{
+			//load settings
+				settings.init();
+		}
+		catch(...)
+		{
+			//error while loading settings
+		}
+		try{
+			launch_ui_server_thread();
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp launch_ui_server() failed");
+		}
+		try{
+			launch_tui_thread();
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp launch_tui_theread() failed");
+		}
+		try{
+			load_pkgs();
+		}
+		catch(...){
+			//error while loading pkgs
+		}
+		try{
+			//show_pkgs();
+			stats.show_totals();
+		}
+		catch(...){
+			//error while showing stats
+		}
 		try{
 			download_pkgs();
 		}
@@ -343,6 +408,13 @@ int main()
 	catch(...)
 	{
 		//error while ending curses
+	}
+	try{
+		close(ui_server.server_sockfd);
+	}
+	catch(...)
+	{
+		//error while clossing server_sockfd
 	}
 	return 0;
 }
