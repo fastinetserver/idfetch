@@ -57,23 +57,34 @@ void Tui_server::init(){
 	listen(server_sockfd, 5);
 	FD_ZERO(&readfds);
 	FD_SET(server_sockfd, &readfds);
+	send_to_fd_busy=false;
+}
+//prevent simultaneous writes
+ulong Tui_server::send_to_fd(uint fd, uint y, string msg){
+//	if (send_to_fd_idle) {
+	while (send_to_fd_busy){
+		sleep(1);
+	}
+	send_to_fd_busy=true;
+	if (fd !=server_sockfd){
+		if(FD_ISSET(fd,&ui_server.readfds)) {
+			string message="<y>"+toString(y)+"<s>"+msg+"<.>";
+			write(fd, message.c_str(), message.length());
+		}
+	}
+	send_to_fd_busy=false;
+	return 0;
 }
 
-ulong Tui_server::send(uint y, string msg){
-
-		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++) {
-			if (fd !=server_sockfd){
-				if(FD_ISSET(fd,&ui_server.testfds)) {
-					string message="<y>"+toString(y)+"<s>"+msg+"<.>";
-					return write(fd, message.c_str(), message.length());
-				}
-			}
-		}
-	return 0;
+void Tui_server::send_all_clients(uint y, string msg){
+	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+		send_to_fd(fd, y, msg);
+	}
 }
 
 void *run_ui_server(void * ){
 	while(1) {
+		max_published_screenline_num=0;
 		uint fd;
 		int nread;
 		ui_server.testfds = ui_server.readfds;
@@ -101,7 +112,17 @@ void *run_ui_server(void * ){
 					debug("Connected new ui client");
 
 					if (client_sockfd>ui_server.max_fd_num) ui_server.max_fd_num=client_sockfd;
+
 					FD_SET(client_sockfd, &ui_server.readfds);
+
+					// Get this info to catch up!
+					for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
+							ui_server.send_to_fd(client_sockfd, line_num, screenlines[line_num]);
+							debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
+//							ui_server.send(line_num,screenlines[line_num]);
+						}
+
+					
 				//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 				}else{
 					ioctl(fd, FIONREAD, &nread);

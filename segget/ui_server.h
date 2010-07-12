@@ -41,14 +41,25 @@
 using namespace std;
 
 #define MAX_BIND_ATTEMPTS 5
+const uint MAX_LINES=200;
+const uint TOTAL_LINE_NUM=MAX_LINES;
+const uint ERROR_LINE_NUM=MAX_LINES+1;
+const uint LOG_LINE_NUM=MAX_LINES+2;
+const uint DEBUG_LINE_NUM=MAX_LINES+3;
+
+//const uint MAX_LINES=200;
+string screenlines[DEBUG_LINE_NUM+1];
+uint max_published_screenline_num;
 
 class Tui_server{
 	public:
+		bool send_to_fd_busy;
 		uint server_sockfd;
 		uint max_fd_num;
 		fd_set readfds, testfds;
 		void init();
-		ulong send(uint y, string msg);
+		ulong send_to_fd(uint fd, uint y, string msg);
+		void send_all_clients(uint y, string msg);
 };
 
 Tui_server ui_server;

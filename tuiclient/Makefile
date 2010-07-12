@@ -1,4 +1,3 @@
-
 BINS = tuiclient
 OBJS = $(addsuffix .o,$(BINS))
 PKGCONFIG_MODULES =
@@ -12,7 +11,7 @@ CXXFLAGS_OPT = -O2 -g
 
 LIBS = $(LIBS_PKGCONFIG)
 #CIBS = -lncurses
-CXXFLAGS = $(CXXFLAGS_PKGCONFIG) -lncurses $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
+CXXFLAGS = $(CXXFLAGS_PKGCONFIG) -lncurses -lpthread $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
 
 all: clean $(BINS)
 	

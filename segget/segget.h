@@ -34,6 +34,7 @@
 #include <iostream>
 #include <json/json.h>
 #include <ncurses.h>
+#include <pthread.h>
 #include "checksum.cpp"
 #include "config.cpp"
 #include "connection.cpp"
@@ -48,7 +49,6 @@
 #include "str.cpp"
 #include "tui.cpp"
 #include "utils.cpp"
-#include <pthread.h>
 #include "ui_server.cpp"
 
 using namespace std;

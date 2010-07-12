@@ -267,58 +267,18 @@ int download_pkgs(){
 void *print_message_function( void *ptr );
 
 void launch_tui_thread(){
-		pthread_t thread1;
-//			, thread2;
-//		char *message1 = "Thread 1";
-//		char *message2 = "Thread 2";
-		int iret1;
-//		int iret2;
-
-    /* Create independent threads each of which will execute function */
-
-		iret1 = pthread_create( &thread1, NULL, print_message_function, (void*) NULL);
-//		iret2 = pthread_create( &thread2, NULL, print_message_function, (void*) message2);
-
-		/* Wait till threads are complete before main continues. Unless we  */
-		/* wait we run the risk of executing an exit which will terminate   */
-		/* the process and all threads before the threads have completed.   */
-
-	debug("oooooooooooooo111111111111111111");
-//		pthread_join( thread1, NULL);
-	debug("oooooooooooooo2222222222222222222222");
-//		pthread_join( thread2, NULL); 
-
-//     printf("Thread 1 returns: %d\n",iret1);
-//     printf("Thread 2 returns: %d\n",iret2);
+	pthread_t tui_thread;
+	int iret1;
+	iret1 = pthread_create( &tui_thread, NULL, print_message_function, (void*) NULL);
 }
 
 void launch_ui_server_thread(){
-		pthread_t thread1;
-//			, thread2;
-//		char *message1 = "Thread 1";
-//		char *message2 = "Thread 2";
-		int iret1;
-//		int iret2;
-
-    /* Create independent threads each of which will execute function */
-
-		debug_no_msg("Creating ui_server_thread.");
-		ui_server.init();
-
-		iret1 = pthread_create( &thread1, NULL, run_ui_server, (void*) NULL);
-//		iret2 = pthread_create( &thread2, NULL, print_message_function, (void*) message2);
-		debug_no_msg("ui_server_lanched");
-		/* Wait till threads are complete before main continues. Unless we  */
-		/* wait we run the risk of executing an exit which will terminate   */
-		/* the process and all threads before the threads have completed.   */
-
-//	debug("oooooooooooooo111111111111111111");
-//		pthread_join( thread1, NULL);
-//	debug("oooooooooooooo2222222222222222222222");
-//		pthread_join( thread2, NULL); 
-
-//     printf("Thread 1 returns: %d\n",iret1);
-//     printf("Thread 2 returns: %d\n",iret2);
+	pthread_t ui_server_thread;
+	int iret1;
+	debug_no_msg("Creating ui_server_thread.");
+	ui_server.init();
+	iret1 = pthread_create( &ui_server_thread, NULL, run_ui_server, (void*) NULL);
+	debug_no_msg("ui_server_lanched");
 }
 
 void segget_exit(int sig){
@@ -420,21 +380,14 @@ int main()
 }
 
 void *print_message_function(void *ptr){
-//	char *message;
-	char * args;
-	args = (char *) ptr;
-	ulong i=0;
+	char * args = (char *) ptr;
 	while (true){
 		ulong time_diff_msecs=time_left_from(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
 			show_progress(time_diff_msecs);
 		};
-		log("Thread:"+toString(i));
-			//haven't downloaded anything - anyway, show totals
-			stats.show_totals();
+		stats.show_totals();
 		sleep(1);
-		i++;
 	}
 	return 0;
-//     printf("%s \n", message);
 }

@@ -29,21 +29,23 @@ extern Tsettings settings;
 
 const uint CONNECTION_LINES=5;
 
-bool msg_idle=true;
+//bool msg_idle=true;
 void msg(uint y, uint x, string msg_text){
-	if (msg_idle){
-		msg_idle=false;
+//	if (msg_idle){
+//		msg_idle=false;
 		try{
-			ui_server.send(y,msg_text);
-			move(y,x);
-			string ready_msg_text=msg_text+"                        ";
-			printw(ready_msg_text.c_str());
+			if (max_published_screenline_num<y && y<MAX_LINES) max_published_screenline_num=y;
+			screenlines[y]=msg_text;
+			ui_server.send_all_clients(y,msg_text);
+//			string ready_msg_text=msg_text+"                        ";
+			string ready_msg_text=msg_text+"";
+			mvaddstr(y,x,ready_msg_text.c_str());
 			refresh();
 		}catch(...){
 			error_log_no_msg("Error in tui.cpp: msg()");
 		}
-		msg_idle=true;
-	}
+//		msg_idle=true;
+//	}
 }
 
 void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text){
@@ -98,10 +100,15 @@ void msg_status2(uint connection_num, string msg_text){
 }
 void msg_clean_connection(uint connection_num){
 	try{
-		msg(connection_num*CONNECTION_LINES,0,"                                                                                                                  ");
-		msg(connection_num*CONNECTION_LINES+1,0,"                                                                                                                  ");
-		msg(connection_num*CONNECTION_LINES+2,0,"                                                                                                                  ");
-		msg(connection_num*CONNECTION_LINES+3,0,"                                                                                                                  ");
+		msg(connection_num*CONNECTION_LINES,0,"");
+		msg(connection_num*CONNECTION_LINES+1,0,"");
+		msg(connection_num*CONNECTION_LINES+2,0,"");
+		msg(connection_num*CONNECTION_LINES+3,0,"");
+
+//		msg(connection_num*CONNECTION_LINES,0,"                                                                                                                  ");
+//		msg(connection_num*CONNECTION_LINES+1,0,"                                                                                                                  ");
+//		msg(connection_num*CONNECTION_LINES+2,0,"                                                                                                                  ");
+//		msg(connection_num*CONNECTION_LINES+3,0,"                                                                                                                  ");
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_clean_connection()");
 	}
@@ -115,14 +122,14 @@ void msg_error(string error_text){
 }
 void msg_total(string msg_text){
 	try{
-		msg(settings.max_connections*CONNECTION_LINES,0,msg_text);
+		msg(TOTAL_LINE_NUM,0,msg_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_total()");
 	}
 }
 void log(string log_msg_text){
 	try{
-		msg(settings.max_connections*CONNECTION_LINES+1,0, "LOG:"+log_msg_text);
+		msg(LOG_LINE_NUM,0, "LOG:"+log_msg_text);
 		ofstream file;
 		file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
@@ -145,7 +152,7 @@ void log(string log_msg_text){
 }
 void debug(string debug_msg_text){
 	try{
-//		msg(settings.max_connections*CONNECTION_LINES+2,0, "DEBUG:"+debug_msg_text);
+//		msg(DEBUG_LINE_NUM,0, "DEBUG:"+debug_msg_text);
 		debug_no_msg(debug_msg_text);
 	}catch(...){
 		error_log("Error in tui.cpp: debug()");
@@ -197,7 +204,7 @@ void error_log(string error_msg_text){
 		fprintf(stderr, "Error log file: %s/%s",settings.logs_dir.c_str(),settings.error_log_file.c_str());
 	}
 	try{
-		msg(settings.max_connections*CONNECTION_LINES+3,0, "ERROR:"+error_msg_text);
+		msg(ERROR_LINE_NUM,0, "ERROR:"+error_msg_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: error_log()");
 	}
