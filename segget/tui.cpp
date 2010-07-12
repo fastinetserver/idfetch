@@ -76,7 +76,7 @@ void msg_segment_progress(uint connection_num, uint network_num, uint segment_nu
 			+field(" Try:",try_num,4)
 			+field(" Bytes:",dld_bytes,7)
 			+field(" / ",total_bytes,7)
-			+field(" = ",percent,3)+"%%"
+			+field(" = ",percent,3)+"%"
 			+speed_str
 			+avg_speed_str);
 	}catch(...){

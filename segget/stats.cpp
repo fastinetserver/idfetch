@@ -57,7 +57,7 @@ void Tstats::show_totals(){
 			+field(" / ",             distfiles_count,4)
 			+field(" = Size:",        dld_size/1000,7)
 			+field(" / ",             total_size/1000,7)+" Kb "
-			+field(" = ",             dld_size*100/(1+show_total_size),3)+"%%"
+			+field(" = ",             dld_size*100/(1+show_total_size),3)+"%"
 			+field(" Total speed: ",  (total_bytes_per_last_interval/(show_last_time_interval)),7)
 			+" Kb/s"
 //			+" Secs:"+toString(now_timee.tv_sec)
