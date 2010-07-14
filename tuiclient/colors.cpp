@@ -29,7 +29,6 @@
 void color_downloads(){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		init_pair(1, COLOR_WHITE, COLOR_BLUE);
 		attron(COLOR_PAIR(1));
 	}
 }
@@ -37,7 +36,6 @@ void color_downloads(){
 void color_info(){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		init_pair(2, COLOR_BLACK, COLOR_CYAN);
 		attron(COLOR_PAIR(2));
 	}
 }
@@ -45,7 +43,42 @@ void color_info(){
 void color_status(){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		init_pair(3, COLOR_RED, COLOR_BLUE);
 		attron(COLOR_PAIR(3));
+	}
+}
+
+void color_disconnected(){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+		init_pair(1, COLOR_WHITE, COLOR_MAGENTA);
+		attron(COLOR_PAIR(1));
+	}
+}
+void color_init(){
+	if(has_colors()){
+		init_color(COLOR_MAGENTA, 300, 300, 300); 
+	}
+}
+void colors_connected(){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+		init_color(COLOR_BLUE, 300, 300, 300); 
+		init_pair(1, COLOR_WHITE, COLOR_BLUE);
+		init_pair(2, COLOR_BLACK, COLOR_CYAN);
+		init_pair(3, COLOR_GREEN, COLOR_BLUE);
+//		attrset(A_REVERSE);
+		attrset(A_DIM);
+	}
+}
+
+void colors_disconnected(){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+		init_color(COLOR_BLUE, 400, 400, 400); 
+		init_pair(1, COLOR_BLACK, COLOR_WHITE);
+		init_pair(2, COLOR_WHITE, COLOR_BLACK);
+		init_pair(3, COLOR_BLACK, COLOR_RED);
+//		attrset(A_BOLD);
+//		attrset(A_REVERSE);
 	}
 }

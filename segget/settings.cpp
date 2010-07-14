@@ -95,6 +95,9 @@ void Tsettings::init(){
 				load_provide_mirror_files_restricted_patterns_vector();
 		}
 
+		conf.set(provide_proxy_fetcher_ip,						"provide_proxy_fetcher_to_others",		"provide_proxy_fetcher_ip");
+		conf.set(provide_proxy_fetcher_port,					"provide_proxy_fetcher_to_others",		"provide_proxy_fetcher_port",1,65535);
+
 		ulong cur_network_priority;
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 			//set default values, in case segget.conf doesn't have these settings
@@ -109,6 +112,10 @@ void Tsettings::init(){
 				network_array[network_num].init(cur_network_priority);
 			}
 		}
+
+		conf.set(ui_ip,									"ui_server",			"ui_ip");
+		conf.set(ui_port,								"ui_server",			"ui_port",1,65535);
+
 		conf.clear();
 	}catch(...){
 		error_log_no_msg("Error in settings.cpp: init()");

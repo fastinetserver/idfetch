@@ -32,4 +32,6 @@
 void color_downloads();
 void color_info();
 void color_status();
+void colors_connected();
+void colors_disconnected();
 #endif

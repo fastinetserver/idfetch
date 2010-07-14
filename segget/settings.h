@@ -68,6 +68,12 @@ class Tsettings{
 		string provide_mirror_dir;
 		bool provide_mirror_files_restrict_list_on;
 		vector<string> provide_mirror_files_restricted_patterns_vector;
+	//provide_proxy_fether_to_others
+		string provide_proxy_fetcher_ip;
+		ulong provide_proxy_fetcher_port;
+	//ui_server
+		string ui_ip;
+		ulong ui_port;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -104,6 +110,12 @@ class Tsettings{
 			provide_mirror_dir("none"),
 			provide_mirror_files_restrict_list_on(0),
 			provide_mirror_files_restricted_patterns_vector(),
+		//provide_proxy_fether_to_others
+			provide_proxy_fetcher_ip("127.0.0.1"),
+			provide_proxy_fetcher_port(9888),
+		//ui_server
+			ui_ip("127.0.0.1"),
+			ui_port(9999),
 		//logs
 			logs_dir("./logs"),
 			general_log_file("segget.log"),

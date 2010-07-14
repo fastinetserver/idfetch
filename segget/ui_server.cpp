@@ -42,9 +42,9 @@ void Tui_server::init(){
 
 		server_address.sin_family = AF_INET;
 		//server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-		string bind_address="127.0.0.1";
+		string bind_address=settings.ui_ip;
 		server_address.sin_addr.s_addr = inet_addr(bind_address.c_str());
-		server_address.sin_port = htons(9999);
+		server_address.sin_port = htons(settings.ui_port);
 		server_len = sizeof(server_address);
 		int res;
 		res=bind(server_sockfd, (struct sockaddr *)&server_address, server_len);

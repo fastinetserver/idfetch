@@ -43,11 +43,15 @@ class Tmainwindow: public Twindow{
 		
 		Thelp_window help_win;
 		bool exit_flag;
+		bool connected_status;
 		string screenlines[200];
 		string screen_info_lines[4];
+		ulong attempt_num;
 		Tmainwindow():
 			help_win(),
-			exit_flag(FALSE)
+			exit_flag(FALSE),
+			connected_status(FALSE),
+			attempt_num(0)
 			{};
 		~Tmainwindow(){};
 		Tmainwindow(const Twindow &L); // copy constructor
@@ -57,5 +61,7 @@ class Tmainwindow: public Twindow{
 		void set_status(string str);
 		void set_line(int y, string msg_text);
 		void init();
+		void connected();
+		void disconnected();
 };
 #endif

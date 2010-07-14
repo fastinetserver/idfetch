@@ -23,41 +23,23 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __PKG_H__
-#define __PKG_H__
 
+#ifndef __PROXYFETCHER_H__
+#define __PROXYFETCHER_H__
+
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include <fstream>
-#include <iostream>
+#include <string.h>
 #include <json/json.h>
-#include "distfile.h"
+#include "tui.h"
+#include "pkg.h"
 
-using namespace std;
-typedef unsigned int uint;
-typedef Tdistfile* Pdistfile;
-
-class Tpkg{
-	public:
-		vector<Pdistfile> Pdistfile_list;
-		string name;
-		string category;
-		uint distfile_count;
-		void load_distfile_list(json_object* json_array_distfile_list);
-		Tpkg():
-			Pdistfile_list(),
-			name(""),
-			category(""),
-			distfile_count(0)
-			{};
-		Tpkg(const Tpkg &L); // copy constructor
-		Tpkg & operator=(const Tpkg &L);
-		~Tpkg();
-		void push_back_distfile(json_object* json_distfile);
-		void load_pkg_from_json(json_object* json_obj_pkg);
-};
-
-Tpkg **Ppkg_array;
-Tpkg proxy_fetcher_pkg;
-
+void *run_proxy_fetcher_server(void * );
 #endif

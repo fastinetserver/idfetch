@@ -64,6 +64,7 @@ int load_pkgs(){
 			else {
 				stats.pkg_count=json_object_array_length(json_array_pkg_list);
 				Ppkg_array= new Tpkg* [stats.pkg_count];
+				// create 0 pkg for distfiles to provide proxy-fetcher
 				for(uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
 					Ppkg_array[array_item_num]=new Tpkg;
 					Ppkg_array[array_item_num]->load_pkg_from_json(json_object_array_get_idx(json_array_pkg_list,array_item_num));
@@ -79,6 +80,7 @@ int load_pkgs(){
 		return 1;
 	}
 }
+/*
 void show_pkgs(){
 	try{
 		for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
@@ -94,31 +96,29 @@ void show_pkgs(){
 		error_log("Error in segget.cpp: show_pkgs()");
 	}
 }
-
-int choose_segment(uint connection_num){
-	try{
-		uint pkg_num (0);
+*/
+int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 		uint distfile_num(0);
 		uint segment_num(0);
-		while (pkg_num<stats.pkg_count){
-//			debug("pkg_num:"+toString(pkg_num));
-			while(distfile_num<Ppkg_array[pkg_num]->distfile_count){
-				if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->allows_new_actions()){
-					debug("Distfile "+Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->name+" allows new connections");
+			while(distfile_num<cur_pkg->distfile_count){
+//				if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
+				if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
+					debug("Distfile "+cur_pkg->Pdistfile_list[distfile_num]->name+" allows new connections");
+//					debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
 //					debug("	distfile_num:"+toString(distfile_num));
-					if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile){
+					if (cur_pkg->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile){
 						debug("max_connection limit has not been reached");
 						debug("segment_num:"+toString(segment_num));
-						debug("segment_count:"+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count));
-						while (segment_num<Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->segments_count){
+						debug("segment_count:"+toString(cur_pkg->Pdistfile_list[distfile_num]->segments_count));
+						while (segment_num<cur_pkg->Pdistfile_list[distfile_num]->segments_count){
 							debug("segment_num:"+toString(segment_num));
 //							debug("		segment_num:"+toString(segment_num));
 							//	segments_in_progress[connection_num]=
 							//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-							debug("Let's get segment status"+statusToString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
-							if (Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
-								if ( ! Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
-									return 0; // success
+							debug("Let's get segment status"+statusToString(cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
+							if (cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
+								if ( ! cur_pkg->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+									return 0; // download started
 								};
 							}else{
 								debug("status is not SWAITING - go for the next segment");
@@ -127,8 +127,8 @@ int choose_segment(uint connection_num){
 							segment_num++;
 						}
 					}else{
-							debug("	distfile "+Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->name+" has "
-							+toString(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->active_connections_num)
+							debug("	distfile "+cur_pkg->Pdistfile_list[distfile_num]->name+" has "
+							+toString(cur_pkg->Pdistfile_list[distfile_num]->active_connections_num)
 							+" connections => choosing another distfile.");
 					}
 				}
@@ -136,7 +136,20 @@ int choose_segment(uint connection_num){
 				segment_num=0;
 			}
 			distfile_num=0;
-			pkg_num++;
+	return 1;
+}
+
+int choose_segment(uint connection_num){
+	try{
+		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
+//			debug("pkg_num:"+toString(pkg_num));
+			if (! pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
+				return 0;
+			}
+		}
+		// download distfiles as a proxy-fetcher
+		if (! pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
+			return 0;
 		}
 		//  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
 		//for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
@@ -278,7 +291,16 @@ void launch_ui_server_thread(){
 	debug_no_msg("Creating ui_server_thread.");
 	ui_server.init();
 	iret1 = pthread_create( &ui_server_thread, NULL, run_ui_server, (void*) NULL);
-	debug_no_msg("ui_server_lanched");
+	debug_no_msg("ui_server_thread launched");
+}
+
+void launch_proxy_fetcher_server_thread(){
+	pthread_t proxy_fetcher_server_thread;
+	int iret1;
+	debug_no_msg("Creating ui_server_thread.");
+//	proxy_fetcher_server_thread.init();
+	iret1 = pthread_create( &proxy_fetcher_server_thread, NULL, run_proxy_fetcher_server, (void*) NULL);
+	debug_no_msg("proxy_fetcher_server_thread launched");
 }
 
 void segget_exit(int sig){
@@ -332,6 +354,11 @@ int main()
 			launch_ui_server_thread();
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_ui_server() failed");
+		}
+		try{
+			launch_proxy_fetcher_server_thread();
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp launch_proxy_fetcher_server_thread failed");
 		}
 		try{
 			launch_tui_thread();

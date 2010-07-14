@@ -26,6 +26,15 @@
 
 #include "mainwindow.h"
 
+void Tmainwindow::connected(){
+	colors_connected();
+	set_status("[Connected]");
+}
+
+void Tmainwindow::disconnected(){
+	colors_disconnected();
+	set_status("[Connecting... Attempt:"+toString(attempt_num)+". Waiting for 1 sec, before next reconnect.]");
+}
 void Tmainwindow::msg_status(){
 	msg_short(0,width/2-13,"tuiclient to segget daemon");
 	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+1+bottom_screenline_num)+"/"+toString(max_received_screenline_num+1)+"]");

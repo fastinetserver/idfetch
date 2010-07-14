@@ -50,15 +50,15 @@
 #include "tui.cpp"
 #include "utils.cpp"
 #include "ui_server.cpp"
+#include "proxyfetcher.cpp"
 
 using namespace std;
-
-Tpkg **Ppkg_array;
 
 CURLM *cm;
 
 int load_pkgs();
 void show_pkgs();
+int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
 int choose_segment(uint connection_num);
 int download_pkgs();
 int main();

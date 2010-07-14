@@ -97,6 +97,8 @@ int main()
 		try{
 			//init curses
 			mainwindow.init();
+//			init_color(COLOR_BLUE, 0, 0, 0); 
+
 		}catch(...)
 		{
 			//error while init curses
@@ -127,8 +129,8 @@ int main()
 
 				//Create a socket for the client:
 				int result=-1;
-				ulong attempt_num=1;
 				while (result==-1){
+					mainwindow.attempt_num++;
 					sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
 					//Name the socket, as agreed with the server:
@@ -139,14 +141,13 @@ int main()
 					//Connect your socket to the server’s socket:
 					result = connect(sockfd, (struct sockaddr *)&address, len);
 					if(result == -1) {
-						mainwindow.set_status("[Connecting... Attempt:"+toString(attempt_num)+". Waiting for 1 sec, before next reconnect.]");
+						mainwindow.disconnected();
 						close(sockfd);
-						attempt_num++;
 						sleep(1);
 					}
 				}
 
-				mainwindow.set_status("[Connected]");
+				mainwindow.connected();
 				fd_set readfds, testfds;
 
 				FD_ZERO(&readfds);
