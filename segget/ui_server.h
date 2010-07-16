@@ -65,6 +65,6 @@ class Tui_server{
 
 extern Tui_server ui_server;
 
-void *run_ui_server(void * ptr);
+void *run_ui_server(void *);
 
 #endif

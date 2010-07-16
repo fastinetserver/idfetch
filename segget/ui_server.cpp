@@ -73,7 +73,10 @@ ulong Tui_server::send_to_fd(uint fd, uint y, string msg){
 	if (fd !=server_sockfd){
 		if(FD_ISSET(fd,&ui_server.readfds)) {
 			string message="<y>"+toString(y)+"<s>"+msg+"<.>";
-			write(fd, message.c_str(), message.length());
+			ulong bytes_written=write(fd, message.c_str(), message.length());
+			if (bytes_written!=message.length()){
+				debug("Error: Not all data has been sent to ui_client()");
+			}
 		}
 	}
 	send_to_fd_busy=false;
@@ -136,7 +139,9 @@ void *run_ui_server(void * ){
 						debug("Client parted from fd:"+toString(fd));
 					}else{
 						char buffer[1000];
-						read(fd, &buffer, nread);
+						if (nread!=read(fd, &buffer, nread)){
+							debug("Not all data has been read from ui_client()");
+						}
 					}
 				}
 			}

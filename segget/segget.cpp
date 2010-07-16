@@ -277,8 +277,6 @@ int download_pkgs(){
 	}
 }
 
-void *print_message_function( void *ptr );
-
 void launch_tui_thread(){
 	pthread_t tui_thread;
 	int iret1;
@@ -406,7 +404,7 @@ int main()
 	return 0;
 }
 
-void *print_message_function(void *ptr){
+void *print_message_function(void * ){
 	while (true){
 		ulong time_diff_msecs=time_left_from(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){

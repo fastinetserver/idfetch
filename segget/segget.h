@@ -61,5 +61,6 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
 int choose_segment(uint connection_num);
 int download_pkgs();
 int main();
+void *print_message_function( void *);
 
 #endif

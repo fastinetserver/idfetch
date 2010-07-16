@@ -26,6 +26,7 @@ segget: segget.o connection.o checksum.o config.o distfile.o mirror.o network.o 
 
 clean:
 	-rm -f $(BINS) $(OBJS)
+	-rm -f *.o
 	-rm -f *.log
 
 .PRECIOUS: %.o

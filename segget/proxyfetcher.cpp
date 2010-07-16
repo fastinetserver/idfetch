@@ -90,7 +90,9 @@ void *run_proxy_fetcher_server(void * ){
 						debug("removing client on fd:"+toString(fd));
 					}else{
 						char buffer[100000]="";
-						read(fd, &buffer, nread);
+						if (nread!=read(fd, &buffer, nread)){
+							error_log("Error in proxyfetcher.cpp : run_proxy_fetcher_server(): Not all data has been read from proxy-fetcher-client");
+						}
 						debug("serving client - read");
 						debug("serving client on fd"+toString(fd));
 						string recv_msg=buffer;
