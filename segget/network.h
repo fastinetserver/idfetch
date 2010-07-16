@@ -31,6 +31,7 @@
 #include <vector>
 #include "str.h"
 #include "mirror.h"
+class Tmirror;
 #include "config.h"
 //#include "tui.h"
 //#include "settings.cpp"
@@ -47,6 +48,7 @@ class Tnetwork{
 	private:
 		void load_mirror_list();
 	public:
+//		vector<int> benchmarked_mirror_list;
 		vector<Tmirror> benchmarked_mirror_list;
 		uint active_connections_num;
 	//network
@@ -113,6 +115,6 @@ class Tnetwork{
 		void disconnect(){active_connections_num--;};
 };
 
-uint Tnetwork::network_count=0;
-Tnetwork network_array[MAX_NETWORKS];
+//extern uint Tnetwork::network_count=0;
+extern Tnetwork network_array[MAX_NETWORKS];
 #endif

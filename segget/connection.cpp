@@ -25,6 +25,10 @@
 */
 #include "connection.h"
 
+uint Tconnection::total_connections=0;
+Tconnection connection_array[MAX_CONNECTS];
+time_t prev_time;
+
 void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
 	try{
 		segment=started_segment;

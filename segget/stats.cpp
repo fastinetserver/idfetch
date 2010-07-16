@@ -26,6 +26,8 @@
 
 #include "stats.h"
 
+Tstats stats;
+
 void Tstats::inc_dld_distfiles_count(){
 	try{
 		dld_distfiles_count++;

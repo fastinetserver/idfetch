@@ -35,22 +35,21 @@
 #include <json/json.h>
 #include <ncurses.h>
 #include <pthread.h>
-#include "checksum.cpp"
-#include "config.cpp"
-#include "connection.cpp"
-#include "distfile.cpp"
-#include "mirror.cpp"
-#include "network.cpp"
-#include "networkbroker.cpp"
-#include "pkg.cpp"
-#include "segment.cpp"
-#include "settings.cpp"
-#include "stats.cpp"
-#include "str.cpp"
-#include "tui.cpp"
-#include "utils.cpp"
-#include "ui_server.cpp"
-#include "proxyfetcher.cpp"
+#include "checksum.h"
+#include "config.h"
+#include "distfile.h"
+#include "mirror.h"
+#include "network.h"
+#include "networkbroker.h"
+#include "pkg.h"
+#include "segment.h"
+#include "settings.h"
+//#include "stats.h"
+#include "str.h"
+#include "tui.h"
+#include "utils.h"
+#include "ui_server.h"
+#include "proxyfetcher.h"
 
 using namespace std;
 

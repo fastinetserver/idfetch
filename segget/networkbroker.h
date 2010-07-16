@@ -26,6 +26,11 @@
 #ifndef __NETWORK_DISTFILE_BROKER_H__
 #define __NETWORK_DISTFILE_BROKER_H__
 
+#include <vector>
+#include "shorttypes.h"
+#include "network.h"
+using namespace std;
+
 class Tnetwork_distfile_broker{
 	public:
 //		map<string,Tmirror *> benchmarked_mirror_list;

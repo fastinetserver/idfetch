@@ -51,18 +51,19 @@
 #include "checksum.h"
 #include "network.h"
 #include "networkbroker.h"
+#include "segment.h"
+class Tsegment;
 
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string>
-#include <string.h>
+//#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <stdio.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
+//#include <sys/ioctl.h>
+//#include <unistd.h>
+//#include <stdlib.h>
+//#include <string>
+//#include <string.h>
 
 
 //#include "client.cpp"

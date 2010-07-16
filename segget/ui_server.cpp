@@ -26,6 +26,10 @@
 
 #include "ui_server.h"
 
+uint max_published_screenline_num;
+Tui_server ui_server;
+string screenlines[DEBUG_LINE_NUM+1];
+
 void Tui_server::init(){
 	socklen_t server_len;
 	struct sockaddr_in server_address;

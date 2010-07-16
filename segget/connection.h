@@ -62,7 +62,6 @@ class Tconnection{
 		void show_connection_progress(ulong time_diff);
 };
 
-time_t prev_time;
-uint Tconnection::total_connections=0;
-Tconnection connection_array[MAX_CONNECTS];
+extern time_t prev_time;
+extern Tconnection connection_array[MAX_CONNECTS];
 #endif

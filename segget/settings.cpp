@@ -25,6 +25,9 @@
 */
 
 #include "settings.h"
+
+Tsettings settings;
+
 void Tsettings::load_provide_mirror_files_restricted_patterns_vector(){
 	try{
 		ifstream file;

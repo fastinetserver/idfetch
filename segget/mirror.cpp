@@ -26,6 +26,8 @@
 
 #include "mirror.h"
 
+map<string,Tmirror *> mirror_list;
+
 double Tmirror::mirror_on_the_wall(){
 	try{
 		double criterion=honesty*1000000000*dld_time/dld_size;

@@ -45,7 +45,7 @@ class Tdistfile;
 
 
 extern Tsettings settings;
-unsigned long downloaded_bytes=0;
+//unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 
 enum Tsegment_status{SWAITING, SDOWNLOADING, SDOWNLOADED, SFAILED};
@@ -90,8 +90,9 @@ class Tsegment{
 		int add_easy_handle_to_multi(CURLM *cm, uint network_num);
 };
 
-Tsegment *segments_in_progress[MAX_CONNECTS]={0};
+extern Tsegment *segments_in_progress[MAX_CONNECTS];
 
+string statusToString(Tsegment_status the_status);
 void show_progress(double time_diff);
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 #endif

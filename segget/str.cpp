@@ -25,15 +25,34 @@
 */
 
 #include "str.h"
-using namespace std;
 
+string toString(uint t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+/*
 template<typename T> string toString(T t){
 	stringstream s;
 	s << t;
 	return s.str();
 }
-
+*/
 template<typename T> string field(string prefix,T t, int width){
+	try{
+		stringstream s1,s2;
+		s1 << t;
+		width=width+prefix.length();
+		s2.width(width);
+		s2 << prefix+s1.str();
+		return s2.str();
+	}catch(...){
+		error_log("Error in str.cpp: field()");
+		return "";
+	}
+}
+
+string field(string prefix,ulong t, int width){
 	try{
 		stringstream s1,s2;
 		s1 << t;

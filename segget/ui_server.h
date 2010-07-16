@@ -36,7 +36,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
+#include "settings.h"
 
 using namespace std;
 
@@ -48,8 +49,8 @@ const uint LOG_LINE_NUM=MAX_LINES+2;
 const uint DEBUG_LINE_NUM=MAX_LINES+3;
 
 //const uint MAX_LINES=200;
-string screenlines[DEBUG_LINE_NUM+1];
-uint max_published_screenline_num;
+extern string screenlines[DEBUG_LINE_NUM+1];
+extern uint max_published_screenline_num;
 
 class Tui_server{
 	public:
@@ -62,7 +63,7 @@ class Tui_server{
 		void send_all_clients(uint y, string msg);
 };
 
-Tui_server ui_server;
+extern Tui_server ui_server;
 
 void *run_ui_server(void * ptr);
 

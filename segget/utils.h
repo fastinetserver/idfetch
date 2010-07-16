@@ -28,6 +28,10 @@
 #define __UTILS_H__
 
 #include "sys/time.h"
+#include "shorttypes.h"
+#include "tui.h"
+
+using namespace std;
 
 ulong time_left_from(timeval from_time);
 

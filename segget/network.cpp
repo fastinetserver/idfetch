@@ -24,6 +24,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include "network.h"
+
+uint Tnetwork::network_count=0;
+Tnetwork network_array[MAX_NETWORKS];
+
 void Tnetwork::load_mirror_list(){
 	try{
 		ifstream file;

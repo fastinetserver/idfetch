@@ -57,7 +57,7 @@ class Tpkg{
 		void load_pkg_from_json(json_object* json_obj_pkg);
 };
 
-Tpkg **Ppkg_array;
-Tpkg proxy_fetcher_pkg;
+extern Tpkg **Ppkg_array;
+extern Tpkg proxy_fetcher_pkg;
 
 #endif

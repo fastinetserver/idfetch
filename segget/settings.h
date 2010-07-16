@@ -127,5 +127,5 @@ class Tsettings{
 		void init();
 };
 
-Tsettings settings;
+extern Tsettings settings;
 #endif

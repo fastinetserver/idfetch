@@ -24,46 +24,9 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __STATS_H__
-#define __STATS_H__
+#ifndef _TYPES_H_
+#define _TYPES_H_
 
-#include <sys/time.h>
-#include "connection.h"
-#include "tui.h"
-#include "settings.h"
-using namespace std;
-
-class Tstats{
-	private:
-		ulong dld_size;
-		ulong dld_distfiles_count;
-		uint total_size;
-	public:
-		ulong total_bytes_per_last_interval;
-		struct timeval previous_time;
-		double last_time_interval;
-		uint pkg_count;
-		uint distfiles_count;
-		Tstats():
-			dld_size(0),
-			dld_distfiles_count(0),
-			total_size(0),
-			total_bytes_per_last_interval(0),
-			previous_time(),
-			last_time_interval(1),
-			pkg_count(0),
-			distfiles_count(0)
-			{};
-		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
-		ulong get_dld_size(){return dld_size;};
-		void inc_dld_distfiles_count();
-		ulong get_dld_distfiles_count(){return dld_distfiles_count;};
-		void inc_total_size(ulong more_bytes){ total_size+=more_bytes;};
-		ulong get_total_size(){return total_size;};
-		void show_totals();
-		void reset_previous_time();
-};
-
-extern Tstats stats;
+typedef unsigned long ulong;
 
 #endif

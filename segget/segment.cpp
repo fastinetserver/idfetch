@@ -26,6 +26,8 @@
 
 #include "segment.h"
 
+Tsegment *segments_in_progress[MAX_CONNECTS]={0};
+
 string statusToString(Tsegment_status the_status){
 	switch (the_status){
 		case SWAITING:return "SWAITING";

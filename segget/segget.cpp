@@ -407,7 +407,6 @@ int main()
 }
 
 void *print_message_function(void *ptr){
-	char * args = (char *) ptr;
 	while (true){
 		ulong time_diff_msecs=time_left_from(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){

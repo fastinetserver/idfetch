@@ -25,6 +25,8 @@
 */
 
 #include "pkg.h"
+Tpkg **Ppkg_array;
+Tpkg proxy_fetcher_pkg;
 
 void Tpkg::push_back_distfile(json_object* json_distfile){
 	try{

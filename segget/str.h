@@ -28,12 +28,18 @@
 #define __STR_H__
 #include <string>
 #include <algorithm>
+#include <sstream>
+#include "tui.h"
 using namespace std;
 
-template<typename T> string toString(T t);
-template<typename T> string field(string prefix,T t, int width);
+//template<typename T> string toString(T t);
+//template<typename T> string field(string prefix,T t, int width);
 
 string trim(std::string const& source, char const* delims = " \t\r\n");
 int lower_char(int c);
 string noupper(string s);
+
+string toString(uint t);
+string field(string prefix,ulong t, int width);
+
 #endif

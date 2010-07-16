@@ -55,7 +55,7 @@ class Tmirror{
 		uint get_active_num(){return active_num;};
 };
 
-map<string,Tmirror *> mirror_list;
+extern map<string,Tmirror *> mirror_list;
 string strip_mirror_name(string path);
 Tmirror* find_mirror(string mirror_url);
 #endif

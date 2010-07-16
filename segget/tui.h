@@ -26,6 +26,7 @@
 
 #ifndef __TUI_H__
 #define __TUI_H__
+#include <ncurses.h>
 #include "settings.h"
 #include "ui_server.h"
 
