@@ -97,7 +97,13 @@ void *run_proxy_fetcher_server(void * ){
 //						debug("serving client on fd"+toString(fd));
 						string recv_msg=buffer;
 						error_log("Received a msg from the client:"+recv_msg);
-						proxy_fetcher_pkg.try_adding_distfile_to_proxy_fetchers_queue(json_tokener_parse(buffer));
+						string send_response;
+//						char send_buffer[10]="";
+						send_response=toString(proxy_fetcher_pkg.try_adding_distfile_to_proxy_fetchers_queue(json_tokener_parse(buffer)));
+//						if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
+						if (write(fd, send_response.c_str(), send_response.length())!=(int)send_response.length()){
+							error_log("Error in proxyfetcher.cpp: run_proxy_fetcher_server(): response msg size and sent data size are different.");
+						};
 					}
 				}
 			}

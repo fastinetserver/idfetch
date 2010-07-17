@@ -72,16 +72,21 @@ using namespace std;
 
 typedef unsigned int uint;
 
-#define R_ERROR_ADDING_TO_PROXY_QUEUE			1
-#define R_ADDED_TO_PROXY_QUEUE					100
-#define R_ALREADY_WAS_IN_QUEUE					101
-#define R_WAITING								102
-#define R_DOWNLOAD_STARTED						103
-#define R_DOWNLOADING							104
-#define R_FAILED								105
-#define R_DOWNLOADED							106
-#define R_WAIT_FOR_LOCAL_MIRRORS				107
-#define R_NO_FREE_NETWORK_CONNECTION_FOUND		108
+#define R_LM_WAIT_FOR_LOCAL_MIRRORS						100
+
+#define R_PF_BE_MORE_PATIENT							101
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				102
+#define R_PF_ADDED_TO_PROXY_QUEUE						103
+#define R_PF_ALREADY_WAS_IN_QUEUE						104
+#define R_PF_DOWNLOADED									105
+#define R_PF_FAILED										106
+
+// 0 for succesfull return of provide_segment()
+#define R_R_DOWNLOAD_STARTED							0
+#define R_R_WAITING										107
+#define R_R_DOWNLOADING									108
+
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		109
 
 enum Tdistfile_status{
 	DNEW,
@@ -144,7 +149,8 @@ class Tdistfile{
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
 		~Tdistfile();
-		Tdistfile_status request(ulong network_num, string msg);
+		int decode_server_response(string server_response);
+		int request(ulong network_num, string msg);
 		void init();
 		bool allows_new_actions();
 		void load_distfile_from_json(json_object* json_obj_distfile);

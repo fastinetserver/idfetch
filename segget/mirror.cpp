@@ -73,10 +73,10 @@ Tmirror* find_mirror(string mirror_url){
 		else{
 			debug("Found mirror:"+mirror_url);
 			debug("==================>>");
-			debug("       time:"+toString(mirror_iterator->second->dld_time));
+			debug("       time:"+toString((uint)mirror_iterator->second->dld_time));
 			debug("       size:"+toString(mirror_iterator->second->dld_size));
-			debug("    honesty:"+toString(mirror_iterator->second->honesty));
-			debug("  criterion:"+toString(mirror_iterator->second->mirror_on_the_wall()));
+			debug("    honesty:"+toString((uint)mirror_iterator->second->honesty));
+			debug("  criterion:"+toString((uint)mirror_iterator->second->mirror_on_the_wall()));
 			return mirror_iterator->second;
 		}
 	}catch(...){

@@ -35,9 +35,11 @@ class Tnetwork_distfile_broker{
 	public:
 //		map<string,Tmirror *> benchmarked_mirror_list;
 		vector<bool> mirror_fails_vector;
+		timeval last_request_time;
 		ulong network_num;
 		Tnetwork_distfile_broker():
 			mirror_fails_vector(),
+			last_request_time(),
 			network_num(0)
 			{};
 		void init(ulong network_number);

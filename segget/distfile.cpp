@@ -29,8 +29,55 @@
 //Make the necessary includes and set up the variables:
 using namespace std;
 
-Tdistfile_status Tdistfile::request(ulong network_num, string msg)
-{
+int Tdistfile::decode_server_response(string server_response){
+/*
+#define R_LM_WAIT_FOR_LOCAL_MIRRORS						100
+
+#define R_PF_BE_MORE_PATIENT							101
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				102
+#define R_PF_ADDED_TO_PROXY_QUEUE						103
+#define R_PF_ALREADY_WAS_IN_QUEUE						104
+#define R_PF_DOWNLOADED									105
+#define R_PF_FAILED										106
+
+// 0 for succesfull return of provide_segment()
+#define R_R_DOWNLOAD_STARTED							0
+#define R_R_WAITING										107
+#define R_R_DOWNLOADING									108
+
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		109
+*/
+	int int_server_response=atoi(server_response.c_str());
+	switch (int_server_response){
+		case R_PF_ERROR_ADDING_TO_PROXY_QUEUE:{
+			debug("Server response:"+server_response+" - R_PF_ERROR_ADDING_TO_PROXY_QUEUE");
+			return int_server_response;
+		};
+		case R_PF_ADDED_TO_PROXY_QUEUE:{
+			debug("Server response:"+server_response+" - R_PF_ADDED_TO_PROXY_QUEUE");
+			return int_server_response;
+		};
+		case R_PF_ALREADY_WAS_IN_QUEUE:{
+			debug("Server response:"+server_response+" - R_PF_ALREADY_WAS_IN_QUEUE");
+			return int_server_response;
+		};
+		case R_PF_DOWNLOADED:{
+			debug("Server response:"+server_response+" - R_PF_DOWNLOADED");
+			return int_server_response;
+		};
+		case R_PF_FAILED:{
+			debug("Server response:"+server_response+" - R_PF_FAILED");
+			return int_server_response;
+		};
+		default :{
+			debug("Server response:"+server_response+" - unknown => R_PF_FAILED");
+			return R_PF_FAILED;
+		};
+	}
+}
+
+int Tdistfile::request(ulong network_num, string msg){
+	gettimeofday(&network_distfile_brokers_array[network_num].last_request_time, NULL);
 	int sockfd;
 	int len;
 	struct sockaddr_in address;
@@ -47,38 +94,49 @@ Tdistfile_status Tdistfile::request(ulong network_num, string msg)
 	//Connect your socket to the server’s socket:
 	result = connect(sockfd, (struct sockaddr *)&address, len);
 	if(result == -1) {
-		error_log("Can't connect to proxy-fetcher");
-		return DPROXY_FAILED;
+		error_log("Network:"+toString(network_num)+"Can't connect to proxy-fetcher");
+		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 	}
-	if (msg.length()>90000){return DPROXY_REJECTED;};
+	if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
 	char send_buffer[100000];
-//	char recv_buffer[256];
+	//	char recv_buffer[256];
 	strcpy(send_buffer,msg.c_str());
 	//You can now read and write via sockfd:
-	int i=write(sockfd, send_buffer, strlen(send_buffer));
-	i++;
-/*
+	if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
+		error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"request msg size and sent data size are different.");
+	};
+
 	fd_set readfds, testfds;
 	FD_ZERO(&readfds);
 	FD_SET(sockfd, &readfds);
 	testfds = readfds;
 
+	struct timeval response_timeout;
+	response_timeout.tv_sec=1;
+	response_timeout.tv_usec=0;
+	
 	result = select(FD_SETSIZE, &testfds, (fd_set *)0,
-	(fd_set *)0, (struct timeval *) 0);
+	(fd_set *)0, &response_timeout);
 
-	int nread;
-	ioctl(sockfd, FIONREAD, &nread);
+	if(FD_ISSET(sockfd,&testfds)) {
+		int nread;
+		ioctl(sockfd, FIONREAD, &nread);
 
-	if(nread == 0) {
-		close(sockfd);
-	//                       FD_CLR(sockfd, &readfds);
-	///                       printf("removing client on fd %d\n", sockfd);
+		char recv_buffer[1000];
+		if(nread == 0) {
+			close(sockfd);
+			error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" no response from proxy-fetcher");
+		}else{
+			if (nread!=read(sockfd, recv_buffer, nread)){
+				error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"response msg size and received data size are different.");
+			};
+			return decode_server_response(recv_buffer);
+		}
 	}else{
-		read(sockfd, recv_buffer, nread);
+		error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" zero size response from proxy-fetcher");
 	}
-*/
 	close(sockfd);
-	return DPROXY_QUEUED;
+	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
 bool Tdistfile::allows_new_actions(){
@@ -239,7 +297,7 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			Pbest_mirror->start();
 			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
-			return R_DOWNLOAD_STARTED;
+			return R_R_DOWNLOAD_STARTED;
 		}
 		else{
 			error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
@@ -272,7 +330,7 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 			network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
 			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
-			return R_DOWNLOAD_STARTED;
+			return R_R_DOWNLOAD_STARTED;
 		}
 		else{
 			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
@@ -350,7 +408,6 @@ void Tdistfile::choose_networks_with_priority(
 	}
 }
 
-
 int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	try{
 		for (uint cur_network_priority=10; cur_network_priority>0; cur_network_priority--){
@@ -391,27 +448,23 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 				if (allow_remote_mirrors){ //since all local failed, go to proxy_fetcher
 					debug("Remote mirrors are allowed");
 					if (best_proxy_fetcher_network_num != -1){
-						if (status == DPROXY_QUEUED){
+						//if less then 30 secs left don't bother proxy-fetcher
+						if (30000>time_left_from(network_distfile_brokers_array[best_proxy_fetcher_network_num].last_request_time)){
+							return R_PF_BE_MORE_PATIENT;
+						}else{
 // TO-DO: Add option to go for remote networks or low priority networks even if already DPROXY_QUEUED
 // TO-DO: There can be several proxy-fetchers of the same priority level, define a rule to make a choice
-// TO-DO: request, probably it's already DPROXY_DOWNLOADED
-							// check time from last request if small difference return
-//							return 1;
+							// request from proxy fethcer
+							int request_result=request(best_proxy_fetcher_network_num, json_data);
+							debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
+							if (request_result==R_PF_DOWNLOADED){
+								// start download from the proxy_fetcher
+								debug("             So best proxy_fetcher_network is network#:"+toString(best_proxy_fetcher_network_num));
+								return choose_best_local_mirror(cm, connection_num, best_proxy_fetcher_network_num, seg_num);
+							}
+							//return - don't switch to low priority networks
+							return request_result;
 						}
-						// request from proxy fethcer
-						status=request(best_proxy_fetcher_network_num, json_data);
-						debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
-						if (status==R_DOWNLOADED){
-							// start download from the proxy_fetcher
-							debug("             So best proxy_fetcher_network is network#:"+toString(best_proxy_fetcher_network_num));
-// BEWARE -- CORRECT FOLLOWING LINES !!!!!!!!!!!
-// TO-DO:					start download from proxy_fether mirrors
-//							return choose_best_mirror(cm, connection_num, best_remote_network_num, seg_num);
-// TO-DO: replace return 0 by result=start_downloading_segment_from_proxy_fetcher_mirror();
-							return 0;
-						}
-						//return - don't switch to low priority networks
-						return status;
 					}else{
 						// remote_mirrors_go_third
 						if (best_remote_network_num!=-1){
@@ -425,12 +478,12 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 				}else{
 					debug("NOT all local mirrors have failed - restricted to local mirrors only.");
 					//return - don't switch to low priority networks
-					return R_WAIT_FOR_LOCAL_MIRRORS;
+					return R_LM_WAIT_FOR_LOCAL_MIRRORS;
 				}
 			}
 		}
 		// haven't found anything suitable
-		return R_NO_FREE_NETWORK_CONNECTION_FOUND;
+		return R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND;
 	}catch(...){
 		error_log("Error: distfile.cpp: provide_segment()");
 		return 1;
