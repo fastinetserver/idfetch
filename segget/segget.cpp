@@ -293,12 +293,14 @@ void launch_ui_server_thread(){
 }
 
 void launch_proxy_fetcher_server_thread(){
-	pthread_t proxy_fetcher_server_thread;
-	int iret1;
-	debug_no_msg("Creating ui_server_thread.");
-//	proxy_fetcher_server_thread.init();
-	iret1 = pthread_create( &proxy_fetcher_server_thread, NULL, run_proxy_fetcher_server, (void*) NULL);
-	debug_no_msg("proxy_fetcher_server_thread launched");
+	if (settings.provide_proxy_fetcher_ip!="none"){
+		pthread_t proxy_fetcher_server_thread;
+		int iret1;
+		debug_no_msg("Creating ui_server_thread.");
+//		proxy_fetcher_server_thread.init();
+		iret1 = pthread_create( &proxy_fetcher_server_thread, NULL, run_proxy_fetcher_server, (void*) NULL);
+		debug_no_msg("proxy_fetcher_server_thread launched");
+	}
 }
 
 void segget_exit(int sig){

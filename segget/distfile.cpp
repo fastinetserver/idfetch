@@ -29,7 +29,7 @@
 //Make the necessary includes and set up the variables:
 using namespace std;
 
-Tdistfile_status Tdistfile::request(string msg)
+Tdistfile_status Tdistfile::request(ulong network_num, string msg)
 {
 	int sockfd;
 	int len;
@@ -40,8 +40,8 @@ Tdistfile_status Tdistfile::request(string msg)
 
 	//Name the socket, as agreed with the server:
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = inet_addr("127.0.0.1");
-	address.sin_port = htons(9888);
+	address.sin_addr.s_addr = inet_addr(network_array[network_num].proxy_fetcher_ip.c_str());
+	address.sin_port = htons(network_array[network_num].proxy_fetcher_port);
 	len = sizeof(address);
 
 	//Connect your socket to the server’s socket:
@@ -399,7 +399,7 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 //							return 1;
 						}
 						// request from proxy fethcer
-						status=request(json_data);
+						status=request(best_proxy_fetcher_network_num, json_data);
 						debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
 						if (status==DPROXY_DOWNLOADED){
 							// start download from the proxy_fetcher

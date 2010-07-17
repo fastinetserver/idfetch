@@ -138,7 +138,7 @@ class Tdistfile{
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
 		~Tdistfile();
-		Tdistfile_status request(string msg);
+		Tdistfile_status request(ulong network_num, string msg);
 		void init();
 		bool allows_new_actions();
 		void load_distfile_from_json(json_object* json_obj_distfile);

@@ -44,9 +44,9 @@ class Tconfig {
 			config_file_name("")
 			{config_file_name=file_name;load_settings_from_config_file();};
 		void load_settings_from_config_file();
-		int set(string &dst,string const& section, string const& entry) const;
-		int set(ulong &dst,string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const;
-		int set(bool &dst,string const& section, string const& entry) const;
+		int set(string const& section, string const& entry, string &dst) const;
+		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
+		int set(string const& section, string const& entry, bool &dst) const;
 		void clear();
 };
 

@@ -75,6 +75,9 @@ class Tnetwork{
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
+	//proxy_fetcher
+		string proxy_fetcher_ip;
+		ulong proxy_fetcher_port;
 	//mirrors
 //		bool use_own_mirror_list_only_on;
 		bool only_local_when_possible;
@@ -82,7 +85,7 @@ class Tnetwork{
 			benchmarked_mirror_list(),
 			active_connections_num(0),
 		//network
-			network_num(network_count),
+			network_num(0),
 			priority(0),
 		//mode
 			network_mode(0),
@@ -105,10 +108,13 @@ class Tnetwork{
 			proxy_off(1),
 			proxy_user("none"),
 			proxy_password("none"),
+		//proxy_fetcher
+			proxy_fetcher_ip("none"),
+			proxy_fetcher_port(3131),
 		//mirrors
 //			use_own_mirror_list_only_on(0),
 			only_local_when_possible(1)
-			{network_count++;};
+			{};
 		void init(uint priority_value);
 		bool has_free_connections();
 		bool connect();

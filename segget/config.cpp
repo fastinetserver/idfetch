@@ -72,7 +72,7 @@ void Tconfig::load_settings_from_config_file(){
 	}
 }
 
-int Tconfig::set(string &dst, string const& section, string const& entry) const {
+int Tconfig::set(string const& section, string const& entry, string &dst) const {
 	try{
 		map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
 		if (ci == content_.end()){
@@ -90,7 +90,7 @@ int Tconfig::set(string &dst, string const& section, string const& entry) const 
 		return 1;
 	}
 }
-int Tconfig::set(ulong &dst, string const& section, string const& entry, uint const& min_limit, uint const& max_limit) const {
+int Tconfig::set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const {
 	try{
 		uint return_value;
 		map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
@@ -130,7 +130,7 @@ int Tconfig::set(ulong &dst, string const& section, string const& entry, uint co
 	}
 }
 
-int Tconfig::set(bool &dst, string const& section, string const& entry) const {
+int Tconfig::set(string const& section, string const& entry, bool &dst) const {
 	try{
 		uint return_value;
 		map<std::string,string>::const_iterator ci = content_.find(section + '/' + entry);

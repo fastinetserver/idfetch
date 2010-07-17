@@ -68,56 +68,57 @@ void Tsettings::load_provide_mirror_files_restricted_patterns_vector(){
 void Tsettings::init(){
 	try{
 		Tconfig conf("segget.conf");
-		conf.set(general_log_file,					"logs",				"general_log_file");
-		conf.set(logs_dir,							"logs",				"logs_dir");
-		conf.set(error_log_file,					"logs",				"error_log_file");
-		conf.set(debug_log_file,					"logs",				"debug_log_file");
-		conf.set(max_connections,					"connections",		"max_connections",1,MAX_CONNECTS);
+		conf.set("logs","general_log_file",general_log_file);
+		conf.set("logs","logs_dir",logs_dir);
+		conf.set("logs","error_log_file",error_log_file);
+		conf.set("logs","debug_log_file",debug_log_file);
+		conf.set("connections","max_connections",max_connections,1,MAX_CONNECTS);
 
-		conf.set(distfiles_dir,						"folders",			"distfiles_dir");
-		conf.set(segments_dir,						"folders",			"segments_dir");
+		conf.set("folders","distfiles_dir",distfiles_dir);
+		conf.set("folders","segments_dir",segments_dir);
 
-		conf.set(pkg_list_dir,						"pkg_list",			"pkg_list_dir");
-		conf.set(del_pkg_list_when_dld_finished,	"pkg_list",			"del_pkg_list_when_dld_finished");
+		conf.set("pkg_list","pkg_list_dir",pkg_list_dir);
+		conf.set("pkg_list","del_pkg_list_when_dld_finished",del_pkg_list_when_dld_finished);
 
-		conf.set(max_connection_num_per_distfile,	"distfiles",		"max_connection_num_per_distfile",1,MAX_CONNECTS);
+		conf.set("distfiles","max_connection_num_per_distfile",max_connection_num_per_distfile,1,MAX_CONNECTS);
 
-		conf.set(resume_on,							"segments",			"resume_on");
-		conf.set(max_segment_size,					"segments",			"max_segment_size",10000,10000000);
-		conf.set(max_tries,							"segments",			"max_tries",1,-1);
+		conf.set("segments","resume_on",resume_on);
+		conf.set("segments","max_segment_size",max_segment_size,10000,10000000);
+		conf.set("segments","max_tries",max_tries,1,-1);
 
-		conf.set(current_speed_time_interval_msecs,	"connections",		"current_speed_time_interval_msecs",100,60000);
+		conf.set("connections","current_speed_time_interval_msecs",current_speed_time_interval_msecs,100,60000);
 
-		conf.set(max_connections_num_per_mirror,	"mirrors",			"max_connections_num_per_mirror",1,10);
-		conf.set(benchmark_oblivion,				"mirrors",			"benchmark_oblivion",0,1000);
+		conf.set("mirrors","max_connections_num_per_mirror",max_connections_num_per_mirror,1,10);
+		conf.set("mirrors","benchmark_oblivion",benchmark_oblivion,0,1000);
 
-		conf.set(provide_mirror_dir,						"provide_mirror_to_others",		"provide_mirror_dir");
+		conf.set("provide_mirror_to_others","provide_mirror_dir",provide_mirror_dir);
 		if (provide_mirror_dir!="none"){
-			conf.set(provide_mirror_files_restrict_list_on,		"provide_mirror_to_others",		"provide_mirror_files_restrict_list_on");
+			conf.set("provide_mirror_to_others","provide_mirror_files_restrict_list_on",provide_mirror_files_restrict_list_on);
 			if (provide_mirror_files_restrict_list_on)
 				load_provide_mirror_files_restricted_patterns_vector();
 		}
 
-		conf.set(provide_proxy_fetcher_ip,						"provide_proxy_fetcher_to_others",		"provide_proxy_fetcher_ip");
-		conf.set(provide_proxy_fetcher_port,					"provide_proxy_fetcher_to_others",		"provide_proxy_fetcher_port",1,65535);
+		conf.set("provide_proxy_fetcher_to_others","provide_proxy_fetcher_ip",provide_proxy_fetcher_ip);
+		conf.set("provide_proxy_fetcher_to_others","provide_proxy_fetcher_port",provide_proxy_fetcher_port,1,65535);
 
 		ulong cur_network_priority;
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 			//set default values, in case segget.conf doesn't have these settings
+			network_array[network_num].network_num=network_num;
 			if (network_num==0){
 				cur_network_priority=10;
 			}else{
 				cur_network_priority=0;
 			}
 
-			conf.set(cur_network_priority,				"networks",			"network"+toString(network_num)+"_priority",0,10);
+			conf.set("networks","network"+toString(network_num)+"_priority",cur_network_priority,0,10);
 			if (cur_network_priority>0){
 				network_array[network_num].init(cur_network_priority);
 			}
 		}
 
-		conf.set(ui_ip,									"ui_server",			"ui_ip");
-		conf.set(ui_port,								"ui_server",			"ui_port",1,65535);
+		conf.set("ui_server","ui_ip",ui_ip);
+		conf.set("ui_server","ui_port",ui_port,1,65535);
 
 		conf.clear();
 	}catch(...){

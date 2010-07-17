@@ -25,7 +25,6 @@
 */
 #include "network.h"
 
-uint Tnetwork::network_count=0;
 Tnetwork network_array[MAX_NETWORKS];
 
 void Tnetwork::load_mirror_list(){
@@ -67,30 +66,49 @@ void Tnetwork::init(uint priority_value){
 	try{
 		priority=priority_value;
 		Tconfig conf("network"+toString(network_num)+".conf");
-		conf.set(network_mode,						"mode",				"network_mode",0,2);
-		conf.set(bind_interface,					"network_bind",		"bind_interface");
-		conf.set(max_connections,					"network_connections",		"max_connections",1,MAX_CONNECTS);
-		conf.set(connection_timeout,				"network_connections",		"connection_timeout",1,1000);
-		conf.set(ftp_response_timeout,				"network_connections",		"ftp_response_timeout",1,-1);
-		conf.set(time_out,							"network_connections",		"timeout",100,-1);
-		conf.set(low_connection_speed_limit,		"network_connections",		"low_connection_speed_limit",1,-1);
-		conf.set(low_connection_speed_time,			"network_connections",		"low_connection_speed_time",1,600);
-		conf.set(max_connection_speed,				"network_connections",		"max_connection_speed",1,-1);
+		conf.set("mode","network_mode",network_mode,0,2);
+		conf.set("network_bind","bind_interface",bind_interface);
+		conf.set("network_connections","max_connections",max_connections,1,MAX_CONNECTS);
+		conf.set("network_connections","connection_timeout",connection_timeout,1,1000);
+		conf.set("network_connections","ftp_response_timeout",ftp_response_timeout,1,-1);
+		conf.set("network_connections","timeout",time_out,100,-1);
+		conf.set("network_connections","low_connection_speed_limit",low_connection_speed_limit,1,-1);
+		conf.set("network_connections","low_connection_speed_time",low_connection_speed_time,1,600);
+		conf.set("network_connections","max_connection_speed",max_connection_speed,1,-1);
 
-		conf.set(user_agent,						"network_user_data",		"user_agent");
+		conf.set("network_user_data","user_agent",user_agent);
 
-		conf.set(proxy_ip_or_name,					"network_proxy",			"proxy_ip_or_name");
-		conf.set(proxy_port,						"network_proxy",			"proxy_port",1,65535);
-		conf.set(proxy_off,							"network_proxy",			"proxy_off");
-		conf.set(proxy_user,						"network_proxy",			"proxy_user");
-		conf.set(proxy_password,					"network_proxy",			"proxy_password");
+		conf.set("network_proxy","proxy_ip_or_name",proxy_ip_or_name);
+		conf.set("network_proxy","proxy_port",proxy_port,1,65535);
+		conf.set("network_proxy","proxy_off",proxy_off);
+		conf.set("network_proxy","proxy_user",proxy_user);
+		conf.set("network_proxy","proxy_password",proxy_password);
 
 //		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
 
-		if (network_mode==MODE_LOCAL){
-			conf.set(only_local_when_possible,			"network_mirrors",			"only_local_when_possible");
-			load_mirror_list();
-			log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));
+		switch (network_mode){
+			case MODE_LOCAL:
+				{
+					conf.set("network_mirrors","only_local_when_possible",only_local_when_possible);
+					load_mirror_list();
+					log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));
+					break;
+				};
+			case MODE_PROXY_FETCHER:
+				{
+					if (proxy_fetcher_ip!="none"){
+						conf.set("network_proxy_fetcher","proxy_fetcher_port",proxy_fetcher_port,1,65535);
+						conf.set("network_mirrors","only_local_when_possible",only_local_when_possible);
+						conf.set("network_proxy_fetcher","proxy_fetcher_ip",proxy_fetcher_ip);
+						load_mirror_list();
+						log("Settings: Network"+toString(network_num)+" local fetcher_local_mirrors_list size:"+toString(mirror_list.size()));
+					}else{
+						error_log("Network"+toString(network_num)+" in PROXY_FETCHER mode, but proxy_fetcher_ip variable haven't been set. Network will be disabled.");
+						priority=0;
+					}
+					break;
+				}
+			default: break; // network in MODE_REMOTE
 		}
 		conf.clear();
 	}catch(...){
