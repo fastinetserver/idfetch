@@ -401,15 +401,17 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 						// request from proxy fethcer
 						status=request(best_proxy_fetcher_network_num, json_data);
 						debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
-						if (status==DPROXY_DOWNLOADED){
+						if (status==R_DOWNLOADED){
 							// start download from the proxy_fetcher
 							debug("             So best proxy_fetcher_network is network#:"+toString(best_proxy_fetcher_network_num));
 // BEWARE -- CORRECT FOLLOWING LINES !!!!!!!!!!!
 // TO-DO:					start download from proxy_fether mirrors
 //							return choose_best_mirror(cm, connection_num, best_remote_network_num, seg_num);
+// TO-DO: replace return 0 by result=start_downloading_segment_from_proxy_fetcher_mirror();
+							return 0;
 						}
 						//return - don't switch to low priority networks
-						return R_ADDED_TO_PROXY_QUEUE;
+						return status;
 					}else{
 						// remote_mirrors_go_third
 						if (best_remote_network_num!=-1){

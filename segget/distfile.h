@@ -72,10 +72,16 @@ using namespace std;
 
 typedef unsigned int uint;
 
-#define R_DOWNLOAD_STARTED						0
-#define R_ADDED_TO_PROXY_QUEUE 					100
-#define R_WAIT_FOR_LOCAL_MIRRORS				101
-#define R_NO_FREE_NETWORK_CONNECTION_FOUND		102
+#define R_ERROR_ADDING_TO_PROXY_QUEUE			1
+#define R_ADDED_TO_PROXY_QUEUE					100
+#define R_ALREADY_WAS_IN_QUEUE					101
+#define R_WAITING								102
+#define R_DOWNLOAD_STARTED						103
+#define R_DOWNLOADING							104
+#define R_FAILED								105
+#define R_DOWNLOADED							106
+#define R_WAIT_FOR_LOCAL_MIRRORS				107
+#define R_NO_FREE_NETWORK_CONNECTION_FOUND		108
 
 enum Tdistfile_status{
 	DNEW,

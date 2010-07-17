@@ -97,7 +97,7 @@ void *run_proxy_fetcher_server(void * ){
 //						debug("serving client on fd"+toString(fd));
 						string recv_msg=buffer;
 						error_log("Received a msg from the client:"+recv_msg);
-						proxy_fetcher_pkg.push_back_distfile(json_tokener_parse(buffer));
+						proxy_fetcher_pkg.try_adding_distfile_to_proxy_fetchers_queue(json_tokener_parse(buffer));
 					}
 				}
 			}

@@ -28,15 +28,58 @@
 Tpkg **Ppkg_array;
 Tpkg proxy_fetcher_pkg;
 
-void Tpkg::push_back_distfile(json_object* json_distfile){
+
+//#define R_DOWNLOAD_STARTED						0
+//#define R_ADDED_TO_PROXY_QUEUE					100
+//#define R_ALREADY_WAS_IN_QUEUE					101
+//#define R_WAIT_FOR_LOCAL_MIRRORS				102
+//#define R_NO_FREE_NETWORK_CONNECTION_FOUND		103
+//#define R_ERROR_ADDING_TO_PROXY_QUEUE			200
+
+int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 	try{
 		distfile_count++;
 		Tdistfile * Pcur_distfile=new Tdistfile();
 		Pdistfile_list.push_back(Pcur_distfile);
-		Pcur_distfile->load_distfile_from_json(json_distfile);
+		Pcur_distfile->load_distfile_from_json(json_obj_distfile);
+
+		string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
+		debug("PROXY_FETCHER: Added Distfile: "+distfile_name+" to proxy-fetcher's queue");
+		return R_ADDED_TO_PROXY_QUEUE;
+	}catch(...){
+		error_log("Error in pkg.cpp: pushback_distfile()");
+		return R_ERROR_ADDING_TO_PROXY_QUEUE;
+	}
+}
+
+int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_distfile){
+	string distfile_name;
+	try{
+		distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
+		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
+			if (Pdistfile_list[distfile_num]->name==distfile_name){
+				switch (Pdistfile_list[distfile_num]->status){
+					case DDOWNLOADED: {
+						debug("PROXY_FETCHER: Distfile: "+distfile_name+" was downloaded");
+						return R_DOWNLOADED;
+					};
+					case DFAILED:{
+						debug("PROXY_FETCHER: Failed to download distfile: "+distfile_name);
+						return R_FAILED;
+					}
+					default:{
+						debug("PROXY_FETCHER: Distfile: "+distfile_name+" was already in queue");
+						return R_ALREADY_WAS_IN_QUEUE;
+					}
+				}
+			}
+		}
+		return push_back_distfile(json_obj_distfile);
 	}catch(...){
 		error_log("Error in pkg.cpp: pushback_distfile()");
 	}
+	debug("PROXY_FETCHER: Error adding Distfile: "+distfile_name+" to proxy-fetcher's queue");
+	return R_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
 

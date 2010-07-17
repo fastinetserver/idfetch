@@ -37,6 +37,10 @@ using namespace std;
 typedef unsigned int uint;
 typedef Tdistfile* Pdistfile;
 
+#define Q_ADDED_TO_QUEUE	0
+#define Q_ALREADY_EXISTS	1
+#define Q_ERROR				100
+
 class Tpkg{
 	public:
 		vector<Pdistfile> Pdistfile_list;
@@ -53,7 +57,8 @@ class Tpkg{
 		Tpkg(const Tpkg &L); // copy constructor
 		Tpkg & operator=(const Tpkg &L);
 		~Tpkg();
-		void push_back_distfile(json_object* json_distfile);
+		int push_back_distfile(json_object* json_obj_distfile);
+		int try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_distfile);
 		void load_pkg_from_json(json_object* json_obj_pkg);
 };
 
