@@ -28,19 +28,26 @@
 uint Tconnection::total_connections=0;
 Tconnection connection_array[MAX_CONNECTS];
 time_t prev_time;
+void init_connections(){
+	for (ulong connection_num=0; connection_num<MAX_CONNECTS; connection_num++){
+		connection_array[connection_num].connection_num=connection_num;
+	};
+}
 
 void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
 	try{
 		segment=started_segment;
-		debug("Started connection for distfile"+segment->parent_distfile->name);
+		debug("Starting connection for distfile: "+segment->parent_distfile->name);
 		mirror_num=best_mirror_num;
 		network_num=network_number;
 		total_dld_bytes=0;
 		bytes_per_last_interval=0;
 		gettimeofday(&start_time,NULL);
 		active=true;
+		debug("Connecting network"+toString(network_num));
 		network_array[network_num].connect();
 		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, mirror_num);
+		debug("Started connection for distfile: "+segment->parent_distfile->name);
 	}catch(...){
 		error_log("Error in connection.cpp: start()");
 	}

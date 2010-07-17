@@ -82,7 +82,7 @@ void *run_proxy_fetcher_server(void * ){
 
 					//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 				}else{
-					debug("old client - read");
+//					debug("old client - read");
 					ioctl(fd, FIONREAD, &nread);
 					if(nread == 0) {
 						close(fd);
@@ -93,11 +93,10 @@ void *run_proxy_fetcher_server(void * ){
 						if (nread!=read(fd, &buffer, nread)){
 							error_log("Error in proxyfetcher.cpp : run_proxy_fetcher_server(): Not all data has been read from proxy-fetcher-client");
 						}
-						debug("serving client - read");
-						debug("serving client on fd"+toString(fd));
+//						debug("serving client - read");
+//						debug("serving client on fd"+toString(fd));
 						string recv_msg=buffer;
 						error_log("Received a msg from the client:"+recv_msg);
-
 						proxy_fetcher_pkg.push_back_distfile(json_tokener_parse(buffer));
 					}
 				}

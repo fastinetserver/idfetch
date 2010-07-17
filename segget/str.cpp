@@ -31,6 +31,26 @@ string toString(uint t){
 	s << t;
 	return s.str();
 }
+string toString(int t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(ulong t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(long t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(bool t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
 /*
 template<typename T> string toString(T t){
 	stringstream s;

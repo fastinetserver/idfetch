@@ -38,24 +38,24 @@ using namespace std;
 class Tconnection{
 	static uint total_connections;
 	private:
-		uint connection_num;
 		uint network_num;
 		uint mirror_num;
 		ulong total_dld_bytes;
 		ulong bytes_per_last_interval;
 	public:
+		uint connection_num;
 		bool active;
 		timeval start_time;
 		Tsegment *segment;
 		Tconnection():
-			connection_num(total_connections),
 			network_num(0),
 			mirror_num(0),
 			total_dld_bytes(0),
 			bytes_per_last_interval(0),
+			connection_num(0),
 			active(0),
 			start_time(),
-			segment(0){total_connections++;};
+			segment(0){};
 		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
 		void stop(uint connection_result);
 		void inc_bytes_per_last_interval(ulong new_bytes_count);
@@ -64,4 +64,5 @@ class Tconnection{
 
 extern time_t prev_time;
 extern Tconnection connection_array[MAX_CONNECTS];
+void init_connections();
 #endif

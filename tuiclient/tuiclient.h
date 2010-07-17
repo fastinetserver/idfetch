@@ -41,6 +41,9 @@
 #include "mainwindow.cpp"
 #include "helpwindow.cpp"
 #include "colors.cpp"
+#include "config.cpp"
+#include "log.cpp"
+#include "settings.cpp"
 
 #define BUFFER_SIZE 2000
 

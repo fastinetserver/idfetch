@@ -24,49 +24,39 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "colors.h"
+#ifndef __SETTINGS_H__
+#define __SETTINGS_H__
 
-void color_downloads(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(1));
-	}
-}
+#include <string>
+#include "config.h"
+//#include "tui.cpp"
 
-void color_info(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(2));
-	}
-}
+using namespace std;
 
-void color_status(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(3));
-	}
-}
+class Tsettings{
+	private:
+	public:
+	//ui_server
+		string ui_ip;
+		ulong ui_port;
+	//logs
+		string logs_dir;
+		string general_log_file;
+		string error_log_file;
+		string debug_log_file;
 
-void colors_connected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 300, 300, 300); 
-		init_pair(1, COLOR_WHITE, COLOR_BLUE);
-		init_pair(2, COLOR_BLACK, COLOR_CYAN);
-		init_pair(3, COLOR_GREEN, COLOR_BLUE);
-//		attrset(A_REVERSE);
-		attrset(A_DIM);
-	}
-}
+		Tsettings():
+		//ui_server
+			ui_ip("127.0.0.1"),
+			ui_port(9999),
+		//logs
+			logs_dir("./logs"),
+			general_log_file("tuiclient.log"),
+			error_log_file("error.log"),
+			debug_log_file("debug.log")
+			{};
+		void init();
+};
 
-void colors_disconnected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 400, 400, 400); 
-		init_pair(1, COLOR_BLACK, COLOR_WHITE);
-		init_pair(2, COLOR_WHITE, COLOR_BLACK);
-		init_pair(3, COLOR_BLACK, COLOR_RED);
-//		attrset(A_BOLD);
-//		attrset(A_REVERSE);
-	}
-}
+extern Tsettings settings;
+#endif

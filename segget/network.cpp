@@ -96,15 +96,21 @@ void Tnetwork::init(uint priority_value){
 				};
 			case MODE_PROXY_FETCHER:
 				{
-					if (proxy_fetcher_ip!="none"){
-						conf.set("network_proxy_fetcher","proxy_fetcher_port",proxy_fetcher_port,1,65535);
-						conf.set("network_mirrors","only_local_when_possible",only_local_when_possible);
-						conf.set("network_proxy_fetcher","proxy_fetcher_ip",proxy_fetcher_ip);
-						load_mirror_list();
-						log("Settings: Network"+toString(network_num)+" local fetcher_local_mirrors_list size:"+toString(mirror_list.size()));
-					}else{
-						error_log("Network"+toString(network_num)+" in PROXY_FETCHER mode, but proxy_fetcher_ip variable haven't been set. Network will be disabled.");
+					conf.set("network_proxy_fetcher","proxy_fetcher_ip",proxy_fetcher_ip);
+					if (proxy_fetcher_ip=="none"){
+						error_log("Network"+toString(network_num)+" in PROXY_FETCHER mode, but proxy_fetcher_ip="+proxy_fetcher_ip+". Network will be disabled.");
 						priority=0;
+					}else{
+						conf.set("network_proxy_fetcher","proxy_fetcher_port",proxy_fetcher_port,1,65535);
+						if (proxy_fetcher_ip==settings.provide_proxy_fetcher_ip && proxy_fetcher_port==settings.provide_proxy_fetcher_port){
+							error_log("Error: Network"+toString(network_num)+" settings have the same ip and port for proxy-fetcher as the ones in [provide_proxy_fetcher_to_others] section of segget.conf file.");
+							error_log("       Segget instance can NOT serve as a proxy-fetcher for itself - network will be disabled");
+							priority=0;
+						}else{
+							conf.set("network_mirrors","only_local_when_possible",only_local_when_possible);
+							load_mirror_list();
+							log("Settings: Network"+toString(network_num)+" local fetcher_local_mirrors_list size:"+toString(mirror_list.size()));
+						}
 					}
 					break;
 				}

@@ -24,49 +24,30 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "colors.h"
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
-void color_downloads(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(1));
-	}
-}
+#include <string>
+#include <map>
+#include <fstream>
+#include "str.h"
+#include "log.h"
+using namespace std;
 
-void color_info(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(2));
-	}
-}
+class Tconfig {
+	private:
+		map<string,string> content_;
+		string config_file_name;
+	public:
+		Tconfig(string const& file_name):
+			content_(),
+			config_file_name("")
+			{config_file_name=file_name;load_settings_from_config_file();};
+		void load_settings_from_config_file();
+		int set(string const& section, string const& entry, string &dst) const;
+		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
+		int set(string const& section, string const& entry, bool &dst) const;
+		void clear();
+};
 
-void color_status(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(3));
-	}
-}
-
-void colors_connected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 300, 300, 300); 
-		init_pair(1, COLOR_WHITE, COLOR_BLUE);
-		init_pair(2, COLOR_BLACK, COLOR_CYAN);
-		init_pair(3, COLOR_GREEN, COLOR_BLUE);
-//		attrset(A_REVERSE);
-		attrset(A_DIM);
-	}
-}
-
-void colors_disconnected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 400, 400, 400); 
-		init_pair(1, COLOR_BLACK, COLOR_WHITE);
-		init_pair(2, COLOR_WHITE, COLOR_BLACK);
-		init_pair(3, COLOR_BLACK, COLOR_RED);
-//		attrset(A_BOLD);
-//		attrset(A_REVERSE);
-	}
-}
+#endif

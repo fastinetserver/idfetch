@@ -29,7 +29,13 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include "log.h"
 using namespace std;
 
 template<typename T> string toString(T t);
+
+string trim(std::string const& source, char const* delims = " \t\r\n");
+int lower_char(int c);
+string noupper(string s);
+
 #endif

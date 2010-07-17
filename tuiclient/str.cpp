@@ -45,3 +45,41 @@ template<typename T> string field(string prefix,T t, int width){
 		return "";
 	}
 }
+
+int lower_char(int c){
+	try{
+		return tolower((unsigned char)c);
+	}catch(...){
+		error_log("Error in str.cpp: lower_char()");
+		return 0;
+	}
+}
+
+string noupper(string s){
+	try{
+		transform(s.begin(), s.end(), s.begin(), lower_char);
+		return s;
+	}catch(...){
+		error_log("Error in str.cpp: noupper()");
+		return "";
+	}
+}
+
+string trim(std::string const& source, char const* delims) {
+	try{
+		string result(source);
+		string::size_type index = result.find_last_not_of(delims);
+		if(index != string::npos)
+			result.erase(++index);
+	
+		index = result.find_first_not_of(delims);
+		if(index != string::npos)
+			result.erase(0, index);
+		else
+			result.erase();
+		return result;
+	}catch(...){
+		error_log("Error in str.cpp: trim()");
+		return "";
+	}
+}

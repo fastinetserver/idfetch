@@ -48,8 +48,7 @@ void quit(){
 	}
 }
 
-void * watch_keyboard_thread_function(void * ptr){
-	char * args = (char *) ptr;
+void * watch_keyboard_thread_function(void *){
 	while (true){
 		char key=getch();
 		switch (key){
@@ -79,8 +78,7 @@ void * watch_keyboard_thread_function(void * ptr){
 	return 0;
 }
 
-void * refresh_screen_thread_function(void * ptr){
-	char * args = (char *) ptr;
+void * refresh_screen_thread_function(void *){
 	while (! mainwindow.exit_flag){
 			mainwindow.refresh();
 		struct timeval delay;
@@ -96,6 +94,7 @@ int main()
 	try{
 		try{
 			//init curses
+			settings.init();
 			mainwindow.init();
 //			init_color(COLOR_BLUE, 0, 0, 0); 
 
@@ -147,6 +146,7 @@ int main()
 					}
 				}
 
+				
 				mainwindow.connected();
 				fd_set readfds, testfds;
 
@@ -171,7 +171,9 @@ int main()
 							run_flag=false;
 						}else {
 							char recv_buffer[BUFFER_SIZE+1]="";
-							read(sockfd, recv_buffer, BUFFER_SIZE);
+							if (nread!=read(sockfd, recv_buffer, BUFFER_SIZE)){
+								error_log("Error in tuiclient.cpp : main() read bytes count does NOT match declared count.");
+							};
 							//recv_msg=recv_msg+recv_buffer;
 							recv_msg=recv_msg+recv_buffer;
 							while (recv_msg.find("<.>")!=recv_msg.npos){

@@ -351,6 +351,11 @@ int main()
 			//error while loading settings
 		}
 		try{
+			init_connections();
+		}catch(...){
+			error_log("error while init_connections");
+		}
+		try{
 			launch_ui_server_thread();
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_ui_server() failed");

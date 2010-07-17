@@ -24,49 +24,23 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "colors.h"
+#include "settings.h"
 
-void color_downloads(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(1));
-	}
-}
+Tsettings settings;
 
-void color_info(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(2));
-	}
-}
+void Tsettings::init(){
+	try{
+		Tconfig conf("tuiclient.conf");
+		conf.set("logs","general_log_file",general_log_file);
+		conf.set("logs","logs_dir",logs_dir);
+		conf.set("logs","error_log_file",error_log_file);
+		conf.set("logs","debug_log_file",debug_log_file);
 
-void color_status(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(3));
-	}
-}
+		conf.set("ui_server","ui_ip",ui_ip);
+		conf.set("ui_server","ui_port",ui_port,1,65535);
 
-void colors_connected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 300, 300, 300); 
-		init_pair(1, COLOR_WHITE, COLOR_BLUE);
-		init_pair(2, COLOR_BLACK, COLOR_CYAN);
-		init_pair(3, COLOR_GREEN, COLOR_BLUE);
-//		attrset(A_REVERSE);
-		attrset(A_DIM);
-	}
-}
-
-void colors_disconnected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 400, 400, 400); 
-		init_pair(1, COLOR_BLACK, COLOR_WHITE);
-		init_pair(2, COLOR_WHITE, COLOR_BLACK);
-		init_pair(3, COLOR_BLACK, COLOR_RED);
-//		attrset(A_BOLD);
-//		attrset(A_REVERSE);
+		conf.clear();
+	}catch(...){
+//		error_log_no_msg("Error in settings.cpp: init()");
 	}
 }

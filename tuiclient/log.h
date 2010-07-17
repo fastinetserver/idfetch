@@ -24,49 +24,16 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "colors.h"
+#ifndef __LOG_H__
+#define __LOG_H__
+#include "settings.h"
 
-void color_downloads(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(1));
-	}
-}
+using namespace std;
 
-void color_info(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(2));
-	}
-}
-
-void color_status(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(3));
-	}
-}
-
-void colors_connected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 300, 300, 300); 
-		init_pair(1, COLOR_WHITE, COLOR_BLUE);
-		init_pair(2, COLOR_BLACK, COLOR_CYAN);
-		init_pair(3, COLOR_GREEN, COLOR_BLUE);
-//		attrset(A_REVERSE);
-		attrset(A_DIM);
-	}
-}
-
-void colors_disconnected(){
-	if(has_colors()){
-		start_color();			/* Start color 			*/
-		init_color(COLOR_BLUE, 400, 400, 400); 
-		init_pair(1, COLOR_BLACK, COLOR_WHITE);
-		init_pair(2, COLOR_WHITE, COLOR_BLACK);
-		init_pair(3, COLOR_BLACK, COLOR_RED);
-//		attrset(A_BOLD);
-//		attrset(A_REVERSE);
-	}
-}
+void log(string log_msg_text);
+void debug(string debug_msg_text);
+void error_log(string error_msg_text);
+void log_no_msg(string log_msg_text);
+void debug_no_msg(string debug_msg_text);
+void error_log_no_msg(string error_msg_text);
+#endif

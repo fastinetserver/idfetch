@@ -27,6 +27,10 @@
 #include "mainwindow.h"
 
 void Tmainwindow::connected(){
+	for (int line_num=0; line_num<=max_received_screenline_num; line_num++){
+		screenlines[line_num]="";
+	}
+	max_received_screenline_num=0;
 	colors_connected();
 	set_status("[Connected]");
 }

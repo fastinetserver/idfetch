@@ -40,6 +40,10 @@ int lower_char(int c);
 string noupper(string s);
 
 string toString(uint t);
+string toString(int t);
+string toString(ulong t);
+string toString(long t);
+string toString(bool t);
 string field(string prefix,ulong t, int width);
 
 #endif

@@ -54,7 +54,7 @@ void Tui_server::init(){
 		res=bind(server_sockfd, (struct sockaddr *)&server_address, server_len);
 		if (res != 0){
 				error_log("Error: "+toString(res)
-							+" in ui_server.cpp binding socket address"+bind_address
+							+" in ui_server.cpp binding socket address "+bind_address
 							+":"+toString(ntohs(server_address.sin_port)));
 		}
 	//Create a connection queue and initialize readfds to handle input from server_sockfd:
