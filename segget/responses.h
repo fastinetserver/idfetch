@@ -23,44 +23,35 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __NETWORK_DISTFILE_BROKER_H__
-#define __NETWORK_DISTFILE_BROKER_H__
 
-#include <vector>
-#include "shorttypes.h"
-#include "network.h"
-#include "responses.h"
+#ifndef __RESPONSES_H__
+#define __RESPONSES_H__
+
 using namespace std;
 
-enum Tnetwork_distfile_broker_phases{
-	E_USE_AS_LOCAL_MIRRORS,
-	E_ALL_LOCAL_MIRRORS_FAILED,
-	E_PROXY_FETCHER_DOWNLOADED,
-	E_ALL_PROXY_FETCHER_MIRRORS_FAILED
-};
+#define R_NOT_SET										300
+#define R_LM_WAIT_FOR_LOCAL_MIRRORS						50
 
-class Tnetwork_distfile_broker{
-	public:
-//		map<string,Tmirror *> benchmarked_mirror_list;
-		vector<bool> mirror_fails_vector;
-		timeval last_request_time;
-		ulong network_num;
-		ulong failed_mirrors_num;
-		Tnetwork_distfile_broker_phases phase;
-		uint proxy_fetcher_response;
-		Tnetwork_distfile_broker():
-			mirror_fails_vector(),
-			last_request_time(),
-			network_num(0),
-			failed_mirrors_num(0),
-			phase(E_USE_AS_LOCAL_MIRRORS),
-			proxy_fetcher_response(R_PF_NOT_REQUESTED_YET)
-			{};
-		void init(ulong network_number);
-//		void mirror_failed(uint mirror_num);
-		void local_mirror_failed(uint mirror_num);
-		void proxy_fetcher_mirror_failed(uint mirror_num);
-//		bool some_mirrors_have_NOT_failed_yet();
-};
+#define R_PF_NOT_REQUESTED_YET							100
+#define R_PF_ADDED_TO_PROXY_QUEUE						101
+#define R_PF_ALREADY_WAS_IN_QUEUE						102
+#define R_PF_DOWNLOADED									103
+#define R_PF_BE_MORE_PATIENT							104
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				105
+#define R_PF_FAILED										106
+#define R_PF_REJECTED									107
+
+// 0 for succesfull return of provide_segment()
+#define R_R_DOWNLOAD_STARTED							0
+#define R_R_WAITING										108
+#define R_R_DOWNLOADING									109
+
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		110
+
+#define ALLOW_REQUESTS_TO_PROXY_FETCHERS				201
+#define DO_NOT_ALLOW_REQUESTS_TO_PROXY_FETCHERS			202
+#define ALLOW_REMOTE_NETWORKS							203
+#define DO_NOT_ALLOW_REMOTE_NETWORKS					204
+#define ALLOW_LOWER_PRIORITY_NETWORKS					205
 
 #endif

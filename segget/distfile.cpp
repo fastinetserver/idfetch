@@ -27,11 +27,6 @@
 #include "distfile.h"
 
 //Make the necessary includes and set up the variables:
-#define ALLOW_PROXY_FETCHER_NETWORKS			201
-#define DO_NOT_ALLOW_PROXY_FETCHER_NETWORKS		202
-#define ALLOW_REMOTE_NETWORKS					203
-#define DO_NOT_ALLOW_REMOTE_NETWORKS			204
-#define ALLOW_LOWER_PRIORITY_NETWORKS			205
 using namespace std;
 
 int Tdistfile::decode_server_response(string server_response){
@@ -39,24 +34,34 @@ int Tdistfile::decode_server_response(string server_response){
 /*
 #define R_LM_WAIT_FOR_LOCAL_MIRRORS						100
 
-#define R_PF_BE_MORE_PATIENT							101
-#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				102
-#define R_PF_ADDED_TO_PROXY_QUEUE						103
-#define R_PF_ALREADY_WAS_IN_QUEUE						104
-#define R_PF_DOWNLOADED									105
+#define R_PF_ADDED_TO_PROXY_QUEUE						101
+#define R_PF_ALREADY_WAS_IN_QUEUE						102
+#define R_PF_DOWNLOADED									103
+#define R_PF_BE_MORE_PATIENT							104
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				105
 #define R_PF_FAILED										106
-#define R_PF_WAIT_FOR_PROXY_FETCHER_MIRRORS				100
+#define R_PF_REJECTED									107
 
 // 0 for succesfull return of provide_segment()
 #define R_R_DOWNLOAD_STARTED							0
-#define R_R_WAITING										107
-#define R_R_DOWNLOADING									108
+#define R_R_WAITING										108
+#define R_R_DOWNLOADING									109
 
-#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		109
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		110
+
+#define ALLOW_PROXY_FETCHER_NETWORKS					201
+#define DO_NOT_ALLOW_PROXY_FETCHER_NETWORKS				202
+#define ALLOW_REMOTE_NETWORKS							203
+#define DO_NOT_ALLOW_REMOTE_NETWORKS					204
+#define ALLOW_LOWER_PRIORITY_NETWORKS					205
 */
 
-	int int_server_response=atoi(server_response.c_str());
+int int_server_response=atoi(server_response.c_str());
 	switch (int_server_response){
+		case R_PF_REJECTED:{
+			debug("Server response:"+server_response+" - R_PF_REJECTED");
+			return int_server_response;
+		};
 		case R_PF_ERROR_ADDING_TO_PROXY_QUEUE:{
 			debug("Server response:"+server_response+" - R_PF_ERROR_ADDING_TO_PROXY_QUEUE");
 			return int_server_response;
@@ -367,20 +372,38 @@ uint Tdistfile::provide_local_network(CURLM* cm, uint connection_num, uint seg_n
 			if (network_array[network_num].priority==network_priority){
 				debug("        network_priority="+toString(network_array[network_num].priority));
 				if (network_array[network_num].network_mode==MODE_LOCAL){
-					if (network_array[network_num].has_free_connections()){
-						if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
+					if (network_distfile_brokers_array[network_num].phase==E_USE_AS_LOCAL_MIRRORS){
+						if (network_array[network_num].has_free_connections()){
 //						debug("             Allowed network#:"+toString(network_num));
 							if ((best_local_network_num==-1)
 							or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
 									best_local_network_num=network_num;
 									debug("             Replace best LOCAL network to network#:"+toString(network_num));
 								}
-						}
-					}else{
-						if (network_array[network_num].only_local_when_possible){
-							if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
+						}else{
+							if (network_array[network_num].only_local_when_possible){
 								allow_proxy_fetcher_mirrors=false;
 								debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
+							}
+						}
+					}
+				}
+				if (network_array[network_num].network_mode==MODE_PROXY_FETCHER)
+				{
+					if ((network_distfile_brokers_array[network_num].phase==E_USE_AS_LOCAL_MIRRORS)
+					or (network_distfile_brokers_array[network_num].phase==E_PROXY_FETCHER_DOWNLOADED))
+					{
+						if (network_array[network_num].has_free_connections()){
+//							debug("             Allowed network#:"+toString(network_num));
+							if ((best_local_network_num==-1)
+							or (network_array[best_local_network_num].active_connections_num>network_array[network_num].active_connections_num)){
+									best_local_network_num=network_num;
+									debug("             Replace best LOCAL network to network#:"+toString(network_num));
+							}
+						}else{
+							if (network_array[network_num].only_local_when_possible){
+									allow_proxy_fetcher_mirrors=false;
+									debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
 							}
 						}
 					}
@@ -394,19 +417,19 @@ uint Tdistfile::provide_local_network(CURLM* cm, uint connection_num, uint seg_n
 			return choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
 		}else{
 			if (allow_proxy_fetcher_mirrors){
-				return ALLOW_PROXY_FETCHER_NETWORKS;
+				return ALLOW_REQUESTS_TO_PROXY_FETCHERS;
 			}else{
 				debug("NOT all local mirrors have failed - restricted to local mirrors only.");
-				return DO_NOT_ALLOW_PROXY_FETCHER_NETWORKS;
+				return DO_NOT_ALLOW_REQUESTS_TO_PROXY_FETCHERS;
 			}
 		}
 	}catch(...){
-		error_log("Error: distfile.cpp: provide_local_network()");
+		error_log("Error: distfile.cpp: provlocal_networkwork()");
 		return 1;
 	}
 }
 
-uint Tdistfile::provide_proxy_fetcher_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority){
+uint Tdistfile::request_proxy_fetcher_network(uint network_priority){
 // TO-DO: Add option to go for remote networks or low priority networks even if already DPROXY_QUEUED
 // TO-DO: There can be several proxy-fetchers of the same priority level, define a rule to make a choice
 	try{
@@ -420,12 +443,22 @@ uint Tdistfile::provide_proxy_fetcher_network(CURLM* cm, uint connection_num, ui
 					//replace this one by does_not_reject_connections
 //					if (network_array[network_num].has_free_connections()){
 						if ((best_proxy_fetcher_network_num==-1)
+						
 //									or
 //						(network_array[best_proxy_fetcher_network_num].active_connections_num>network_array[network_num].active_connections_num)
-						 ){
-							best_proxy_fetcher_network_num=network_num;
-							debug("             Replace best_proxy_fetcher_network_num to network#:"+toString(best_proxy_fetcher_network_num));
-						}
+						    
+						){
+							switch (network_distfile_brokers_array[best_proxy_fetcher_network_num].proxy_fetcher_response){
+								case R_PF_DOWNLOADED:break;
+								case R_PF_ERROR_ADDING_TO_PROXY_QUEUE:break;
+								case R_PF_FAILED:break;
+								case R_PF_REJECTED:break;
+								default:{
+									best_proxy_fetcher_network_num=network_num;
+									debug("             Replace best_proxy_fetcher network_num to network#:"+toString(best_proxy_fetcher_network_num));
+									break;
+								}
+							}
 /*
 					}else{
 						if (network_array[network_num].only_local_when_possible){
@@ -436,6 +469,7 @@ uint Tdistfile::provide_proxy_fetcher_network(CURLM* cm, uint connection_num, ui
 						}
 					}
 */
+						}
 				}
 			}
 		}
@@ -445,15 +479,21 @@ uint Tdistfile::provide_proxy_fetcher_network(CURLM* cm, uint connection_num, ui
 				return R_PF_BE_MORE_PATIENT;
 			}else{
 				// request from proxy fethcer
-				int request_result=request(best_proxy_fetcher_network_num, json_data);
+				network_distfile_brokers_array[best_proxy_fetcher_network_num].proxy_fetcher_response=request(best_proxy_fetcher_network_num, json_data);
+				if ((network_distfile_brokers_array[best_proxy_fetcher_network_num].proxy_fetcher_response==R_PF_DOWNLOADED)
+				and (network_distfile_brokers_array[best_proxy_fetcher_network_num].phase==E_ALL_LOCAL_MIRRORS_FAILED))
+				{
+					network_distfile_brokers_array[best_proxy_fetcher_network_num].phase=E_PROXY_FETCHER_DOWNLOADED;
+				}
 				debug("Trying to dowload distfile"+name+" via proxy_fetcher. status="+toString(status));
-				if (request_result==R_PF_DOWNLOADED){
+				if (network_distfile_brokers_array[best_proxy_fetcher_network_num].phase==E_PROXY_FETCHER_DOWNLOADED){
 					// start download from the proxy_fetcher
 					debug("             So best proxy_fetcher_network is network#:"+toString(best_proxy_fetcher_network_num));
-					return choose_best_local_mirror(cm, connection_num, best_proxy_fetcher_network_num, seg_num);
+					return R_PF_DOWNLOADED;
+						//choose_best_local_mirror(cm, connection_num, best_proxy_fetcher_network_num, seg_num);
 				}
 				//return - don't switch to low priority networks
-				return request_result;
+				return network_distfile_brokers_array[best_proxy_fetcher_network_num].proxy_fetcher_response;
 			}
 		}else{
 			if (allow_remote_mirrors){
@@ -465,7 +505,7 @@ uint Tdistfile::provide_proxy_fetcher_network(CURLM* cm, uint connection_num, ui
 			}
 		}
 	}catch(...){
-		error_log("Error: distfile.cpp: provide_proxy_fetcher_network()");
+		error_log("Error: distfile.cpp: provproxy_fetcher_networkwork()");
 		return 1;
 	}
 }
@@ -511,30 +551,37 @@ uint Tdistfile::provide_remote_network(CURLM* cm, uint connection_num, uint seg_
 	}
 }
 
-
 int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 	try{
-		int result;
+		int result=R_NOT_SET;
 		for (uint network_priority=10; network_priority>0; network_priority--){
-			result=provide_local_network(cm, connection_num, seg_num, network_priority);
-			if (result==ALLOW_PROXY_FETCHER_NETWORKS){
-				debug("Switching to proxy-fetcher networks with priority:"+toString(network_priority));
-				result=provide_proxy_fetcher_network(cm, connection_num, seg_num, network_priority);
-				if (result==ALLOW_REMOTE_NETWORKS){
-					debug("Switching to remote networks with priority:"+toString(network_priority));
-					result=provide_remote_network(cm, connection_num, seg_num, network_priority);
-					// if not lower_priority_networks -> result found -> return it
-					if (result!=ALLOW_LOWER_PRIORITY_NETWORKS){
-						return result;
+			{
+				result=provide_local_network(cm, connection_num, seg_num, network_priority);
+				if (result==ALLOW_REQUESTS_TO_PROXY_FETCHERS){
+					debug("Switching to proxy-fetcher networks with priority:"+toString(network_priority));
+					result=request_proxy_fetcher_network(network_priority);
+					switch (result){
+						case ALLOW_REMOTE_NETWORKS:{
+							debug("Switching to remote networks with priority:"+toString(network_priority));
+							result=provide_remote_network(cm, connection_num, seg_num, network_priority);
+							// if not lower_priority_networks => result found => return it
+							if (result!=ALLOW_LOWER_PRIORITY_NETWORKS){
+								return result;
+							};
+							break;
+						}
+						// don't switch to remote and lower priority networks => return results
+						case DO_NOT_ALLOW_REMOTE_NETWORKS: return result;
+						case R_PF_DOWNLOADED: break;
 					}
 				}else{
-					// don't switch to low priority networks - return results
+					// don't switch to proxy-fetcher requests, remote,
+					// and lower priority networks => return results
 					return result;
 				}
-			}else{
-				// don't switch to low priority networks - return results
-				return result;
-			}
+			// try to download from local mirrors again because one of the proxy-fetcher
+			// claims that distfile has been donwloaded
+			}while (result==R_PF_DOWNLOADED);
 		}
 		// haven't found anything suitable
 		return R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND;
@@ -552,16 +599,23 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 		error_log("Error: distfile.cpp: inc_dld_segments_count()");
 	}
 }
+long is_symlink_restricted(string distfile_name){
+	for(ulong pattern_num=0; pattern_num<settings.provide_mirror_files_restricted_patterns_vector.size(); pattern_num++){
+		if (distfile_name.find(settings.provide_mirror_files_restricted_patterns_vector[pattern_num],0)!=distfile_name.npos){
+			return pattern_num;
+		}
+	}
+	return -1;
+}
 
 void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
 	try{
-		for(ulong pattern_num=0; pattern_num<settings.provide_mirror_files_restricted_patterns_vector.size(); pattern_num++){
-			if (name.find(settings.provide_mirror_files_restricted_patterns_vector[pattern_num],0)!=name.npos){
-				log("Symlink to distfile:"+name+" was restricted by pattern <"
+		long pattern_num=is_symlink_restricted(name);
+		if (pattern_num>=0){
+			log("Symlink to distfile:"+name+" was restricted by pattern <"
 					+settings.provide_mirror_files_restricted_patterns_vector[pattern_num]
 					+"> from line "+toString(pattern_num+1)+" of restrict.conf file");
-				return;
-			}
+			return;
 		}
 		string new_mirror_name;
 		string old_distfile_name;

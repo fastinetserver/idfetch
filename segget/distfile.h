@@ -52,6 +52,7 @@
 #include "network.h"
 #include "networkbroker.h"
 #include "segment.h"
+#include "responses.h"
 class Tsegment;
 
 //#include <sys/types.h>
@@ -72,22 +73,6 @@ using namespace std;
 
 typedef unsigned int uint;
 
-#define R_LM_WAIT_FOR_LOCAL_MIRRORS						100
-
-#define R_PF_BE_MORE_PATIENT							101
-#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				102
-#define R_PF_ADDED_TO_PROXY_QUEUE						103
-#define R_PF_ALREADY_WAS_IN_QUEUE						104
-#define R_PF_DOWNLOADED									105
-#define R_PF_FAILED										106
-
-// 0 for succesfull return of provide_segment()
-#define R_R_DOWNLOAD_STARTED							0
-#define R_R_WAITING										107
-#define R_R_DOWNLOADING									108
-
-#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		109
-
 enum Tdistfile_status{
 	DNEW,
 	D_NOT_PROXY_REQUESTED,
@@ -101,6 +86,8 @@ enum Tdistfile_status{
 	DDOWNLOADED,
 	DFAILED
 };
+
+long is_symlink_restricted(string distfile_name);
 
 class Tdistfile{
 	private:
@@ -157,7 +144,7 @@ class Tdistfile{
 		void load_url_list(json_object* json_array_distfile_urllist);
 		void split_into_segments();
 		uint provide_local_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
-		uint provide_proxy_fetcher_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
+		uint request_proxy_fetcher_network(uint network_priority);
 		uint provide_remote_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
 		void inc_dld_segments_count(Tsegment * current_segment);

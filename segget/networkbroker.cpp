@@ -39,16 +39,49 @@ void Tnetwork_distfile_broker::init(ulong network_number){
 	}
 }
 
+void Tnetwork_distfile_broker::local_mirror_failed(uint mirror_num){
+	if (phase==E_USE_AS_LOCAL_MIRRORS){
+		if (! mirror_fails_vector[mirror_num]){
+			mirror_fails_vector[mirror_num]=true;
+			failed_mirrors_num++;
+		}
+		if (failed_mirrors_num>=mirror_fails_vector.size()){
+			phase=E_ALL_LOCAL_MIRRORS_FAILED;
+			failed_mirrors_num=0;
+		}
+	}
+}
+
+void Tnetwork_distfile_broker::proxy_fetcher_mirror_failed(uint mirror_num){
+	if (phase==E_PROXY_FETCHER_DOWNLOADED){
+		if (! mirror_fails_vector[mirror_num]){
+			mirror_fails_vector[mirror_num]=true;
+			failed_mirrors_num++;
+		}
+		if (failed_mirrors_num>=mirror_fails_vector.size()){
+			phase=E_ALL_PROXY_FETCHER_MIRRORS_FAILED;
+			failed_mirrors_num=0;
+		}
+	}
+}
+
+/*
 bool Tnetwork_distfile_broker::some_mirrors_have_NOT_failed_yet(){
 	try{
-		for (ulong cur_mirror_num=0; cur_mirror_num<mirror_fails_vector.size();cur_mirror_num++){
-			if (! mirror_fails_vector[cur_mirror_num]){
-				return true;
-			}
+		if (failed_mirrors_num<mirror_fails_vector.size()){
+			return false;
+		}else{
+			return true;
 		}
-		return false;
+//		for (ulong cur_mirror_num=0; cur_mirror_num<mirror_fails_vector.size();cur_mirror_num++){
+//			if (! mirror_fails_vector[cur_mirror_num]){
+//				return true;
+//			}
+//		}
+//		return false;
 	}catch(...){
 		error_log("Error in networkbroker.cpp: init()");
 		return false;
 	}
 }
+*/

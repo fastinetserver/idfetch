@@ -32,12 +32,14 @@
 class Tsegment;
 #include "segment.h"
 #include "utils.h"
+#include "networkbroker.h"
 
 using namespace std;
 
 class Tconnection{
 	static uint total_connections;
 	private:
+		Tnetwork_distfile_broker_phases connection_start_time_network_phase_for_pf_networks;
 		uint network_num;
 		uint mirror_num;
 		ulong total_dld_bytes;
@@ -48,6 +50,7 @@ class Tconnection{
 		timeval start_time;
 		Tsegment *segment;
 		Tconnection():
+			connection_start_time_network_phase_for_pf_networks(E_USE_AS_LOCAL_MIRRORS),
 			network_num(0),
 			mirror_num(0),
 			total_dld_bytes(0),

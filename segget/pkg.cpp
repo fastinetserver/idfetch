@@ -56,6 +56,9 @@ int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_dist
 	string distfile_name;
 	try{
 		distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
+		if (is_symlink_restricted(distfile_name)){
+			return R_PF_REJECTED;
+		}
 		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
 			if (Pdistfile_list[distfile_num]->name==distfile_name){
 				switch (Pdistfile_list[distfile_num]->status){
