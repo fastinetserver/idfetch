@@ -37,6 +37,9 @@ void *run_proxy_fetcher_server(void * ){
 	// Create and name a socket for the server:
 	server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
+	int on=1;
+	setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
 	server_address.sin_family = AF_INET;
 	//server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_address.sin_addr.s_addr = inet_addr(settings.provide_proxy_fetcher_ip.c_str());

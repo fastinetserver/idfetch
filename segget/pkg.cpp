@@ -45,10 +45,10 @@ int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 
 		string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
 		debug("Added distfile: "+distfile_name+" to download queue");
-		return R_ADDED_TO_PROXY_QUEUE;
+		return R_PF_ADDED_TO_PROXY_QUEUE;
 	}catch(...){
 		error_log("Error in pkg.cpp: pushback_distfile()");
-		return R_ERROR_ADDING_TO_PROXY_QUEUE;
+		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 	}
 }
 
@@ -61,15 +61,15 @@ int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_dist
 				switch (Pdistfile_list[distfile_num]->status){
 					case DDOWNLOADED: {
 						debug("PROXY_FETCHER: distfile: "+distfile_name+" was downloaded");
-						return R_DOWNLOADED;
+						return R_PF_DOWNLOADED;
 					};
 					case DFAILED:{
 						debug("PROXY_FETCHER: Failed to download distfile: "+distfile_name);
-						return R_FAILED;
+						return R_PF_FAILED;
 					}
 					default:{
 						debug("PROXY_FETCHER: distfile: "+distfile_name+" was already in queue");
-						return R_ALREADY_WAS_IN_QUEUE;
+						return R_PF_ALREADY_WAS_IN_QUEUE;
 					}
 				}
 			}
@@ -79,7 +79,7 @@ int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_dist
 		error_log("Error in pkg.cpp: pushback_distfile()");
 	}
 	debug("PROXY_FETCHER: Error adding distfile: "+distfile_name+" to proxy-fetcher's queue");
-	return R_ERROR_ADDING_TO_PROXY_QUEUE;
+	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
 

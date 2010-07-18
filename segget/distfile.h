@@ -156,7 +156,9 @@ class Tdistfile{
 		void load_distfile_from_json(json_object* json_obj_distfile);
 		void load_url_list(json_object* json_array_distfile_urllist);
 		void split_into_segments();
-		void choose_networks_with_priority(uint priority, bool &allow_remote_mirrors, int &best_local_network_num,int &best_proxy_fetcher_network_num,int &best_remote_network_num);
+		uint provide_local_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
+		uint provide_proxy_fetcher_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
+		uint provide_remote_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
 		void inc_dld_segments_count(Tsegment * current_segment);
 		void symlink_distfile_to_provide_mirror_dir();
