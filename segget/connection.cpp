@@ -28,6 +28,7 @@
 uint Tconnection::total_connections=0;
 Tconnection connection_array[MAX_CONNECTS];
 time_t prev_time;
+
 void init_connections(){
 	for (ulong connection_num=0; connection_num<MAX_CONNECTS; connection_num++){
 		connection_array[connection_num].connection_num=connection_num;
@@ -47,25 +48,44 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 		active=true;
 		debug("Connecting network"+toString(network_num));
 
-		if (network_array[network_number].network_mode==MODE_PROXY_FETCHER){
-			connection_start_time_network_phase_for_pf_networks=segment->parent_distfile->network_distfile_brokers_array[network_number].phase;
+		if (network_array[network_num].network_mode==MODE_PROXY_FETCHER){
+			connection_start_time_network_phase_for_pf_networks=segment->parent_distfile->network_distfile_brokers_array[network_num].phase;
+		}
+		string url;
+		if (network_array[network_num].network_mode!=MODE_REMOTE){
+			url=network_array[network_num].benchmarked_mirror_list[mirror_num].url+segment->parent_distfile->name;
+			debug("  URL:"+url);
+		}else{
+			url=segment->parent_distfile->url_list[mirror_num];
 		}
 
+		
+		network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
 		network_array[network_num].connect();
-		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, mirror_num);
+		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, url);
 		debug("Started connection for distfile: "+segment->parent_distfile->name);
 	}catch(...){
 		error_log("Error in connection.cpp: start()");
 	}
 }
 
-void Tconnection::stop(uint connection_result){
+void Tconnection::stop(int connection_result){
 	try{
-		debug("Finished connection for distfile"+segment->parent_distfile->name+" Status"+toString(connection_result));
+		debug("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
+		error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
+		
 		msg_clean_connection(connection_num);
 		active=false;
 		network_array[network_num].disconnect();
+//		network_array[network_num].benchmarked_mirror_list[mirror_num].stop();
 		segment->segment_file.close();
+		if (connection_result==0){
+			if (! segment->segment_verification_is_ok()){
+				debug("curl_lies - there is a problem downloading segment");
+				error_log("curl_lies - there is a problem downloading segment");
+				connection_result=100;
+			}
+		}
 
 		Tdistfile* prnt_distfile=segment->parent_distfile;
 		prnt_distfile->active_connections_num--;
@@ -124,7 +144,7 @@ void Tconnection::stop(uint connection_result){
 			// no error => count this one and start new
 			log("Succesfully downloaded "+segment->file_name+" on connection#"+toString(connection_num));
 			debug(" Successful download "+segment->url);
-			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
+// already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
 			segment->status=SDOWNLOADED;
 			prnt_distfile->inc_dld_segments_count(segment);

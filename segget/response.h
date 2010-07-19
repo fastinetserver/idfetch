@@ -24,48 +24,38 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CONNECTION_H__
-#define __CONNECTION_H__
+#ifndef __RESPONSE_H__
+#define __RESPONSE_H__
 
-#include <time.h>
-#include <curl/curl.h>
-class Tsegment;
-#include "segment.h"
-#include "utils.h"
-#include "networkbroker.h"
+#include "tui.h"
 
 using namespace std;
 
-class Tconnection{
-	static uint total_connections;
-	private:
-		Tnetwork_distfile_broker_phases connection_start_time_network_phase_for_pf_networks;
-		uint network_num;
-		uint mirror_num;
-		ulong total_dld_bytes;
-		ulong bytes_per_last_interval;
-	public:
-		uint connection_num;
-		bool active;
-		timeval start_time;
-		Tsegment *segment;
-		Tconnection():
-			connection_start_time_network_phase_for_pf_networks(E_USE_AS_LOCAL_MIRRORS),
-			network_num(0),
-			mirror_num(0),
-			total_dld_bytes(0),
-			bytes_per_last_interval(0),
-			connection_num(0),
-			active(0),
-			start_time(),
-			segment(0){};
-		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
-		void stop(int connection_result);
-		void inc_bytes_per_last_interval(ulong new_bytes_count);
-		void show_connection_progress(ulong time_diff);
-};
+#define R_NOT_SET										300
+#define R_LM_WAIT_FOR_LOCAL_MIRRORS						50
 
-extern time_t prev_time;
-extern Tconnection connection_array[MAX_CONNECTS];
-void init_connections();
+#define R_PF_NOT_REQUESTED_YET							100
+#define R_PF_ADDED_TO_PROXY_QUEUE						101
+#define R_PF_ALREADY_WAS_IN_QUEUE						102
+#define R_PF_DOWNLOADED									103
+#define R_PF_BE_MORE_PATIENT							104
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				105
+#define R_PF_FAILED										106
+#define R_PF_REJECTED									107
+
+// 0 for succesfull return of provide_segment()
+#define R_R_DOWNLOAD_STARTED							0
+#define R_R_WAITING										108
+#define R_R_DOWNLOADING									109
+
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		110
+
+#define ALLOW_REQUESTS_TO_PROXY_FETCHERS				201
+#define DO_NOT_ALLOW_REQUESTS_TO_PROXY_FETCHERS			202
+#define ALLOW_REMOTE_NETWORKS							203
+#define DO_NOT_ALLOW_REMOTE_NETWORKS					204
+#define ALLOW_LOWER_PRIORITY_NETWORKS					205
+
+int decode_server_response(string server_response);
+
 #endif

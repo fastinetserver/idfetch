@@ -54,7 +54,7 @@ void Tmirror::stop(ulong time, uint size){
 		dld_time+=time/1000;
 		dld_size+=size;
 		honesty=1;
-		debug(toString(time)+"---"+toString(size));
+		debug("Connnection to Mirror stopped: Time spent:"+toString(time)+"--- Size downloaded:"+toString(size));
 		active_num--;
 	}catch(...){
 		error_log("Error in mirror.cpp: stop()");

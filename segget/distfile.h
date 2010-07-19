@@ -52,7 +52,7 @@
 #include "network.h"
 #include "networkbroker.h"
 #include "segment.h"
-#include "responses.h"
+#include "response.h"
 class Tsegment;
 
 //#include <sys/types.h>
@@ -136,7 +136,6 @@ class Tdistfile{
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
 		~Tdistfile();
-		int decode_server_response(string server_response);
 		int request(ulong network_num, string msg);
 		void init();
 		bool allows_new_actions();

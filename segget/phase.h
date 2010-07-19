@@ -24,48 +24,20 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CONNECTION_H__
-#define __CONNECTION_H__
+#ifndef __PHASE_H__
+#define __PHASE_H__
 
-#include <time.h>
-#include <curl/curl.h>
-class Tsegment;
-#include "segment.h"
-#include "utils.h"
-#include "networkbroker.h"
+#include <string>
 
 using namespace std;
 
-class Tconnection{
-	static uint total_connections;
-	private:
-		Tnetwork_distfile_broker_phases connection_start_time_network_phase_for_pf_networks;
-		uint network_num;
-		uint mirror_num;
-		ulong total_dld_bytes;
-		ulong bytes_per_last_interval;
-	public:
-		uint connection_num;
-		bool active;
-		timeval start_time;
-		Tsegment *segment;
-		Tconnection():
-			connection_start_time_network_phase_for_pf_networks(E_USE_AS_LOCAL_MIRRORS),
-			network_num(0),
-			mirror_num(0),
-			total_dld_bytes(0),
-			bytes_per_last_interval(0),
-			connection_num(0),
-			active(0),
-			start_time(),
-			segment(0){};
-		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
-		void stop(int connection_result);
-		void inc_bytes_per_last_interval(ulong new_bytes_count);
-		void show_connection_progress(ulong time_diff);
+enum Tnetwork_distfile_broker_phases{
+	E_USE_AS_LOCAL_MIRRORS,
+	E_ALL_LOCAL_MIRRORS_FAILED,
+	E_PROXY_FETCHER_DOWNLOADED,
+	E_ALL_PROXY_FETCHER_MIRRORS_FAILED
 };
 
-extern time_t prev_time;
-extern Tconnection connection_array[MAX_CONNECTS];
-void init_connections();
+string phaseToString(int phase_num);
+
 #endif

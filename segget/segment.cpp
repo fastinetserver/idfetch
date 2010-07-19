@@ -37,6 +37,25 @@ string statusToString(Tsegment_status the_status){
 		default :return "UNKNOWN STATUS";
 	}
 }
+bool Tsegment::segment_verification_is_ok(){
+	try{
+		ulong downloaded_size;
+		ifstream file((settings.segments_dir+"/"+file_name).c_str(), ios::in|ios::binary);
+		ulong start = file.tellg();
+		file.seekg (0, ios::end);
+		ulong end = file.tellg();
+		downloaded_size = end - start;
+		debug("seg:"+toString(segment_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
+		file.close();
+		if (downloaded_size==segment_size){
+			return true;
+		}
+	}catch(...){
+		error_log("Error in segment.cpp: segment_verification_is_ok()");
+	}
+	return false;
+}
+
 void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end){
 	try{
 		parent_distfile=prnt_distfile;
@@ -44,17 +63,9 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 		segment_size=range_end-seg_num*default_seg_size+1;
 		range=toString(seg_num*default_seg_size)+"-"+toString(range_end);
 		file_name="."+distfile_name+".seg"+toString(seg_num);
-		ulong downloaded_size;
 		if (settings.get_resume()){
 			//check if downloaded
-			ifstream file((settings.segments_dir+"/"+file_name).c_str(), ios::in|ios::binary);
-			ulong start = file.tellg();
-			file.seekg (0, ios::end);
-			ulong end = file.tellg();
-			downloaded_size = end - start;
-			debug("seg:"+toString(seg_num)+" Dsize="+toString(downloaded_size)+" seg_size="+toString(segment_size));
-			file.close();
-			if (downloaded_size==segment_size){
+			if (segment_verification_is_ok()){
 				status=SDOWNLOADED;
 				debug("seg:"+toString(seg_num)+" Downloaded");
 			}
@@ -67,15 +78,11 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 		error_log("Error in segment.cpp: prepare_for_connection()");
 	}
 }
-void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, uint mirror_num){
+void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string url_address){
 	try{
 //		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
-		if (network_array[network_num].network_mode==MODE_LOCAL){
-			url=network_array[network_num].benchmarked_mirror_list[mirror_num].url+parent_distfile->name;
-			debug("  URL:"+url);
-		}else{
-			url=parent_distfile->url_list[mirror_num];
-		}
+		// if MODE_LOCAL or MODE_PROXY_FETCHER
+		url=url_address;
 		msg_connecting(con_num,distfile_num, segment_num,"Downloading from "+url);
 		segments_in_progress[con_num]=this;
 		status=SDOWNLOADING;

@@ -103,7 +103,8 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 			while(distfile_num<cur_pkg->distfile_count){
 //				if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
 				if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
-					debug("Distfile "+cur_pkg->Pdistfile_list[distfile_num]->name+" allows new connections");
+					debug("============================================= Distfile "
+						+cur_pkg->Pdistfile_list[distfile_num]->name+" allows new connections");
 //					debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
 //					debug("	distfile_num:"+toString(distfile_num));
 					if (cur_pkg->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile){
@@ -115,16 +116,21 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 //							debug("		segment_num:"+toString(segment_num));
 							//	segments_in_progress[connection_num]=
 							//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-							debug("Let's get segment status"+statusToString(cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
+							debug("Let's get segment status: "+statusToString(cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
 							if (cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
-								if ( ! cur_pkg->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+								if (0==cur_pkg->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
 									return 0; // download started
 								};
+								// no success with this segment though it's waiting
+								// probably there will be a problem downloading next segment
+								// so let's go for the next distfile
+								// and return to this distfile later - next time pkg_choose_segment is called
+								break; 
 							}else{
 								debug("status is not SWAITING - go for the next segment");
+								// haven't managed to provide this segment, go for the next one
+								segment_num++;
 							}
-							// haven't managed to provide this segment, go for the next one
-							segment_num++;
 						}
 					}else{
 							debug("	distfile "+cur_pkg->Pdistfile_list[distfile_num]->name+" has "
@@ -143,12 +149,12 @@ int choose_segment(uint connection_num){
 	try{
 		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
 //			debug("pkg_num:"+toString(pkg_num));
-			if (! pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
+			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
 				return 0;
 			}
 		}
 		// download distfiles as a proxy-fetcher
-		if (! pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
+		if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
 			return 0;
 		}
 		//  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
@@ -193,19 +199,20 @@ int download_pkgs(){
 			U=1;
 			while (U) {
 				// Use free connections to download segments connections
+				debug("Entering connection activation cycle");
 				for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
 					debug("connection_num:"+toString(connection_num));
 					if ( ! connection_array[connection_num].active){
-//						if (
 						debug("connection is not active - choosing segment");
 						choose_segment(connection_num);
-//						    )
-//							break;
+//						// activate only one connection
+//						break;
 					}
 					else{
 						debug("connection is active");
 					}
 				};
+				debug("Exit connection activation sycle");
 				while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
 				if (U) {
 					FD_ZERO(&R);
@@ -244,7 +251,7 @@ int download_pkgs(){
 						Tsegment *current_segment;
 						CURL *e = msg->easy_handle;
 						curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-						uint connection_result=msg->data.result;
+						int connection_result=msg->data.result;
 						string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
 						msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 						curl_multi_remove_handle(cm, e);

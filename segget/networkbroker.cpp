@@ -25,6 +25,11 @@
 */
 
 #include "networkbroker.h"
+
+string phaseToString(int phase_num);
+
+
+
 void Tnetwork_distfile_broker::init(ulong network_number){
 	try{
 		network_num=network_number;

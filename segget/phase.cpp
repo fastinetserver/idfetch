@@ -23,38 +23,15 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __NETWORK_DISTFILE_BROKER_H__
-#define __NETWORK_DISTFILE_BROKER_H__
 
-#include <vector>
-#include "shorttypes.h"
-#include "network.h"
-#include "response.h"
 #include "phase.h"
-using namespace std;
 
-class Tnetwork_distfile_broker{
-	public:
-//		map<string,Tmirror *> benchmarked_mirror_list;
-		vector<bool> mirror_fails_vector;
-		timeval last_request_time;
-		ulong network_num;
-		ulong failed_mirrors_num;
-		Tnetwork_distfile_broker_phases phase;
-		uint proxy_fetcher_response;
-		Tnetwork_distfile_broker():
-			mirror_fails_vector(),
-			last_request_time(),
-			network_num(0),
-			failed_mirrors_num(0),
-			phase(E_USE_AS_LOCAL_MIRRORS),
-			proxy_fetcher_response(R_PF_NOT_REQUESTED_YET)
-			{};
-		void init(ulong network_number);
-//		void mirror_failed(uint mirror_num);
-		void local_mirror_failed(uint mirror_num);
-		void proxy_fetcher_mirror_failed(uint mirror_num);
-//		bool some_mirrors_have_NOT_failed_yet();
-};
-
-#endif
+string phaseToString(int phase_num){
+	switch(phase_num){
+		case E_USE_AS_LOCAL_MIRRORS: return "E_USE_AS_LOCAL_MIRRORS";
+		case E_ALL_LOCAL_MIRRORS_FAILED: return "E_ALL_LOCAL_MIRRORS_FAILED";
+		case E_PROXY_FETCHER_DOWNLOADED: return "E_PROXY_FETCHER_DOWNLOADED";
+		case E_ALL_PROXY_FETCHER_MIRRORS_FAILED: return "E_ALL_PROXY_FETCHER_MIRRORS_FAILED";
+		default: return "Unknown phase";
+	}
+}
