@@ -144,7 +144,8 @@ void Tconnection::stop(int connection_result){
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 			if (segment->try_num>=settings.max_tries){
 				segment->status=SFAILED;
-//				segm
+				segment->parent_distfile->status=DFAILED;
+				error_log("Segget failed to download distfile: "+segment->parent_distfile->name);
 				error_log("Segment:"+segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
 			}
 			else segment->status=SWAITING;
