@@ -258,7 +258,11 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 
 		for (url_num=0; url_num<url_count; url_num++){
 			Pcurr_mirror=find_mirror(strip_mirror_name(url_list[url_num]));
+			debug("Evaluating url:"+url_list[url_num]
+					+" active_connections:"+toString(Pcurr_mirror->get_active_num())
+					+" connection limit:"+toString(settings.max_connections_num_per_mirror));
 			if (Pcurr_mirror->get_active_num()<settings.max_connections_num_per_mirror){
+				debug("Url satisfies connection num per mirror limit");
 				curr_mirror_self_rating=Pcurr_mirror->mirror_on_the_wall();
 				if (curr_mirror_self_rating<best_mirror_self_rating){
 					best_mirror_num=url_num;
@@ -272,8 +276,8 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 		}
 		if (Pbest_mirror){
 			debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
-			Pbest_mirror->start();
-			active_connections_num++;
+//			Pbest_mirror->start();
+//			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return R_R_DOWNLOAD_STARTED;
 		}
@@ -314,7 +318,7 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 
 
 
-			active_connections_num++;
+//			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return R_R_DOWNLOAD_STARTED;
 		}

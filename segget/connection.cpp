@@ -48,20 +48,28 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 		active=true;
 		debug("Connecting network"+toString(network_num));
 
+		segment->parent_distfile->active_connections_num++;
+
 		if (network_array[network_num].network_mode==MODE_PROXY_FETCHER){
 			connection_start_time_network_phase_for_pf_networks=segment->parent_distfile->network_distfile_brokers_array[network_num].phase;
 		}
-		string url;
-		if (network_array[network_num].network_mode!=MODE_REMOTE){
-			url=network_array[network_num].benchmarked_mirror_list[mirror_num].url+segment->parent_distfile->name;
-			debug("  URL:"+url);
-		}else{
-			url=segment->parent_distfile->url_list[mirror_num];
-		}
 
-		
-		network_array[network_num].benchmarked_mirror_list[best_mirror_num].start();
+		Tmirror *Pcurr_mirror;
+		string url;
+		if (network_array[network_num].network_mode==MODE_REMOTE){
+			url=segment->parent_distfile->url_list[mirror_num];
+			Pcurr_mirror=find_mirror(strip_mirror_name(url));
+		}else{
+			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+			url=Pcurr_mirror->url+segment->parent_distfile->name;
+		}
+		debug("  URL:"+url);
+
+		debug("aaaaa");
+		Pcurr_mirror->start();
+		debug("bbbbb");
 		network_array[network_num].connect();
+		debug("ccccc");
 		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, url);
 		debug("Started connection for distfile: "+segment->parent_distfile->name);
 	}catch(...){
@@ -87,8 +95,7 @@ void Tconnection::stop(int connection_result){
 			}
 		}
 
-		Tdistfile* prnt_distfile=segment->parent_distfile;
-		prnt_distfile->active_connections_num--;
+		segment->parent_distfile->active_connections_num--;
 /*
 		Tmirror *Pcurr_mirror;
 		if (network_array[network_num].network_mode==MODE_LOCAL){
@@ -114,16 +121,16 @@ void Tconnection::stop(int connection_result){
 			switch (network_array[network_num].network_mode){
 				case MODE_LOCAL:{
 	//				prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
-					prnt_distfile->network_distfile_brokers_array[network_num].local_mirror_failed(mirror_num);
+					segment->parent_distfile->network_distfile_brokers_array[network_num].local_mirror_failed(mirror_num);
 	//				find_mirror(strip_mirror_name(segment->url));
 					break;
 				}
 				case MODE_PROXY_FETCHER:{
 	//				prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
 					if (connection_start_time_network_phase_for_pf_networks==E_USE_AS_LOCAL_MIRRORS){
-						prnt_distfile->network_distfile_brokers_array[network_num].local_mirror_failed(mirror_num);
+						segment->parent_distfile->network_distfile_brokers_array[network_num].local_mirror_failed(mirror_num);
 					}else{ // proxy-fetcher mirror failed, if everything correct it must be in phase E_PROXY_FETCHER_DOWNLOADED,
-						prnt_distfile->network_distfile_brokers_array[network_num].proxy_fetcher_mirror_failed(mirror_num);
+						segment->parent_distfile->network_distfile_brokers_array[network_num].proxy_fetcher_mirror_failed(mirror_num);
 					}
 	//				find_mirror(strip_mirror_name(segment->url));
 					break;
@@ -137,6 +144,7 @@ void Tconnection::stop(int connection_result){
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 			if (segment->try_num>=settings.max_tries){
 				segment->status=SFAILED;
+//				segm
 				error_log("Segment:"+segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
 			}
 			else segment->status=SWAITING;
@@ -147,7 +155,7 @@ void Tconnection::stop(int connection_result){
 // already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
 			segment->status=SDOWNLOADED;
-			prnt_distfile->inc_dld_segments_count(segment);
+			segment->parent_distfile->inc_dld_segments_count(segment);
 		};
 	}catch(...){
 		error_log("Error in connection.cpp: stop()");

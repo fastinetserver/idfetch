@@ -53,6 +53,10 @@ void Tnetwork_distfile_broker::local_mirror_failed(uint mirror_num){
 		if (failed_mirrors_num>=mirror_fails_vector.size()){
 			phase=E_ALL_LOCAL_MIRRORS_FAILED;
 			failed_mirrors_num=0;
+			// clean the vector, to use it again when we switch to E_PROXY_FETCHER_DOWNLOADED phase
+			for (ulong mirr_num=0; mirr_num<mirror_fails_vector.size(); mirr_num++){
+				mirror_fails_vector[mirr_num]=false;
+			}
 		}
 	}
 }
