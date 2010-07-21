@@ -76,12 +76,26 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 		error_log("Error in connection.cpp: start()");
 	}
 }
-
-void Tconnection::stop(int connection_result){
+/*
+string explain_curl_error(int error_code){
+	try{
+		//curl_easy_strerror(
+	}catch(...){
+		error_log("Error in connection.cpp: explain_curl_error()");
+	}
+	return "Error in connection.cpp: explain_curl_error()";
+}
+*/
+void Tconnection::stop(CURLcode connection_result){
 	try{
 		stats.active_connections_counter--;
 		debug("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
-		error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
+		if (connection_result){
+			string error_str=curl_easy_strerror(connection_result);
+			debug("	ERROR "+toString(connection_result)+": "+error_str);
+			error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
+			error_log("	ERROR "+toString(connection_result)+": "+error_str);
+		}
 		
 		msg_clean_connection(connection_num);
 		active=false;
@@ -92,7 +106,7 @@ void Tconnection::stop(int connection_result){
 			if (! segment->segment_verification_is_ok()){
 				debug("curl_lies - there is a problem downloading segment");
 				error_log("curl_lies - there is a problem downloading segment");
-				connection_result=100;
+				connection_result=CURLE_READ_ERROR;
 			}
 		}
 

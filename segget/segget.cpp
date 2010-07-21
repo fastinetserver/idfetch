@@ -255,12 +255,12 @@ int download_pkgs(){
 						Tsegment *current_segment;
 						CURL *e = msg->easy_handle;
 						curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-						int connection_result=msg->data.result;
-						string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
-						msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
+//						CURLcode connection_result=msg->data.result;
+//						string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
+//						msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 						curl_multi_remove_handle(cm, e);
 	
-						connection_array[current_segment->connection_num].stop(connection_result);
+						connection_array[current_segment->connection_num].stop(msg->data.result);
 	
 //						if (not choose_segment(current_segment->connection_num)) {
 //							U++; // just to prevent it from remaining at 0 if there are more URLs to get
