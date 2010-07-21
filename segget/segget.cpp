@@ -262,9 +262,9 @@ int download_pkgs(){
 	
 						connection_array[current_segment->connection_num].stop(connection_result);
 	
-						if (not choose_segment(current_segment->connection_num)) {
-							U++; // just to prevent it from remaining at 0 if there are more URLs to get
-						};
+//						if (not choose_segment(current_segment->connection_num)) {
+//							U++; // just to prevent it from remaining at 0 if there are more URLs to get
+//						};
 						stats.show_totals();
 						curl_easy_cleanup(e);
 					}else {
