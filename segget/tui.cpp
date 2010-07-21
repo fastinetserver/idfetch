@@ -58,17 +58,35 @@ void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, st
 
 void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
 	try{
+
+		string eta_string;
+		if (speed==0){
+			eta_string=" ETA: inf";
+		}else{
+			eta_string=" ETA: "+secsToString((total_bytes-dld_bytes)/speed);
+		}
+
 		string speed_str;
 		string avg_speed_str;
+/*
 		if (speed<1000)
 			speed_str=field(" Speed:",speed,7)+" b/s";
 		else
 			speed_str=field(" Speed:",speed/1000,7)+" Kb/s";
+*/
+
+		speed_str=" Speed: "+speedToString(speed);
+/*
 		if (avg_speed<1000)
-			avg_speed_str=field(" AVG speed:",avg_speed,7)+" b/s";
+			avg_speed_str=field(" AVG",avg_speed,7)+" b/s";
 		else
-			avg_speed_str=field(" AVG speed:",avg_speed/1000,7)+" Kb/s";
+			avg_speed_str=field(" AVG",avg_speed/1000,7)+" Kb/s";
+*/
+		avg_speed_str=" AVG speed: "+speedToString(avg_speed);
+		
 		int percent=dld_bytes*100/total_bytes;
+
+		
 		msg(connection_num*CONNECTION_LINES,0,
 			field("[",connection_num,2)+"]"
 			+field(" Net",network_num,1)
@@ -78,7 +96,8 @@ void msg_segment_progress(uint connection_num, uint network_num, uint segment_nu
 			+field(" / ",total_bytes,7)
 			+field(" = ",percent,3)+"%"
 			+speed_str
-			+avg_speed_str);
+			+avg_speed_str
+			+eta_string);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_segment_progress()");
 	}

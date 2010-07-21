@@ -40,3 +40,85 @@ ulong time_left_from(timeval from_time){
 	}
 }
 
+string secsToString(ulong secs){
+	string result="";
+	ulong mins=0;
+	ulong hours=0;
+	ulong days=0;
+	ldiv_t time_div_spliter;
+	if (secs>60){
+		time_div_spliter = ldiv (secs,60);
+		secs=time_div_spliter.rem;
+		if (time_div_spliter.quot>60){
+			time_div_spliter = ldiv (time_div_spliter.quot,60);
+			mins=time_div_spliter.rem;
+			if (time_div_spliter.quot>24){
+				time_div_spliter = ldiv (time_div_spliter.quot,24);
+				hours=time_div_spliter.rem;
+				days=time_div_spliter.quot;
+				if (days>999) return ("inf");
+				result=result+field(" ", days,3)+"d";
+			}else{
+				hours=time_div_spliter.quot;
+			}
+			result=result+field(" ", hours,2)+"h";
+		}else{
+			mins=time_div_spliter.quot;
+		}
+		result=result+field(" ", mins,2)+"m";
+	}
+	result=result+field(" ", secs,2)+"s";
+
+	return result;
+}
+
+string speedToString(ulong dld_bytes, ulong time_left){
+	try{
+		string speed_str;
+		if (time_left==0){
+			speed_str="N/a";
+		}else{
+			ulong speed=(dld_bytes*1000/time_left);
+			string suffix;
+			if (speed>1500){
+				if (speed>1500000){
+					suffix=" MB/s";
+					speed=speed/1000000;
+				}else{
+					suffix=" KB/s";
+					speed=speed/1000;
+				}
+			}else{
+				suffix="  B/s";
+			}
+			speed_str=field("",speed,4)+suffix;
+		}
+		return speed_str;
+	}catch(...){
+		error_log("Error in utils.cpp: speedToString()");
+	}
+	return "";
+}
+
+string speedToString(ulong speed){
+	try{
+		string speed_str;
+		string suffix;
+		if (speed>1500){
+			if (speed>1500000){
+				suffix=" MB/s";
+				speed=speed/1000000;
+			}else{
+				suffix=" KB/s";
+				speed=speed/1000;
+			}
+		}else{
+			suffix="  B/s";
+		}
+		speed_str=field("",speed,4)+suffix;
+		return speed_str;
+	}catch(...){
+		error_log("Error in utils.cpp: speedToString()");
+	}
+	return "";
+}

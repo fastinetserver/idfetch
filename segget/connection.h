@@ -42,9 +42,9 @@ class Tconnection{
 		Tnetwork_distfile_broker_phases connection_start_time_network_phase_for_pf_networks;
 		uint network_num;
 		uint mirror_num;
+	public:
 		ulong total_dld_bytes;
 		ulong bytes_per_last_interval;
-	public:
 		uint connection_num;
 		bool active;
 		timeval start_time;

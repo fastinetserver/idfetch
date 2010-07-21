@@ -42,8 +42,10 @@ class Tstats{
 		ulong total_bytes_per_last_interval;
 		struct timeval previous_time;
 		double last_time_interval;
+		ulong avg_total_speed;
 		uint pkg_count;
 		uint distfiles_count;
+		ulong active_connections_counter;
 		Tstats():
 			dld_size(0),
 			dld_distfiles_count(0),
@@ -51,8 +53,10 @@ class Tstats{
 			total_bytes_per_last_interval(0),
 			previous_time(),
 			last_time_interval(1),
+			avg_total_speed(0),
 			pkg_count(0),
-			distfiles_count(0)
+			distfiles_count(0),
+			active_connections_counter(0)
 			{};
 		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
 		ulong get_dld_size(){return dld_size;};

@@ -29,6 +29,7 @@
 #include <ncurses.h>
 #include "settings.h"
 #include "ui_server.h"
+#include "utils.h"
 
 using namespace std;
 

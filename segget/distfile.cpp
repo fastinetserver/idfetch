@@ -121,7 +121,26 @@ bool Tdistfile::allows_new_actions(){
 //	if (downloaded) return false;
 //	else return true;
 //	int time_left=0;
-	if (status==DDOWNLOADED) return false;
+	if (status==DDOWNLOADED){
+		debug("No new connection for distfile:"+name+". Distfile has DDOWNLOADED status");
+		return false;
+	}
+	if (status==DFAILED){
+		debug("No new connection for distfile:"+name+". Distfile has DFAILED status");
+		return false;
+	}
+//	debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
+//	debug("	distfile_num:"+toString(distfile_num));
+	if (active_connections_num<settings.max_connection_num_per_distfile){
+		debug("Allow new connection for ============================================= Distfile "+name);
+		debug("max_connection limit has not been reached");
+		return true;
+	}else{
+		debug("No new connection for distfile: "+name+". It already has "
+			+toString(active_connections_num)
+			+" connections => choose another distfile.");
+			return false;
+	}
 //	if (((status==DPROXY_QUEUED) || (status==DPROXY_DOWNLOADING)) && (time_left<100)) return false;
 //oterwise allow connections
 //	DNEW,
@@ -131,9 +150,6 @@ bool Tdistfile::allows_new_actions(){
 //	DPROXY_DOWNLOADED,
 //	DWAITING,
 //	DDOWNLOADING,
-//	DDOWNLOADED,
-//	DFAILED
-	return true;
 }
 
 void Tdistfile::init(){
@@ -293,31 +309,34 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
 	try{
 		long best_mirror_num=-1;	// the best isn't set let's find it
+		bool all_mirrors_failed=true;
 		ulong best_mirror_self_rating=-1;
 		ulong curr_mirror_self_rating;
 		debug("Choosing mirror for network"+toString(network_num));
 		for (ulong mirror_num=0; mirror_num<network_array[network_num].benchmarked_mirror_list.size(); mirror_num++){
 			debug("Evaluating mirror:"+network_array[network_num].benchmarked_mirror_list[mirror_num].url);
-			if (network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num()<settings.max_connections_num_per_mirror){
-				curr_mirror_self_rating=network_array[network_num].benchmarked_mirror_list[mirror_num].mirror_on_the_wall();
-				if (curr_mirror_self_rating<best_mirror_self_rating){
-					best_mirror_num=mirror_num;
-					best_mirror_self_rating=curr_mirror_self_rating;
-				}
-				if (best_mirror_self_rating==0)
-					// 0 can not be improved - it's one of the best
-					break;
+			if (network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]){
+				debug("mirror:"+network_array[network_num].benchmarked_mirror_list[mirror_num].url+" has FAILED status - will be skipped");
 			}else{
-				debug("Mirror already has:"
-					+toString(network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num())
-					+" connections which doesn't meet limit:"+toString(settings.max_connections_num_per_mirror));
+				all_mirrors_failed=false;
+				if (network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num()<settings.max_connections_num_per_mirror){
+					curr_mirror_self_rating=network_array[network_num].benchmarked_mirror_list[mirror_num].mirror_on_the_wall();
+					if (curr_mirror_self_rating<best_mirror_self_rating){
+						best_mirror_num=mirror_num;
+						best_mirror_self_rating=curr_mirror_self_rating;
+					}
+					if (best_mirror_self_rating==0)
+						// 0 can not be improved - it's one of the best
+						break;
+				}else{
+					debug("Mirror already has:"
+						+toString(network_array[network_num].benchmarked_mirror_list[mirror_num].get_active_num())
+						+" connections which doesn't meet limit:"+toString(settings.max_connections_num_per_mirror));
+				}
 			}
 		}
 		if (best_mirror_num!=-1){
 			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].benchmarked_mirror_list[best_mirror_num].url);
-
-
-
 //			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
 			return R_R_DOWNLOAD_STARTED;
@@ -325,6 +344,10 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 		else{
 			debug("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
 			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
+			if (all_mirrors_failed){
+				debug("All local mirrors failed in network#"+toString(network_num));
+				error_log("All local mirrors failed in network#"+toString(network_num));
+			}
 			return 1;
 		}
 	}catch(...){

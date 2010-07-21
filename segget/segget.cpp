@@ -103,12 +103,6 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 			while(distfile_num<cur_pkg->distfile_count){
 //				if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
 				if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
-					debug("============================================= Distfile "
-						+cur_pkg->Pdistfile_list[distfile_num]->name+" allows new connections");
-//					debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
-//					debug("	distfile_num:"+toString(distfile_num));
-					if (cur_pkg->Pdistfile_list[distfile_num]->active_connections_num<settings.max_connection_num_per_distfile){
-						debug("max_connection limit has not been reached");
 						debug("segment_num:"+toString(segment_num));
 						debug("segment_count:"+toString(cur_pkg->Pdistfile_list[distfile_num]->segments_count));
 						while (segment_num<cur_pkg->Pdistfile_list[distfile_num]->segments_count){
@@ -132,11 +126,6 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 								segment_num++;
 							}
 						}
-					}else{
-							debug("	distfile "+cur_pkg->Pdistfile_list[distfile_num]->name+" has "
-							+toString(cur_pkg->Pdistfile_list[distfile_num]->active_connections_num)
-							+" connections => choosing another distfile.");
-					}
 				}
 				distfile_num++;
 				segment_num=0;
@@ -195,26 +184,39 @@ int download_pkgs(){
 //			}
 //		};
 		bool keep_running_flag=true;
-		while (keep_running_flag){
-			U=1;
-			while (U) {
-				// Use free connections to download segments connections
+		struct timeval prev_connection_activation_cycle_time;
+		while (keep_running_flag) {
+			// Use free connections to download segments connections
+			if (1000>time_left_from(prev_connection_activation_cycle_time)){
+				debug("Not enough time left to start connection activation cycle");
+				sleep(1);
+			}else{
 				debug("Entering connection activation cycle");
+				gettimeofday(&prev_connection_activation_cycle_time,NULL);
 				for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
 					debug("connection_num:"+toString(connection_num));
 					if ( ! connection_array[connection_num].active){
 						debug("connection is not active - choosing segment");
-						choose_segment(connection_num);
-//						// activate only one connection
-//						break;
+						if (choose_segment(connection_num)){
+						// if no success don't try the same for other connections
+							debug("No segment found for connection:"+toString(connection_num)+" => no reason to look for a segment for other connections");
+							break;
+						}else{
+//							U++;
+						}
 					}
 					else{
 						debug("connection is active");
 					}
 				};
 				debug("Exit connection activation sycle");
-				while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
-				if (U) {
+			}
+			U=stats.active_connections_counter;
+			debug("before multi_perform");
+//			while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
+			if (CURLM_CALL_MULTI_PERFORM != curl_multi_perform(cm, &U)){
+				debug("after multi_perform");
+//				if (U) {
 					FD_ZERO(&R);
 					FD_ZERO(&W);
 					FD_ZERO(&E);
@@ -245,8 +247,10 @@ int download_pkgs(){
 							return EXIT_FAILURE;
 						}
 					}
-				}
+//				}
+				debug("before multi_info_read");
 				while ((msg = curl_multi_info_read(cm, &Q))) {
+					debug("inside multi_info_read");
 					if (msg->msg == CURLMSG_DONE) {
 						Tsegment *current_segment;
 						CURL *e = msg->easy_handle;
@@ -268,11 +272,6 @@ int download_pkgs(){
 					}
 				}
 			}
-			debug("bbbbbblllllllllllllaaaaaaaaaaaaa");
-			// nothing to download - wait 5 secs and check upper_proxy_fetchers again
-			// later will be replaced by server_waiting_for_incoming connections and new tasks
-			// with timeout to check downloads from upper proxy fetcher
-			sleep(1);
 		}
 		curl_multi_cleanup(cm);
 		curl_global_cleanup();

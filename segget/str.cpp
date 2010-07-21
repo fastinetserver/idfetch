@@ -58,6 +58,7 @@ template<typename T> string toString(T t){
 	return s.str();
 }
 */
+/*
 template<typename T> string field(string prefix,T t, int width){
 	try{
 		stringstream s1,s2;
@@ -71,7 +72,7 @@ template<typename T> string field(string prefix,T t, int width){
 		return "";
 	}
 }
-
+*/
 string field(string prefix,ulong t, int width){
 	try{
 		stringstream s1,s2;

@@ -37,7 +37,7 @@ void init_connections(){
 
 void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
 	try{
-
+		stats.active_connections_counter++;
 		segment=started_segment;
 		debug("Starting connection for distfile: "+segment->parent_distfile->name);
 		mirror_num=best_mirror_num;
@@ -79,6 +79,7 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 
 void Tconnection::stop(int connection_result){
 	try{
+		stats.active_connections_counter--;
 		debug("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
 		error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
 		
@@ -174,19 +175,17 @@ void Tconnection::inc_bytes_per_last_interval(ulong new_bytes_count){
 
 void Tconnection::show_connection_progress(ulong time_diff){
 	try{
-		if (active){
-			stats.total_bytes_per_last_interval+=bytes_per_last_interval;
-			msg_segment_progress(
-				segment->connection_num,
-				network_num,
-				segment->segment_num,
-				segment->try_num,
-				segment->downloaded_bytes,
-				segment->segment_size,
-				(bytes_per_last_interval*1000)/time_diff,
-				(total_dld_bytes*1000)/time_left_from(start_time));
-			bytes_per_last_interval=0;
-		}
+		stats.total_bytes_per_last_interval+=bytes_per_last_interval;
+		msg_segment_progress(
+			segment->connection_num,
+			network_num,
+			segment->segment_num,
+			segment->try_num,
+			segment->downloaded_bytes,
+			segment->segment_size,
+			(bytes_per_last_interval*1000)/time_diff,
+			(total_dld_bytes*1000)/time_left_from(start_time));
+		bytes_per_last_interval=0;
 	}catch(...){
 		error_log("Error in connection.cpp: show_connection_progress()");
 	}

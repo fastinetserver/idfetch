@@ -53,17 +53,32 @@ void Tstats::show_totals(){
 			show_total_size=total_size;
 		struct timeval now_timee;
 		gettimeofday(&now_timee,NULL);
-		msg_total("Total" 
-			+field(" PKGs:",          pkg_count,4)
-			+field(" = DFs:",         dld_distfiles_count,4)
-			+field(" / ",             distfiles_count,4)
-			+field(" = Size:",        dld_size/1000,7)
-			+field(" / ",             total_size/1000,7)+" Kb "
-			+field(" = ",             dld_size*100/(1+show_total_size),3)+"%"
-			+field(" Total speed: ",  (total_bytes_per_last_interval/(show_last_time_interval)),7)
-			+" Kb/s"
-//			+" Secs:"+toString(now_timee.tv_sec)
-//			+" usecs:"+toString(now_timee.tv_usec)
+		string eta_str;
+		if (avg_total_speed==0){
+			eta_str=" ETA: inf";
+		}else{
+			eta_str=" ETA: "+secsToString((total_size-dld_size)/avg_total_speed);
+		}
+
+			string avg_speed_str=" AVG speed: "+speedToString(avg_total_speed);
+
+		msg_total("Total CON:" 
+			+field("",					active_connections_counter,2)+"/"
+			+field("",					settings.max_connections,2)
+//			+field(" PKGs:",			pkg_count,4)
+//			+field(" = DFs:",			dld_distfiles_count,4)
+			+" = DF:"+toString(dld_distfiles_count)
+			+field("/",				distfiles_count,4)
+//			+field(" = Size:",			dld_size/1000,7)
+			+" = Size:"+toString(dld_size/1000)
+			+field("(",				((double)dld_size/show_total_size)*100,3)+"%)"
+//			+field("/",				total_size/1000,7)+" Kb "
+			+"/"+toString(total_size/1000)+"Kb"
+			+" Total spd: "+speedToString(total_bytes_per_last_interval*1000/show_last_time_interval)
+			+avg_speed_str
+			+eta_str
+		//			+" Secs:"+toString(now_timee.tv_sec)
+		//			+" usecs:"+toString(now_timee.tv_usec)
 			);
 		reset_previous_time();
 	}catch(...){

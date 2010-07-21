@@ -169,10 +169,16 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 void show_progress(double time_diff){
 	try{
 		stats.total_bytes_per_last_interval=0;
+		stats.avg_total_speed=0;
 		for (uint con_num=0; con_num<MAX_CONNECTS; con_num++){
 			//    ulong speed=bytes_written*1000/(diff_sec+diff_milli);
 			//if connection is not NULL
-			connection_array[con_num].show_connection_progress(time_diff);
+			if (connection_array[con_num].active){
+				connection_array[con_num].show_connection_progress(time_diff);
+				if (time_left_from(connection_array[con_num].start_time)>0){
+					stats.avg_total_speed+=(connection_array[con_num].total_dld_bytes*1000)/time_left_from(connection_array[con_num].start_time);
+				}
+			}
 		}
 		stats.last_time_interval=time_diff;
 		stats.show_totals();
