@@ -282,6 +282,17 @@ int download_pkgs(){
 		return EXIT_FAILURE;
 	}
 }
+void *print_message_function(void * ){
+	while (true){
+		ulong time_diff_msecs=time_left_from(stats.previous_time);
+		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
+			show_progress(time_diff_msecs);
+		};
+		stats.show_totals();
+		sleep(1);
+	}
+	return 0;
+}
 
 void launch_tui_thread(){
 	pthread_t tui_thread;
@@ -331,23 +342,12 @@ void segget_exit(int sig){
 	exit(0);
 }
 
-int main()
-{
+int routine(){
 	try{
 		signal(SIGABRT,segget_exit);//If program aborts go to assigned function "segget_exit".
 		signal(SIGTERM,segget_exit);//If program terminates go to assigned function "segget_exit".
 		signal(SIGINT,segget_exit);//If program terminates go to assigned function "segget_exit".
 		prev_time=time((time_t *)NULL);
-		try{
-			//init curses
-			initscr();
-			curs_set(0);
-			refresh();
-		}
-		catch(...)
-		{
-			//error while init curses
-		}
 		try{
 			//load settings
 				settings.init();
@@ -378,53 +378,95 @@ int main()
 		}
 		try{
 			load_pkgs();
-		}
-		catch(...){
+		}catch(...){
 			//error while loading pkgs
 		}
 		try{
 			//show_pkgs();
 			stats.show_totals();
-		}
-		catch(...){
+		}catch(...){
 			//error while showing stats
 		}
 		try{
 			download_pkgs();
-		}
-		catch(...){
+		}catch(...){
 			//error while downloading_pkgs
 		}
-		getch();
-	}
-	catch(...){
-		//error during init and downloading process
-	}
-	try{
-		endwin();
-	}
-	catch(...)
+		try{
+			close(ui_server.server_sockfd);
+		}catch(...){
+			//error while clossing server_sockfd
+		}
+		return 0;
+	}catch(...)
 	{
-		//error while ending curses
+		perror("Error in segget.cpp: routine()");
 	}
-	try{
-		close(ui_server.server_sockfd);
-	}
-	catch(...)
-	{
-		//error while clossing server_sockfd
-	}
-	return 0;
+	return 1;
 }
 
-void *print_message_function(void * ){
-	while (true){
-		ulong time_diff_msecs=time_left_from(stats.previous_time);
-		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
-			show_progress(time_diff_msecs);
-		};
-		stats.show_totals();
-		sleep(1);
+void start_daemon_mode(){
+	try{
+		debug("start_daemon_mode()");
+		switch (fork())
+		{
+			case 0:  break; //child
+			case -1: error_log("Error in segget.cpp: start_daemon_mode() during first fork()"); //fork error
+			default: exit(0); //parent
+		}
+		struct rlimit _ResourceLimit;
+		if (getrlimit(RLIMIT_NOFILE, &_ResourceLimit)!=0) error_log("Error in segget.cpp: start_daemon_mode() during getrlimit()");
+		if (_ResourceLimit.rlim_max==0) throw("Error in segget.cpp: start_daemon_mode() - no open file descriptors");
+		for (uint i=0;i<_ResourceLimit.rlim_max;i++) close(i);
+		if (setsid()==-1) error_log_no_msg("Error in segget.cpp: start_daemon_mode() during setsid()");
+		switch (fork()){
+			case 0:  break; // child
+			case -1: error_log_no_msg("Error in segget.cpp: start_daemon_mode() during second fork()");
+			default: exit(0); // parent
+		}
+		umask(0);
+		// prevent unmount problems - switch to root
+//		chdir("/");
+		// create descriptors in case someone will use them
+		int fileDesc = open("/dev/null", O_RDWR); //stdin
+		dup(fileDesc); //stdout
+		dup(fileDesc); //stderr
+		log_no_msg("Starting daemon routine");
+		routine();
+		log_no_msg("Exited daemon routine");
+	}catch (...){
+		error_log_no_msg("Error in segget.cpp: start_daemon_mode()");
+		exit(1);
 	}
-	return 0;
+}
+
+int init_curses(){
+	try{
+		initscr();
+		curs_set(0);
+		refresh();
+		return 0;
+	}catch(...){
+		perror("Error in segget.cpp: init_curses()");
+	}
+	return 1;
+}
+
+int main()
+{
+	try{
+		bool daemon_mode_flag=true;
+		if (daemon_mode_flag){
+			start_daemon_mode();
+		}else{
+			init_curses();
+			routine();
+			// exit curses
+			endwin();
+		}
+		exit (0);
+	}catch(...){
+		perror("Error in segget.cpp main()");
+	}
+	exit(1);
 }

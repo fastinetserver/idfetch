@@ -35,6 +35,11 @@
 #include <json/json.h>
 #include <ncurses.h>
 #include <pthread.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "checksum.h"
 #include "config.h"
 #include "distfile.h"
@@ -55,6 +60,9 @@ using namespace std;
 
 CURLM *cm;
 
+int routine();
+void start_daemon_mode();
+int init_curses();
 int load_pkgs();
 void show_pkgs();
 int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
