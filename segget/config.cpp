@@ -31,10 +31,10 @@ void Tconfig::load_settings_from_config_file(){
 		ifstream file;
 		file.exceptions (ifstream::failbit | ifstream::badbit);
 		try{
-			file.open(config_file_name.c_str());
+			file.open((settings.conf_dir+"/"+config_file_name).c_str());
 		}
 		catch(...){
-			error_log("Error opening settings file: "+config_file_name+". Default settings will be used. Check if config file: "+config_file_name+" exists and segget has rights to access it.");
+			error_log("Error opening settings file: "+settings.conf_dir+"/"+config_file_name+". Default settings will be used. Check if config file: "+config_file_name+" exists and segget has rights to access it.");
 			return;
 		}
 		try{

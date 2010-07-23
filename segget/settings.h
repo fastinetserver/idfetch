@@ -39,6 +39,8 @@ class Tsettings{
 	private:
 		void load_provide_mirror_files_restricted_patterns_vector();
 	public:
+		string conf_dir;
+		bool no_daemon_flag;
 	//folders
 		string distfiles_dir;
 		string segments_dir;
@@ -81,6 +83,8 @@ class Tsettings{
 		string debug_log_file;
 
 	Tsettings():
+			conf_dir("/etc/seggetd"),
+			no_daemon_flag(false),
 		//folders
 			distfiles_dir("./distfiles"),
 			segments_dir("./tmp"),

@@ -451,18 +451,37 @@ int init_curses(){
 	}
 	return 1;
 }
+int parse_cli_arguments(int argc, char* argv[]){
+	try{
+		string option,name,value;
+		cout << "argc = " << argc << endl;
+		int posEqual;
+		for(int i = 0; i < argc; i++){
+			cout << "argv[" << i << "] = " << argv[i] << endl; 
+			option=argv[i];
+			posEqual=option.find('=');
+			name  = trim(option.substr(0,posEqual));
+			value = trim(option.substr(posEqual+1));
+			if (name=="--conf-dir") {settings.conf_dir=value; continue;};
+			if (name=="--no-daemon"){settings.no_daemon_flag=true; continue;}
+		}
+		return 0;
+	}catch(...){
+		perror("Error in segget.cpp: init_curses()");
+	}
+	return 1;
+}
 
-int main()
+int main(int argc, char* argv[])
 {
 	try{
-		bool daemon_mode_flag=true;
-		if (daemon_mode_flag){
-			start_daemon_mode();
-		}else{
+		parse_cli_arguments(argc, argv);
+		if (settings.no_daemon_flag){
 			init_curses();
 			routine();
-			// exit curses
-			endwin();
+			endwin(); // exit curses
+		}else{
+			start_daemon_mode();
 		}
 		exit (0);
 	}catch(...){

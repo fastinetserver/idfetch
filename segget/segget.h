@@ -62,13 +62,14 @@ CURLM *cm;
 
 int routine();
 void start_daemon_mode();
+int parse_cli_arguments(int argc, char* argv[]);
 int init_curses();
 int load_pkgs();
 void show_pkgs();
 int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
 int choose_segment(uint connection_num);
 int download_pkgs();
-int main();
+int main(int argc, char* argv[]);
 void *print_message_function( void *);
 
 #endif
