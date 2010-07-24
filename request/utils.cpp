@@ -23,48 +23,22 @@
 * License along with Segget; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-#ifndef __PKG_H__
-#define __PKG_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include "distfile.h"
+#include "utils.h"
+void merror(string error_msg){
+	perror(error_msg.c_str());
+}
 
-using namespace std;
-typedef unsigned int uint;
-typedef Tdistfile* Pdistfile;
-
-#define Q_ADDED_TO_QUEUE	0
-#define Q_ALREADY_EXISTS	1
-#define Q_ERROR				100
-
-class Tpkg{
-	public:
-		vector<Pdistfile> Pdistfile_list;
-		string name;
-		string category;
-		uint distfile_count;
-		void load_distfile_list(json_object* json_array_distfile_list);
-		Tpkg():
-			Pdistfile_list(),
-			name(""),
-			category(""),
-			distfile_count(0)
-			{};
-		Tpkg(const Tpkg &L); // copy constructor
-		Tpkg & operator=(const Tpkg &L);
-		~Tpkg();
-		int push_back_distfile(json_object* json_obj_distfile);
-		int try_adding_distfile_to_request_server_queue(json_object* json_obj_distfile);
-		int try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_distfile);
-		void load_pkg_from_json(json_object* json_obj_pkg);
-};
-
-extern Tpkg **Ppkg_array;
-extern Tpkg proxy_fetcher_pkg;
-extern Tpkg request_server_pkg;
-
-#endif
+ulong time_left_from(timeval from_time){
+	try{
+		timeval now_time;
+		gettimeofday(&now_time,NULL);
+		ulong timeleft=(now_time.tv_sec-from_time.tv_sec)*1000+(now_time.tv_usec-from_time.tv_usec)/1000;
+		if (timeleft<1)
+			timeleft=1;
+		return timeleft;
+	}catch(...){
+		merror("Error in utils.cpp: time_left_from()");
+		return 1;
+	}
+}

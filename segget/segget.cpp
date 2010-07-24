@@ -98,40 +98,45 @@ void show_pkgs(){
 }
 */
 int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
+	try{
 		uint distfile_num(0);
 		uint segment_num(0);
-			while(distfile_num<cur_pkg->distfile_count){
-//				if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
-				if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
-						debug("segment_num:"+toString(segment_num));
-						debug("segment_count:"+toString(cur_pkg->Pdistfile_list[distfile_num]->segments_count));
-						while (segment_num<cur_pkg->Pdistfile_list[distfile_num]->segments_count){
-							debug("segment_num:"+toString(segment_num));
-//							debug("		segment_num:"+toString(segment_num));
-							//	segments_in_progress[connection_num]=
-							//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
-							debug("Let's get segment status: "+statusToString(cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
-							if (cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
-								if (0==cur_pkg->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
-									return 0; // download started
-								};
-								// no success with this segment though it's waiting
-								// probably there will be a problem downloading next segment
-								// so let's go for the next distfile
-								// and return to this distfile later - next time pkg_choose_segment is called
-								break; 
-							}else{
-								debug("status is not SWAITING - go for the next segment");
-								// haven't managed to provide this segment, go for the next one
-								segment_num++;
-							}
-						}
+		while(distfile_num<cur_pkg->distfile_count){
+//			if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
+			if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
+				debug("segment_num:"+toString(segment_num));
+				debug("segment_count:"+toString(cur_pkg->Pdistfile_list[distfile_num]->segments_count));
+				while (segment_num<cur_pkg->Pdistfile_list[distfile_num]->segments_count){
+					debug("segment_num:"+toString(segment_num));
+//					debug("		segment_num:"+toString(segment_num));
+					//	segments_in_progress[connection_num]=
+					//	if not(Ppkg_array[pkg_num]->Pdistfile_list[distfile_num]->get_segment_downloaded_status(segment_num);
+					debug("Let's get segment status: "+statusToString(cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status));
+					if (cur_pkg->Pdistfile_list[distfile_num]->dn_segments[segment_num].status==SWAITING){
+						if (0==cur_pkg->Pdistfile_list[distfile_num]->provide_segment(cm, connection_num, segment_num)){
+							return 0; // download started
+						};
+						// no success with this segment though it's waiting
+						// probably there will be a problem downloading next segment
+						// so let's go for the next distfile
+						// and return to this distfile later - next time pkg_choose_segment is called
+						break; 
+					}else{
+						debug("status is not SWAITING - go for the next segment");
+						// haven't managed to provide this segment, go for the next one
+						segment_num++;
+					}
 				}
-				distfile_num++;
-				segment_num=0;
 			}
-			distfile_num=0;
-	return 1;
+			distfile_num++;
+			segment_num=0;
+		}
+		distfile_num=0;
+		return 1;
+	}catch(...){
+		error_log("Error: segget.cpp : pkg_choose_segment()");
+		return 1;
+	}
 }
 
 int choose_segment(uint connection_num){
@@ -141,6 +146,9 @@ int choose_segment(uint connection_num){
 			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
 				return 0;
 			}
+		}
+		if (0==pkg_choose_segment(&request_server_pkg, connection_num)){
+			return 0;
 		}
 		// download distfiles as a proxy-fetcher
 		if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
@@ -282,7 +290,7 @@ int download_pkgs(){
 		return EXIT_FAILURE;
 	}
 }
-void *print_message_function(void * ){
+void *refresh_tui_screen(void * ){
 	while (true){
 		ulong time_diff_msecs=time_left_from(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
@@ -297,7 +305,7 @@ void *print_message_function(void * ){
 void launch_tui_thread(){
 	pthread_t tui_thread;
 	int iret1;
-	iret1 = pthread_create( &tui_thread, NULL, print_message_function, (void*) NULL);
+	iret1 = pthread_create( &tui_thread, NULL, refresh_tui_screen, (void*) NULL);
 }
 
 void launch_ui_server_thread(){
@@ -317,6 +325,17 @@ void launch_proxy_fetcher_server_thread(){
 //		proxy_fetcher_server_thread.init();
 		iret1 = pthread_create( &proxy_fetcher_server_thread, NULL, run_proxy_fetcher_server, (void*) NULL);
 		debug_no_msg("proxy_fetcher_server_thread launched");
+	}
+}
+
+void launch_request_server_thread(){
+	if (settings.request_ip!="none"){
+		pthread_t request_server_thread;
+		int iret1;
+		debug_no_msg("Creating request_server_thread.");
+//		proxy_fetcher_server_thread.init();
+		iret1 = pthread_create( &request_server_thread, NULL, run_request_server, (void*) NULL);
+		debug_no_msg("request_server_thread launched");
 	}
 }
 
@@ -365,6 +384,11 @@ int routine(){
 			launch_ui_server_thread();
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_ui_server() failed");
+		}
+		try{
+			launch_request_server_thread();
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp launch_proxy_fetcher_server_thread failed");
 		}
 		try{
 			launch_proxy_fetcher_server_thread();

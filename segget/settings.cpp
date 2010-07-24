@@ -120,6 +120,9 @@ void Tsettings::init(){
 		conf.set("ui_server","ui_ip",ui_ip);
 		conf.set("ui_server","ui_port",ui_port,1,65535);
 
+		conf.set("request_server","request_ip",request_ip);
+		conf.set("request_server","request_port",request_port,1,65535);
+
 		conf.clear();
 	}catch(...){
 		error_log_no_msg("Error in settings.cpp: init()");

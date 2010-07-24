@@ -24,57 +24,21 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
-
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "checksum.h"
-#include "config.h"
-#include "distfile.h"
-#include "mirror.h"
-#include "network.h"
-#include "networkbroker.h"
-#include "pkg.h"
-#include "segment.h"
 #include "settings.h"
-//#include "stats.h"
-#include "str.h"
-#include "tui.h"
-#include "utils.h"
-#include "ui_server.h"
-#include "proxyfetcher.h"
-#include "requestserver.h"
 
-using namespace std;
+Tsettings settings;
 
-CURLM *cm;
-
-int routine();
-void start_daemon_mode();
-int parse_cli_arguments(int argc, char* argv[]);
-int init_curses();
-int load_pkgs();
-void show_pkgs();
-int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main(int argc, char* argv[]);
-void *refresh_tui_screen( void *);
-void launch_tui_thread();
-void launch_ui_server_thread();
-void launch_proxy_fetcher_server_thread();
-void launch_request_server_thread();
-
-#endif
+void Tsettings::init(){
+	try{
+		Tconfig conf("segget.conf");
+		conf.set("logs","general_log_file",general_log_file);
+		conf.set("logs","logs_dir",logs_dir);
+		conf.set("logs","error_log_file",error_log_file);
+		conf.set("logs","debug_log_file",debug_log_file);
+		conf.set("request_server","request_ip",request_ip);
+		conf.set("request_server","request_port",request_port,1,65535);
+		conf.clear();
+	}catch(...){
+		perror("Error in settings.cpp: init()");
+	}
+}

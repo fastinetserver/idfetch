@@ -24,57 +24,38 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
-
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "checksum.h"
-#include "config.h"
-#include "distfile.h"
-#include "mirror.h"
-#include "network.h"
-#include "networkbroker.h"
-#include "pkg.h"
-#include "segment.h"
-#include "settings.h"
-//#include "stats.h"
-#include "str.h"
-#include "tui.h"
-#include "utils.h"
-#include "ui_server.h"
-#include "proxyfetcher.h"
-#include "requestserver.h"
+#ifndef __RESPONSE_H__
+#define __RESPONSE_H__
+#include <string>
+#include <cstdlib>
 
 using namespace std;
 
-CURLM *cm;
+#define R_NOT_SET										300
+#define R_LM_WAIT_FOR_LOCAL_MIRRORS						50
 
-int routine();
-void start_daemon_mode();
-int parse_cli_arguments(int argc, char* argv[]);
-int init_curses();
-int load_pkgs();
-void show_pkgs();
-int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main(int argc, char* argv[]);
-void *refresh_tui_screen( void *);
-void launch_tui_thread();
-void launch_ui_server_thread();
-void launch_proxy_fetcher_server_thread();
-void launch_request_server_thread();
+#define R_PF_NOT_REQUESTED_YET							100
+#define R_PF_ADDED_TO_PROXY_QUEUE						101
+#define R_PF_ALREADY_WAS_IN_QUEUE						102
+#define R_PF_DOWNLOADED									103
+#define R_PF_BE_MORE_PATIENT							104
+#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				105
+#define R_PF_FAILED										106
+#define R_PF_REJECTED									107
+
+// 0 for succesfull return of provide_segment()
+#define R_R_DOWNLOAD_STARTED							0
+#define R_R_WAITING										108
+#define R_R_DOWNLOADING									109
+
+#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		110
+
+#define ALLOW_REQUESTS_TO_PROXY_FETCHERS				201
+#define DO_NOT_ALLOW_REQUESTS_TO_PROXY_FETCHERS			202
+#define ALLOW_REMOTE_NETWORKS							203
+#define DO_NOT_ALLOW_REMOTE_NETWORKS					204
+#define ALLOW_LOWER_PRIORITY_NETWORKS					205
+
+int decode_server_response(string server_response);
 
 #endif

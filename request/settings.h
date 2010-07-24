@@ -29,15 +29,12 @@
 
 #include <string>
 #include "config.h"
-#include "network.h"
 //#include "tui.cpp"
 #define MAX_CONNECTS 20 /* number of simultaneous transfers */
 
 using namespace std;
 
 class Tsettings{
-	private:
-		void load_provide_mirror_files_restricted_patterns_vector();
 	public:
 		string conf_dir;
 		bool no_daemon_flag;
@@ -69,14 +66,10 @@ class Tsettings{
 	//provide_mirror_to_others
 		string provide_mirror_dir;
 		bool provide_mirror_files_restrict_list_on;
-		vector<string> provide_mirror_files_restricted_patterns_vector;
 	//provide_proxy_fether_to_others
 		string provide_proxy_fetcher_ip;
 		ulong provide_proxy_fetcher_port;
 	//ui_server
-		string ui_ip;
-		ulong ui_port;
-	//request_server
 		string request_ip;
 		ulong request_port;
 	//logs
@@ -116,14 +109,10 @@ class Tsettings{
 		//provide_mirror_to_others
 			provide_mirror_dir("none"),
 			provide_mirror_files_restrict_list_on(0),
-			provide_mirror_files_restricted_patterns_vector(),
 		//provide_proxy_fether_to_others
 			provide_proxy_fetcher_ip("127.0.0.1"),
 			provide_proxy_fetcher_port(9888),
 		//ui_server
-			ui_ip("127.0.0.1"),
-			ui_port(9999),
-		//request_server
 			request_ip("127.0.0.1"),
 			request_port(10000),
 		//logs

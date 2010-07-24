@@ -26,7 +26,7 @@
 
 #include "proxyfetcher.h"
 
-void *run_proxy_fetcher_server(void * ){
+void *run_request_server(void * ){
 	try{
 		int server_sockfd, client_sockfd;
 		socklen_t server_len, client_len;
@@ -43,8 +43,8 @@ void *run_proxy_fetcher_server(void * ){
 
 		server_address.sin_family = AF_INET;
 		//server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-		server_address.sin_addr.s_addr = inet_addr(settings.provide_proxy_fetcher_ip.c_str());
-		server_address.sin_port = htons(settings.provide_proxy_fetcher_port);
+		server_address.sin_addr.s_addr = inet_addr(settings.request_ip.c_str());
+		server_address.sin_port = htons(settings.request_port);
 		server_len = sizeof(server_address);
 
 		bind(server_sockfd, (struct sockaddr *)&server_address, server_len);
@@ -104,7 +104,7 @@ void *run_proxy_fetcher_server(void * ){
 							error_log("Received a msg from the client:"+recv_msg);
 							string send_response;
 //							char send_buffer[10]="";
-							send_response=toString(proxy_fetcher_pkg.try_adding_distfile_to_proxy_fetchers_queue(json_tokener_parse(buffer)));
+							send_response=toString(request_server_pkg.try_adding_distfile_to_request_server_queue(json_tokener_parse(buffer)));
 //							if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
 							if (write(fd, send_response.c_str(), send_response.length())!=(int)send_response.length()){
 								error_log("Error in proxyfetcher.cpp: run_proxy_fetcher_server(): response msg size and sent data size are different.");

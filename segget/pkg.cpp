@@ -27,7 +27,7 @@
 #include "pkg.h"
 Tpkg **Ppkg_array;
 Tpkg proxy_fetcher_pkg;
-
+Tpkg request_server_pkg;
 
 //#define R_DOWNLOAD_STARTED						0
 //#define R_ADDED_TO_PROXY_QUEUE					100
@@ -86,6 +86,34 @@ int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_dist
 	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
+int Tpkg::try_adding_distfile_to_request_server_queue(json_object* json_obj_distfile){
+	string distfile_name;
+	try{
+		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
+			if (Pdistfile_list[distfile_num]->name==distfile_name){
+				switch (Pdistfile_list[distfile_num]->status){
+					case DDOWNLOADED: {
+						debug("REQUEST_SERVER: distfile: "+distfile_name+" was downloaded");
+						return R_PF_DOWNLOADED;
+					};
+					case DFAILED:{
+						debug("REQUEST_SERVER: Failed to download distfile: "+distfile_name);
+						return R_PF_FAILED;
+					}
+					default:{
+						debug("REQUEST_SERVER: distfile: "+distfile_name+" was already in queue");
+						return R_PF_ALREADY_WAS_IN_QUEUE;
+					}
+				}
+			}
+		}
+		return push_back_distfile(json_obj_distfile);
+	}catch(...){
+		error_log("Error in pkg.cpp: pushback_distfile()");
+	}
+	debug("REQUEST_SERVER: Error adding distfile: "+distfile_name+" to seggets's queue");
+	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+}
 
 void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
 	try{

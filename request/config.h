@@ -24,57 +24,31 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <string>
+#include <map>
 #include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "checksum.h"
-#include "config.h"
-#include "distfile.h"
-#include "mirror.h"
-#include "network.h"
-#include "networkbroker.h"
-#include "pkg.h"
-#include "segment.h"
-#include "settings.h"
-//#include "stats.h"
 #include "str.h"
-#include "tui.h"
+#include "settings.h"
 #include "utils.h"
-#include "ui_server.h"
-#include "proxyfetcher.h"
-#include "requestserver.h"
-
 using namespace std;
 
-CURLM *cm;
-
-int routine();
-void start_daemon_mode();
-int parse_cli_arguments(int argc, char* argv[]);
-int init_curses();
-int load_pkgs();
-void show_pkgs();
-int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main(int argc, char* argv[]);
-void *refresh_tui_screen( void *);
-void launch_tui_thread();
-void launch_ui_server_thread();
-void launch_proxy_fetcher_server_thread();
-void launch_request_server_thread();
+class Tconfig {
+	private:
+		map<string,string> content_;
+		string config_file_name;
+	public:
+		Tconfig(string const& file_name):
+			content_(),
+			config_file_name("")
+			{config_file_name=file_name;load_settings_from_config_file();};
+		void load_settings_from_config_file();
+		int set(string const& section, string const& entry, string &dst) const;
+		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
+		int set(string const& section, string const& entry, bool &dst) const;
+		void clear();
+};
 
 #endif
