@@ -52,66 +52,31 @@ int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 	}
 }
 
-int Tpkg::try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_distfile){
-	string distfile_name;
-	try{
-		distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
-		if (is_symlink_restricted(distfile_name)!=-1){
-			debug("PROXY_FETCHER: distfile: "+distfile_name+" restricted (name matches restriting pattern");
-			return R_PF_REJECTED;
-		}
-		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
-			if (Pdistfile_list[distfile_num]->name==distfile_name){
-				switch (Pdistfile_list[distfile_num]->status){
-					case DDOWNLOADED: {
-						debug("PROXY_FETCHER: distfile: "+distfile_name+" was downloaded");
-						return R_PF_DOWNLOADED;
-					};
-					case DFAILED:{
-						debug("PROXY_FETCHER: Failed to download distfile: "+distfile_name);
-						return R_PF_FAILED;
-					}
-					default:{
-						debug("PROXY_FETCHER: distfile: "+distfile_name+" was already in queue");
-						return R_PF_ALREADY_WAS_IN_QUEUE;
-					}
-				}
-			}
-		}
-		return push_back_distfile(json_obj_distfile);
-	}catch(...){
-		error_log("Error in pkg.cpp: pushback_distfile()");
-	}
-	debug("PROXY_FETCHER: Error adding distfile: "+distfile_name+" to proxy-fetcher's queue");
-	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
-}
-
-int Tpkg::try_adding_distfile_to_request_server_queue(json_object* json_obj_distfile){
-	string distfile_name;
+int Tpkg::find_distfile(string distfile_name){
 	try{
 		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
 			if (Pdistfile_list[distfile_num]->name==distfile_name){
 				switch (Pdistfile_list[distfile_num]->status){
 					case DDOWNLOADED: {
-						debug("REQUEST_SERVER: distfile: "+distfile_name+" was downloaded");
+						debug("find_distfile(): distfile: "+distfile_name+" was downloaded");
 						return R_PF_DOWNLOADED;
 					};
 					case DFAILED:{
-						debug("REQUEST_SERVER: Failed to download distfile: "+distfile_name);
+						debug("find_distfile(): failed to download distfile: "+distfile_name);
 						return R_PF_FAILED;
 					}
 					default:{
-						debug("REQUEST_SERVER: distfile: "+distfile_name+" was already in queue");
+						debug("find_distfile(): distfile: "+distfile_name+" was already in queue");
 						return R_PF_ALREADY_WAS_IN_QUEUE;
 					}
 				}
 			}
 		}
-		return push_back_distfile(json_obj_distfile);
+		return R_PF_NOT_REQUESTED_YET;
 	}catch(...){
-		error_log("Error in pkg.cpp: pushback_distfile()");
+		error_log("Error in pkg.cpp: find_distfile()");
 	}
-	debug("REQUEST_SERVER: Error adding distfile: "+distfile_name+" to seggets's queue");
+	debug("Error in pkg.cpp: find_distfile(): distfile: "+distfile_name);
 	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 

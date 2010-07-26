@@ -58,8 +58,7 @@ class Tpkg{
 		Tpkg & operator=(const Tpkg &L);
 		~Tpkg();
 		int push_back_distfile(json_object* json_obj_distfile);
-		int try_adding_distfile_to_request_server_queue(json_object* json_obj_distfile);
-		int try_adding_distfile_to_proxy_fetchers_queue(json_object* json_obj_distfile);
+		int find_distfile(string distfile_name);
 		void load_pkg_from_json(json_object* json_obj_pkg);
 };
 

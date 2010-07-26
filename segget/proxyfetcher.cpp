@@ -104,7 +104,32 @@ void *run_proxy_fetcher_server(void * ){
 							error_log("Received a msg from the client:"+recv_msg);
 							string send_response;
 //							char send_buffer[10]="";
-							send_response=toString(proxy_fetcher_pkg.try_adding_distfile_to_proxy_fetchers_queue(json_tokener_parse(buffer)));
+
+							json_object* json_obj_distfile=json_tokener_parse(buffer);
+							string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
+							int result=request_server_pkg.find_distfile(distfile_name);
+							switch (result){
+								case R_PF_NOT_REQUESTED_YET:
+								case R_PF_ERROR_ADDING_TO_PROXY_QUEUE: // if error - try with proxy_fetcher
+								{
+									result=proxy_fetcher_pkg.find_distfile(distfile_name);
+									switch (result){
+										case R_PF_NOT_REQUESTED_YET:{
+											if (is_symlink_restricted(distfile_name)!=-1){
+												debug("PROXY_FETCHER: distfile: "+distfile_name+" restricted (name matches restriting pattern");
+												result=R_PF_REJECTED;
+											}else{
+												result=proxy_fetcher_pkg.push_back_distfile(json_obj_distfile);
+											break;
+											}
+										}
+										default: break;
+									}
+									break;
+								}
+								default: break;
+							}
+							send_response=toString(result);
 //							if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
 							if (write(fd, send_response.c_str(), send_response.length())!=(int)send_response.length()){
 								error_log("Error in proxyfetcher.cpp: run_proxy_fetcher_server(): response msg size and sent data size are different.");

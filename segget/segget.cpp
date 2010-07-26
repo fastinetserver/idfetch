@@ -27,7 +27,6 @@
 #include "segget.h"
 
 int load_pkgs(){
-	debug("uuuuuuuuuuuuuummmmmmmmmmmmmmmm");
 	try{
 		
 		ifstream json_pkg_list_file;
@@ -141,12 +140,12 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 
 int choose_segment(uint connection_num){
 	try{
-		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
+//		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
 //			debug("pkg_num:"+toString(pkg_num));
-			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
-				return 0;
-			}
-		}
+//			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
+//				return 0;
+//			}
+//		}
 		if (0==pkg_choose_segment(&request_server_pkg, connection_num)){
 			return 0;
 		}
@@ -400,11 +399,11 @@ int routine(){
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_tui_theread() failed");
 		}
-		try{
-			load_pkgs();
-		}catch(...){
+//		try{
+//			load_pkgs();
+//		}catch(...){
 			//error while loading pkgs
-		}
+//		}
 		try{
 			//show_pkgs();
 			stats.show_totals();
