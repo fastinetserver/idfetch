@@ -54,7 +54,7 @@ void log_no_msg(string log_msg_text){
 void log(string log_msg_text){
 	log_no_msg(log_msg_text);
 	try{
-		msg(LOG_LINE_NUM,0, "LOG:"+log_msg_text);
+		msg_log(log_msg_text);
 	}catch(...){
 		error_log("Error in tui.cpp: log()");
 	}
@@ -111,7 +111,7 @@ void error_log_no_msg(string error_msg_text){
 void error_log(string error_msg_text){
 	error_log_no_msg(error_msg_text);
 	try{
-		msg(ERROR_LINE_NUM,0, "ERROR:"+error_msg_text);
+		msg_error_log(error_msg_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: error_log()");
 	}

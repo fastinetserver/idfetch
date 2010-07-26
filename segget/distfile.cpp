@@ -814,7 +814,7 @@ int Tdistfile::combine_segments(){
 				status=DFAILED;
 				return 12;
 			}
-/*
+
 			if (! sha512_ok(settings.distfiles_dir+"/"+name,SHA512)){
 				status=DFAILED;
 				return 13;
@@ -834,7 +834,6 @@ int Tdistfile::combine_segments(){
 				status=DFAILED;
 				return 16;
 			}
-			*/
 			status=DDOWNLOADED;
 			if (settings.provide_mirror_dir!="none"){
 				symlink_distfile_to_provide_mirror_dir();

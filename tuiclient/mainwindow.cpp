@@ -50,7 +50,7 @@ void Tmainwindow::compose(){
 	//clear();
 	box(window, ACS_VLINE, ACS_HLINE);
 	getmaxyx(window,height,width);
-	bottom_screenline_num=height-6;
+	bottom_screenline_num=height-3;
 	color_status();
 	msg_status();
 	color_info();
@@ -58,12 +58,24 @@ void Tmainwindow::compose(){
 		msg_line(y+1,screen_info_lines[status_line_num]);
 	}
 	color_downloads();
-	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
+//	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
 	for (int y=0, line_num=top_position; y<bottom_screenline_num; y++, line_num++){
 		msg_line(y+1,screenlines[line_num]);
 	}
 	wrefresh(window);
 	//and show children
+	if (log_win.visible && error_log_win.visible){
+		int modd = (height-3)%4;
+		log_win.resize((height-3)/4+modd, width, 1+(height-3)/4*2, 0);
+		error_log_win.resize((height-3)/4, width, 1+(height-3)/4*3+modd, 0);
+	}else{
+		int modd = (height-3)%2;
+		log_win.resize((height-3)/2+modd, width, 1+(height-3)/2, 0);
+		error_log_win.resize((height-3)/2+modd, width, 1+(height-3)/2, 0);
+	}
+	log_win.show();
+	error_log_win.show();
+
 	help_win.center(height,width);
 	help_win.show();
 }
@@ -99,5 +111,8 @@ void Tmainwindow::init(){
 	exit_flag=FALSE;
 	visible=TRUE;
 	notfresh=TRUE;
-	help_win.init(12,30,5,5);
+	help_win.init(" HELP ",14,31,5,5);
+	log_win.init(" LOG ",12,50,5,5);
+	error_log_win.init(" ERROR LOG ",12,50,5,5);
+
 }

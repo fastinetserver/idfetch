@@ -26,7 +26,8 @@
 
 #include "twindow.h"
 
-void Twindow::init(int height_, int width_, int y_, int x_){
+void Twindow::init(string caption_, int height_, int width_, int y_, int x_){
+	caption=caption_;
 	height=height_;
 	width=width_;
 	y=y_;
@@ -86,6 +87,22 @@ void Twindow::center(uint max_y, uint max_x){
 	x=(max_x-width)/2;
 	mvwin(window,y,x);
 }
+
+void Twindow::resize(uint new_height, uint new_width, uint new_y, uint new_x){
+	y=new_y;
+	x=new_x;
+	height=new_height;
+	width=new_width;
+	mvwin(window,y,x);
+	wresize(window,height,width);
+}
+
+void Twindow::make_frame(){
+	wclear(window);
+	box(window, ACS_VLINE, ACS_HLINE);
+	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
+}
+
 
 void Twindow::refresh(){
 	if (notfresh){

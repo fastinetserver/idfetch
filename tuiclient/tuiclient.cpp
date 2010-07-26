@@ -64,14 +64,18 @@ void * watch_keyboard_thread_function(void *){
 			case (char)82:mainwindow.down(mainwindow.bottom_screenline_num);break;
 			//KEY_PG_UP
 			case (char)83:mainwindow.up(mainwindow.bottom_screenline_num);break;
-			case 'u':mainwindow.up(1);break;
+			case 'u':
 			case 'U':mainwindow.up(1);break;
-			case 'd':mainwindow.down(1);break;
+			case 'd':
 			case 'D':mainwindow.down(1);break;
-			case 'q':quit();break;
+			case 'q':
 			case 'Q':quit();break;
-			case 'h':mainwindow.help_win.toggle(); mainwindow.show();break;
+			case 'h':
 			case 'H':mainwindow.help_win.toggle(); mainwindow.show();break;
+			case 'l':
+			case 'L':mainwindow.log_win.toggle(); mainwindow.show();break;
+			case 'e':
+			case 'E':mainwindow.error_log_win.toggle(); mainwindow.show();break;
 //			default: screenlines[25]=toString((int)key);
 		}
 	}
@@ -87,6 +91,35 @@ void * refresh_screen_thread_function(void *){
 		select(FD_SETSIZE, (fd_set *)0, (fd_set *)0,(fd_set *)0, (struct timeval *) &delay);//&timeout
 	}
 	return 0;
+}
+
+
+Tparts split(string splitter, string str){
+	Tparts result;
+	int splitter_pos=str.find(splitter);
+	result.before=str.substr(0,splitter_pos);
+	result.after=str.substr(splitter_pos+splitter.length());
+	return result;
+}
+
+void decode_connection_msg(string msg_body){
+	Tparts parts=split("<y>",msg_body);
+	int line_num=atoi(parts.before.c_str());
+	if (line_num<200){
+		mainwindow.set_line(line_num, parts.after);
+//		set_line(line_num, "||"+toString(line_num)+"||("+first_part.substr(0,first_part.find("<s>")+3)+")"+msg_text);
+//		set_line(line_num, "||"+toString(line_num)+"||("+original_msg);
+	}else{
+		mainwindow.screen_info_lines[line_num-200]=parts.after;
+	}
+}
+
+void decode_log_msg(string msg_body){
+	mainwindow.log_win.add_line(msg_body);
+}
+
+void decode_error_log_msg(string msg_body){
+	mainwindow.error_log_win.add_line(msg_body);
 }
 
 int main()
@@ -124,7 +157,7 @@ int main()
 				int len;
 
 				struct sockaddr_in address;
-				string recv_msg, first_part, msg_text;
+				string rest_of_the_msg, first_part, msg_text;
 
 				//Create a socket for the client:
 				int result=-1;
@@ -134,8 +167,8 @@ int main()
 
 					//Name the socket, as agreed with the server:
 					address.sin_family = AF_INET;
-					address.sin_addr.s_addr = inet_addr("127.0.0.1");
-					address.sin_port = htons(9999);
+					address.sin_addr.s_addr = inet_addr(settings.ui_ip.c_str());
+					address.sin_port = htons(settings.ui_port);
 					len = sizeof(address);
 					//Connect your socket to the server’s socket:
 					result = connect(sockfd, (struct sockaddr *)&address, len);
@@ -175,20 +208,21 @@ int main()
 								error_log("Error in tuiclient.cpp : main() read bytes count does NOT match declared count.");
 							};
 							//recv_msg=recv_msg+recv_buffer;
-							recv_msg=recv_msg+recv_buffer;
-							while (recv_msg.find("<.>")!=recv_msg.npos){
-								string original_msg=recv_msg;
-								recv_msg=recv_msg.substr(recv_msg.find("<y>")+3,recv_msg.npos);
-								first_part=recv_msg.substr(0,recv_msg.find("<.>"));
-								recv_msg=recv_msg.substr(recv_msg.find("<.>")+3);
-								uint line_num=atoi(first_part.substr(0,first_part.find("<s>")).c_str());
-								msg_text=first_part.substr(first_part.find("<s>")+3,first_part.npos);
-								if (line_num<200){
-									mainwindow.set_line(line_num, msg_text);
-//									set_line(line_num, "||"+toString(line_num)+"||("+first_part.substr(0,first_part.find("<s>")+3)+")"+msg_text);
-//									set_line(line_num, "||"+toString(line_num)+"||("+original_msg);
-								}else{
-									mainwindow.screen_info_lines[line_num-200]=msg_text;
+							rest_of_the_msg=rest_of_the_msg+recv_buffer;
+							Tparts msg_parts;
+							while (rest_of_the_msg.find("<.>")!=rest_of_the_msg.npos){
+								msg_parts=split("<m>",rest_of_the_msg);
+								msg_parts=split("<t>",msg_parts.after);
+								char msg_type=msg_parts.before[0];
+								debug("msg_type="+msg_type);
+								msg_parts=split("<.>",msg_parts.after);
+								string msg_body=msg_parts.before;
+								debug("msg_body="+msg_body);
+								rest_of_the_msg=msg_parts.after;
+								switch (msg_type){
+									case 'c': decode_connection_msg(msg_parts.before); break;
+									case 'l': decode_log_msg(msg_parts.before);break;
+									case 'e': decode_error_log_msg(msg_parts.before);break;
 								}
 							}
 						};

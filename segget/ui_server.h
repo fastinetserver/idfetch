@@ -38,19 +38,13 @@
 #include <stdlib.h>
 #include <string>
 #include "settings.h"
+#include "tui.h"
 
 using namespace std;
 
 #define MAX_BIND_ATTEMPTS 5
-const uint MAX_LINES=200;
-const uint TOTAL_LINE_NUM=MAX_LINES;
-const uint ERROR_LINE_NUM=MAX_LINES+1;
-const uint LOG_LINE_NUM=MAX_LINES+2;
-const uint DEBUG_LINE_NUM=MAX_LINES+3;
 
 //const uint MAX_LINES=200;
-extern string screenlines[DEBUG_LINE_NUM+1];
-extern uint max_published_screenline_num;
 
 class Tui_server{
 	public:
@@ -59,8 +53,13 @@ class Tui_server{
 		uint max_fd_num;
 		fd_set readfds, testfds;
 		void init();
-		ulong send_to_fd(uint fd, uint y, string msg);
-		void send_all_clients(uint y, string msg);
+		string encode_connection_msg(uint y, string msg);
+		string encode_log_msg(string msg);
+		string encode_error_log_msg(string msg);
+		ulong send_to_fd(uint fd, string msg);
+		void send_connection_msg_to_all_clients(uint y, string msg);
+		void send_log_msg_to_all_clients(string msg);
+		void send_error_log_msg_to_all_clients(string msg);
 };
 
 extern Tui_server ui_server;

@@ -26,9 +26,7 @@
 
 #include "ui_server.h"
 
-uint max_published_screenline_num;
 Tui_server ui_server;
-string screenlines[DEBUG_LINE_NUM+1];
 
 void Tui_server::init(){
 	socklen_t server_len;
@@ -64,7 +62,25 @@ void Tui_server::init(){
 	send_to_fd_busy=false;
 }
 //prevent simultaneous writes
-ulong Tui_server::send_to_fd(uint fd, uint y, string msg){
+string Tui_server::encode_connection_msg(uint y, string msg){
+//	if (send_to_fd_idle) {
+	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
+	return message;
+}
+
+string Tui_server::encode_log_msg(string msg){
+//	if (send_to_fd_idle) {
+	string message="<m>l<t>"+msg+"<.>";
+	return message;
+}
+
+string Tui_server::encode_error_log_msg(string msg){
+//	if (send_to_fd_idle) {
+	string message="<m>e<t>"+msg+"<.>";
+	return message;
+}
+
+ulong Tui_server::send_to_fd(uint fd, string msg){
 //	if (send_to_fd_idle) {
 	while (send_to_fd_busy){
 		sleep(1);
@@ -72,9 +88,8 @@ ulong Tui_server::send_to_fd(uint fd, uint y, string msg){
 	send_to_fd_busy=true;
 	if (fd !=server_sockfd){
 		if(FD_ISSET(fd,&ui_server.readfds)) {
-			string message="<y>"+toString(y)+"<s>"+msg+"<.>";
-			ulong bytes_written=write(fd, message.c_str(), message.length());
-			if (bytes_written!=message.length()){
+			ulong bytes_written=write(fd, msg.c_str(), msg.length());
+			if (bytes_written!=msg.length()){
 				debug("Error: Not all data has been sent to ui_client()");
 			}
 		}
@@ -83,9 +98,21 @@ ulong Tui_server::send_to_fd(uint fd, uint y, string msg){
 	return 0;
 }
 
-void Tui_server::send_all_clients(uint y, string msg){
+void Tui_server::send_connection_msg_to_all_clients(uint y, string msg){
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		send_to_fd(fd, y, msg);
+		send_to_fd(fd, encode_connection_msg(y, msg));
+	}
+}
+
+void Tui_server::send_log_msg_to_all_clients(string msg){
+	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+		send_to_fd(fd, encode_log_msg(msg));
+	}
+}
+
+void Tui_server::send_error_log_msg_to_all_clients(string msg){
+	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+		send_to_fd(fd, encode_error_log_msg(msg));
 	}
 }
 
@@ -124,7 +151,7 @@ void *run_ui_server(void * ){
 
 					// Get this info to catch up!
 					for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
-							ui_server.send_to_fd(client_sockfd, line_num, screenlines[line_num]);
+							ui_server.send_to_fd(client_sockfd, ui_server.encode_connection_msg(line_num, screenlines[line_num]));
 							debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
 //							ui_server.send(line_num,screenlines[line_num]);
 						}

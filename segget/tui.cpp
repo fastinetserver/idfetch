@@ -27,7 +27,11 @@
 #include "tui.h"
 extern Tsettings settings;
 
-const uint CONNECTION_LINES=5;
+const uint CONNECTION_LINES=3;
+string screenlines[DEBUG_LINE_NUM+1];
+vector<string> log_lines;
+uint log_lines_counter=0;
+uint max_published_screenline_num;
 
 //bool msg_idle=true;
 void msg(uint y, uint x, string msg_text){
@@ -36,7 +40,7 @@ void msg(uint y, uint x, string msg_text){
 		try{
 			if (max_published_screenline_num<y && y<MAX_LINES) max_published_screenline_num=y;
 			screenlines[y]=msg_text;
-			ui_server.send_all_clients(y,msg_text);
+			ui_server.send_connection_msg_to_all_clients(y,msg_text);
 //			string ready_msg_text=msg_text+"                        ";
 			string ready_msg_text=msg_text+"";
 			mvaddstr(y,x,ready_msg_text.c_str());
@@ -46,14 +50,6 @@ void msg(uint y, uint x, string msg_text){
 		}
 //		msg_idle=true;
 //	}
-}
-
-void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text){
-	try{
-		msg(connection_num*CONNECTION_LINES+1,0,"DF#"+toString(distfile_num)+" Seg#"+toString(segment_num)+" "+msg_text);
-	}catch(...){
-		error_log_no_msg("Error in tui.cpp: msg_connecting()");
-	}
 }
 
 void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
@@ -103,6 +99,14 @@ void msg_segment_progress(uint connection_num, uint network_num, uint segment_nu
 	}
 }
 
+void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text){
+	try{
+		msg(connection_num*CONNECTION_LINES+1,0,"DF#"+toString(distfile_num)+" Seg#"+toString(segment_num)+" "+msg_text);
+	}catch(...){
+		error_log_no_msg("Error in tui.cpp: msg_connecting()");
+	}
+}
+/*
 void msg_status1(uint connection_num, uint segment_num, string msg_text){
 	try{
 		msg(connection_num*CONNECTION_LINES+2,0,"Seg#"+toString(segment_num)+" "+msg_text);
@@ -117,6 +121,8 @@ void msg_status2(uint connection_num, string msg_text){
 		error_log_no_msg("Error in tui.cpp: msg_status2()");
 	}
 }
+*/
+
 void msg_clean_connection(uint connection_num){
 	try{
 		msg(connection_num*CONNECTION_LINES,0,"");
@@ -132,9 +138,26 @@ void msg_clean_connection(uint connection_num){
 		error_log_no_msg("Error in tui.cpp: msg_clean_connection()");
 	}
 }
-void msg_error(string error_text){
+void msg_log(string log_text){
 	try{
-		msg(20,0, error_text);
+		ui_server.send_log_msg_to_all_clients(log_text);
+		log_lines.push_back(log_text);
+		if (log_lines.size()>LOG_LINES_MAX_NUM){
+			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
+		}
+//		msg(20,0, error_text);
+	}catch(...){
+		error_log_no_msg("Error in tui.cpp: msg_error()");
+	}
+}
+void msg_error_log(string error_log_text){
+	try{
+		ui_server.send_error_log_msg_to_all_clients(error_log_text);
+		log_lines.push_back(error_log_text);
+		if (log_lines.size()>LOG_LINES_MAX_NUM){
+			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
+		}
+//		msg(20,0, error_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_error()");
 	}

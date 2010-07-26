@@ -34,6 +34,7 @@ using namespace std;
 
 #include "twindow.h"
 #include "helpwindow.h"
+#include "scrollwindow.h"
 
 const uint CONNECTION_LINES=5;
 const uint MAX_LINES=200;
@@ -42,6 +43,8 @@ class Tmainwindow: public Twindow{
 	public:
 		
 		Thelp_window help_win;
+		Tscroll_window log_win;
+		Tscroll_window error_log_win;
 		bool exit_flag;
 		bool connected_status;
 		string screenlines[200];
@@ -49,6 +52,8 @@ class Tmainwindow: public Twindow{
 		ulong attempt_num;
 		Tmainwindow():
 			help_win(),
+			log_win(),
+			error_log_win(),
 			exit_flag(FALSE),
 			connected_status(FALSE),
 			attempt_num(0)

@@ -24,50 +24,31 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string>
-#include <string.h>
-#include <ncurses.h>
-#include <pthread.h>
-#include "str.cpp"
-#include "twindow.cpp"
-#include "mainwindow.cpp"
-#include "helpwindow.cpp"
-#include "scrollwindow.cpp"
-#include "colors.cpp"
-#include "config.cpp"
-#include "log.cpp"
-#include "settings.cpp"
+#include "scrollwindow.h"
 
-#define BUFFER_SIZE 2000
+//Tscroll_window::~Tscroll_window(){};
 
-#define TOTAL_LINE_NUM	200
-#define ERROR_LINE_NUM	201
-#define LOG_LINE_NUM	202
-#define DEBUG_LINE_NUM	203
-
-using namespace std;
-
-class Tparts{
-	public:
-		string before, after;
-		Tparts():
-			before(""),
-			after("")
-		{};
-};
+void Tscroll_window::compose(){
+//		msg_text=msg_text+" ";
+//	
+	make_frame();
+	getmaxyx(window,height,width);
+	bottom_screenline_num=height-1;
+	color_downloads();
+//	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
+	top_position=scroll_lines.size()-height+2; // +2 for border lines
+	if (top_position<0) {top_position=0;};
+	uint line_num=top_position;
+	for (int y=0; (y<bottom_screenline_num && line_num<scroll_lines.size()); y++, line_num++){
+		msg_line(y+1,scroll_lines[line_num]);
+	}
+	wrefresh(window);
+}
 
 
-Tmainwindow mainwindow;
-
-int sockfd;
-void quit();
-void * watch_keyboard_thread_function(void * ptr);
-void * refresh_screen_thread_function(void * ptr);
+void Tscroll_window::add_line(string line){
+		scroll_lines.push_back(line);
+		if (scroll_lines.size()>SCROLL_LINES_MAX_NUM){
+			scroll_lines.erase(scroll_lines.begin(),scroll_lines.begin()+scroll_lines.size()-SCROLL_LINES_MAX_NUM);
+		}
+}

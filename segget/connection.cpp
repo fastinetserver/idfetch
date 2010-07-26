@@ -92,9 +92,9 @@ void Tconnection::stop(CURLcode connection_result){
 		debug("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
 		if (connection_result){
 			string error_str=curl_easy_strerror(connection_result);
-			debug("	ERROR "+toString(connection_result)+": "+error_str);
+			debug("  ERROR "+toString(connection_result)+": "+error_str);
 			error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
-			error_log("	ERROR "+toString(connection_result)+": "+error_str);
+			error_log("  ERROR "+toString(connection_result)+": "+error_str);
 		}
 		
 		msg_clean_connection(connection_num);
@@ -154,7 +154,7 @@ void Tconnection::stop(CURLcode connection_result){
 				}
 			}
 			// error -> start downloading again
-			msg_status2(segment->connection_num, toString(connection_result)+"]- Failed download "+segment->file_name);
+//			msg_status2(segment->connection_num, toString(connection_result)+"]- Failed download "+segment->file_name);
 			debug(toString(connection_result)+"]- Failed download "+segment->url);
 			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 			if (segment->try_num>=settings.max_tries){

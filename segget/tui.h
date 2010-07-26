@@ -27,12 +27,26 @@
 #ifndef __TUI_H__
 #define __TUI_H__
 #include <ncurses.h>
+#include <vector>
 #include "settings.h"
 #include "ui_server.h"
 #include "utils.h"
 #include "log.h"
 
 using namespace std;
+
+const uint MAX_LINES=200;
+const uint TOTAL_LINE_NUM=MAX_LINES;
+const uint ERROR_LINE_NUM=MAX_LINES+1;
+const uint LOG_LINE_NUM=MAX_LINES+2;
+const uint DEBUG_LINE_NUM=MAX_LINES+3;
+const uint LOG_LINES_MAX_NUM=200;
+
+extern string screenlines[DEBUG_LINE_NUM+1];
+extern uint max_published_screenline_num;
+
+extern vector<string> log_lines;
+extern uint log_lines_counter;
 
 void msg_total(string msg_text);
 void msg(uint y, uint x, string msg_text);
@@ -41,6 +55,7 @@ void msg_segment_progress(uint connection_num, uint network_num, uint segment_nu
 void msg_status1(uint connection_num, uint segment_num, string msg_text);
 void msg_status2(uint connection_num, string msg_text);
 void msg_clean_connection(uint connection_num);
-void msg_error(string error_text);
+void msg_log(string log_text);
+void msg_error_log(string error_log_text);
 void msg_total(string msg_text);
 #endif

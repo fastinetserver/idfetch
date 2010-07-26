@@ -24,58 +24,26 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef _TWINDOW_H_
-#define _TWINDOW_H_
+#ifndef _SCROLLWINDOW_H_
+#define _SCROLLWINDOW_H_
 
-#include <ncurses.h>
-#include <sys/types.h>
-#include "colors.h"
+const uint SCROLL_LINES_MAX_NUM=200;
+
+#include "twindow.h"
+#include <vector>
 
 using namespace std;
-
-class Twindow{
+class Tscroll_window: public Twindow{
 	public:
-		WINDOW * window;
-		string caption;
-		uint width;
-		uint height;
-		uint y;
-		uint x;
-		bool notfresh;
-		bool visible;
-		int top_position;
-		int bottom_screenline_num;
-		int max_received_screenline_num;
-		string status_str;
-
-		Twindow():
-			window(0),
-			caption(""),
-			width(10),
-			height(10),
-			y(1),
-			x(1),
-			notfresh(FALSE),
-			visible(FALSE),
-			top_position(0),
-			bottom_screenline_num(0),
-			max_received_screenline_num(0),
-			status_str("")
+		vector<string> scroll_lines;
+		uint scroll_lines_counter;
+		Tscroll_window():
+			scroll_lines(),
+			scroll_lines_counter(0)
 			{};
-		virtual ~Twindow(){};
-		Twindow(const Twindow &L); // copy constructor
-		Twindow & operator=(const Twindow &L);
-		void init(string caption_, int height_, int width_, int y_, int x_);
-		void toggle();
-		void msg_line(uint y, string msg_text);
-		void msg_short(uint y, uint x, string msg_text);
-		void up(int inc);
-		void down(uint inc);
-		void center(uint max_y, uint max_x);
-		void resize(uint new_height, uint new_width, uint new_y, uint new_x);
-		void make_frame();
-		void refresh();
-		void show();
-		virtual void compose(){};
+		~Tscroll_window(){};
+		void add_line(string line);
+		void compose();
 };
+
 #endif

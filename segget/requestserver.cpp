@@ -101,7 +101,7 @@ void *run_request_server(void * ){
 //							debug("serving client - read");
 //							debug("serving client on fd"+toString(fd));
 							string recv_msg=buffer;
-							error_log("Received a msg from the client:"+recv_msg);
+//							error_log("Received a msg from the client:"+recv_msg);
 //							char send_buffer[10]="";
 							json_object* json_obj_distfile=json_tokener_parse(buffer);
 							string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));

@@ -29,14 +29,15 @@
 void Thelp_window::compose(){
 //		msg_text=msg_text+" ";
 //	
-	box(window, ACS_VLINE, ACS_HLINE);
-	mvwaddstr(window,0,12," HELP ");
+	make_frame();
 	mvwaddstr(window,2,1,"q      - quit");
 	mvwaddstr(window,3,1,"h      - show this help");
 	mvwaddstr(window,4,1,"l      - show log");
-	mvwaddstr(window,5,1,"Up     - scroll 1 line up");
-	mvwaddstr(window,6,1,"Down   - scroll 1 line down");
-	mvwaddstr(window,7,1,"PgUp   - scroll 1 page up");
-	mvwaddstr(window,8,1,"PgDown - scroll 1 page down");
+	mvwaddstr(window,5,1,"e      - show error log");
+	mvwaddstr(window,6,1,"d      - show distfiles queue");
+	mvwaddstr(window,7,1,"Up     - scroll 1 line up");
+	mvwaddstr(window,8,1,"Down   - scroll 1 line down");
+	mvwaddstr(window,9,1,"PgUp   - scroll 1 page up");
+	mvwaddstr(window,10,1,"PgDown - scroll 1 page down");
 	wrefresh(window);
 }

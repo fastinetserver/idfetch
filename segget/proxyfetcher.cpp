@@ -101,7 +101,7 @@ void *run_proxy_fetcher_server(void * ){
 //							debug("serving client - read");
 //							debug("serving client on fd"+toString(fd));
 							string recv_msg=buffer;
-							error_log("Received a msg from the client:"+recv_msg);
+//							error_log("Received a msg from the client:"+recv_msg);
 							string send_response;
 //							char send_buffer[10]="";
 
