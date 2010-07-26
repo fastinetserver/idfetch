@@ -40,12 +40,13 @@ int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 	try{
 		distfile_count++;
 		Tdistfile * Pcur_distfile=new Tdistfile();
-		Pdistfile_list.push_back(Pcur_distfile);
-		Pcur_distfile->load_distfile_from_json(json_obj_distfile);
-
-		string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
-		debug("Added distfile: "+distfile_name+" to download queue");
-		return R_PF_ADDED_TO_PROXY_QUEUE;
+		if (Pcur_distfile->load_distfile_from_json(json_obj_distfile)){
+			error_log("Error in pkg.cpp: push_back_distfile(): while loading distfile");
+			return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+		}else{
+			Pdistfile_list.push_back(Pcur_distfile);
+			return R_PF_ADDED_TO_PROXY_QUEUE;
+		}
 	}catch(...){
 		error_log("Error in pkg.cpp: pushback_distfile()");
 		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;

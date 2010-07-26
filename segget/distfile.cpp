@@ -149,7 +149,7 @@ bool Tdistfile::allows_new_actions(){
 //	DPROXY_FAILED,
 //	DPROXY_DOWNLOADED,
 //	DWAITING,
-//	DDOWNLOADING,
+//	DDOWNLOADING,json_object_object_get(json_obj_distfile,"SHA512")
 }
 
 void Tdistfile::init(){
@@ -207,21 +207,59 @@ bool Tdistfile::check_if_dld(){
 	}
 }
 
-void Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
+bool Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
 	try{
-		name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
-		size=atoi(json_object_to_json_string(json_object_object_get(json_obj_distfile,"size")));
-		RMD160=json_object_get_string(json_object_object_get(json_obj_distfile,"RMD160"));
-		SHA1=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA1"));
-		SHA256=json_object_get_string(json_object_object_get(json_obj_distfile,"SHA256"));
+		json_object* json_obj_buffer;
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"name");
+		if (json_obj_buffer){
+			name=json_object_get_string(json_obj_buffer);
+		}else{
+			return true;
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"size");
+		if (json_obj_buffer){
+			size=atoi(json_object_get_string(json_obj_buffer));
+		}else{
+			return true;
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"RMD160");
+		if (json_obj_buffer){
+			RMD160=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"SHA1");
+		if (json_obj_buffer){
+			SHA1=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"SHA256");
+		if (json_obj_buffer){
+			SHA256=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"SHA512");
+		if (json_obj_buffer){
+			SHA512=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"WHIRLPOOL");
+		if (json_obj_buffer){
+			WHIRLPOOL=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"MD5");
+		if (json_obj_buffer){
+			MD5=json_object_get_string(json_obj_buffer);
+		}
+		json_obj_buffer=json_object_object_get(json_obj_distfile,"CRC32");
+		if (json_obj_buffer){
+			CRC32=json_object_get_string(json_obj_buffer);
+		}
 		if (not(check_if_dld())){
 			json_data=json_object_to_json_string(json_obj_distfile);
 			split_into_segments();
 			load_url_list(json_object_object_get(json_obj_distfile,"url_list"));
 		}
+		debug("Added distfile: "+name+" to download queue");
 	}catch(...){
 		error_log("Error: distfile.cpp: load_distfile_from_json()");
 	}
+	return false;
 }
 
 void Tdistfile::split_into_segments(){
@@ -762,32 +800,41 @@ int Tdistfile::combine_segments(){
 			return 5;
 		}
 		try{
-			if (rmd160_ok(settings.distfiles_dir+"/"+name,RMD160))
-				log("RMD160 checksum for distfile:"+name+" is [OK]");
-			else{
-				log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
-				error_log("Error: RMD160 checksum for distfile:"+name+" [FAILED]");
+			if (! rmd160_ok(settings.distfiles_dir+"/"+name,RMD160)){
 				status=DFAILED;
 				return 10;
-			}
+			};
 	
-			if (sha1_ok(settings.distfiles_dir+"/"+name,SHA1))
-				log("SHA1   checksum for distfile:"+name+" is [OK]");
-			else{
-				log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
-				error_log("Error: SHA1   checksum for distfile:"+name+" [FAILED]");
+			if (! sha1_ok(settings.distfiles_dir+"/"+name,SHA1)){
 				status=DFAILED;
 				return 11;
 			}
 	
-			if (sha256_ok(settings.distfiles_dir+"/"+name,SHA256))
-				log("SHA256 checksum for distfile:"+name+" is [OK]");
-			else{
-				log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
-				error_log("Error: SHA256 checksum for distfile:"+name+" [FAILED]");
+			if (! sha256_ok(settings.distfiles_dir+"/"+name,SHA256)){
 				status=DFAILED;
 				return 12;
 			}
+/*
+			if (! sha512_ok(settings.distfiles_dir+"/"+name,SHA512)){
+				status=DFAILED;
+				return 13;
+			}
+			
+			if (! whirlpool_ok(settings.distfiles_dir+"/"+name,WHIRLPOOL)){
+				status=DFAILED;
+				return 14;
+			}
+			
+			if (! md5_ok(settings.distfiles_dir+"/"+name,MD5)){
+				status=DFAILED;
+				return 15;
+			}
+			
+			if (! crc32_ok(settings.distfiles_dir+"/"+name,CRC32)){
+				status=DFAILED;
+				return 16;
+			}
+			*/
 			status=DDOWNLOADED;
 			if (settings.provide_mirror_dir!="none"){
 				symlink_distfile_to_provide_mirror_dir();

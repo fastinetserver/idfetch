@@ -111,6 +111,10 @@ class Tdistfile{
 		string RMD160;
 		string SHA1;
 		string SHA256;
+		string SHA512;
+		string WHIRLPOOL;
+		string MD5;
+		string CRC32;
 		uint url_count;
 		uint segment_size;
 		Tdistfile():
@@ -130,6 +134,10 @@ class Tdistfile{
 			RMD160(""),
 			SHA1(""),
 			SHA256(""),
+			SHA512(""),
+			WHIRLPOOL(""),
+			MD5(""),
+			CRC32(""),
 			url_count(0),
 			segment_size(settings.max_segment_size)
 			{init();};
@@ -139,7 +147,7 @@ class Tdistfile{
 		int request(ulong network_num, string msg);
 		void init();
 		bool allows_new_actions();
-		void load_distfile_from_json(json_object* json_obj_distfile);
+		bool load_distfile_from_json(json_object* json_obj_distfile);
 		void load_url_list(json_object* json_array_distfile_urllist);
 		void split_into_segments();
 		uint provide_local_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
