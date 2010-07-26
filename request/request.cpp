@@ -93,9 +93,9 @@ int load_pkgs(){
 		ifstream json_pkg_list_file;
 		json_pkg_list_file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
-			json_pkg_list_file.open((settings.pkg_list_dir+"/pkg.list").c_str());
+			json_pkg_list_file.open(settings.pkg_list_file.c_str());
 		}catch(...){
-			merror("Error: Can't open "+settings.pkg_list_dir+"/pkg.list"+" file");
+			merror("Error: Can't open distfile list file: "+settings.pkg_list_file);
 			return 1;
 		}
 		string buff((std::istreambuf_iterator<char>(json_pkg_list_file)), std::istreambuf_iterator<char>());
@@ -226,6 +226,7 @@ int parse_cli_arguments(int argc, char* argv[]){
 			name  = trim(option.substr(0,posEqual));
 			value = trim(option.substr(posEqual+1));
 			if (name=="--conf-dir") {settings.conf_dir=value; continue;};
+			if (name=="--pkglist-file") {settings.pkg_list_file=value; continue;};
 		}
 		return 0;
 	}catch(...){

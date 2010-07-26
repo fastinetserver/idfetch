@@ -31,10 +31,10 @@ Tsettings settings;
 void Tsettings::init(){
 	try{
 		Tconfig conf("segget.conf");
-		conf.set("logs","general_log_file",general_log_file);
-		conf.set("logs","logs_dir",logs_dir);
-		conf.set("logs","error_log_file",error_log_file);
-		conf.set("logs","debug_log_file",debug_log_file);
+//		conf.set("logs","general_log_file",general_log_file);
+//		conf.set("logs","logs_dir",logs_dir);
+//		conf.set("logs","error_log_file",error_log_file);
+//		conf.set("logs","debug_log_file",debug_log_file);
 		conf.set("request_server","request_ip",request_ip);
 		conf.set("request_server","request_port",request_port,1,65535);
 		conf.clear();
