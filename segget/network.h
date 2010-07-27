@@ -29,6 +29,7 @@
 //#include <string>
 //#include <map>
 #include <vector>
+#include <curl/curl.h>
 #include "str.h"
 #include "mirror.h"
 class Tmirror;
@@ -43,6 +44,13 @@ using namespace std;
 #define MODE_PROXY_FETCHER 1
 #define MODE_LOCAL 2
 #define MODE_CORAL_CDN 3
+
+#define HTTP				0
+#define HTTP_1_0			1
+#define SOCKS4				2
+#define SOCKS4a				3
+#define SOCKS5				4
+#define SOCKS5_HOSTNAME		5
 
 class Tnetwork{
 	static uint network_count;
@@ -78,6 +86,7 @@ class Tnetwork{
 		bool proxy_off;
 		string proxy_user;
 		string proxy_password;
+		ulong proxy_type;
 	//proxy_fetcher
 		string proxy_fetcher_ip;
 		ulong proxy_fetcher_port;
@@ -113,6 +122,7 @@ class Tnetwork{
 			proxy_off(1),
 			proxy_user("none"),
 			proxy_password("none"),
+			proxy_type(CURLPROXY_HTTP),
 		//proxy_fetcher
 			proxy_fetcher_ip("none"),
 			proxy_fetcher_port(3131),

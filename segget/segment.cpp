@@ -152,6 +152,7 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 					if (network_array[network_num].proxy_password!="none")
 						curl_easy_setopt(easyhandle, CURLOPT_PROXYPASSWORD, network_array[network_num].proxy_password.c_str());
 				}
+				curl_easy_setopt(easyhandle, CURLOPT_PROXYTYPE, network_array[network_num].proxy_type);
 			}
 
 			if ((network_array[network_num].bind_interface!="none") 

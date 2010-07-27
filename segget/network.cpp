@@ -85,6 +85,18 @@ void Tnetwork::init(uint priority_value){
 		conf.set("network_proxy","proxy_user",proxy_user);
 		conf.set("network_proxy","proxy_password",proxy_password);
 
+		ulong raw_proxy_type=0;
+		conf.set("network_proxy","proxy_type",raw_proxy_type,0,5);
+		switch (raw_proxy_type){
+			case HTTP: proxy_type=CURLPROXY_HTTP; break;
+			case HTTP_1_0: proxy_type=CURLPROXY_HTTP_1_0; break;
+			case SOCKS4: proxy_type=CURLPROXY_SOCKS4; break;
+			case SOCKS4a: proxy_type=CURLPROXY_SOCKS4A; break;
+			case SOCKS5: proxy_type=CURLPROXY_SOCKS5; break;
+			case SOCKS5_HOSTNAME: proxy_type=CURLPROXY_SOCKS5_HOSTNAME; break;
+			default : proxy_type=CURLPROXY_HTTP; break;
+		}
+
 //		conf.set(use_own_mirror_list_only_on,		"network_mirrors",			"use_own_mirror_list_only_on");
 
 		switch (network_mode){
