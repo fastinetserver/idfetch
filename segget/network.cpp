@@ -75,7 +75,8 @@ void Tnetwork::init(uint priority_value){
 		conf.set("network_connections","low_connection_speed_limit",low_connection_speed_limit,1,-1);
 		conf.set("network_connections","low_connection_speed_time",low_connection_speed_time,1,600);
 		conf.set("network_connections","max_connection_speed",max_connection_speed,1,-1);
-
+		conf.set("network_connections","follow_location",follow_location);
+		conf.set("network_connections","max_redirs",max_redirs,0,100);
 		conf.set("network_user_data","user_agent",user_agent);
 
 		conf.set("network_proxy","proxy_ip_or_name",proxy_ip_or_name);

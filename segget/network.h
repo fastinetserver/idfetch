@@ -68,6 +68,8 @@ class Tnetwork{
 		ulong low_connection_speed_time;
 		ulong max_connection_speed;
 		ulong current_speed_time_interval_msecs;
+		bool follow_location;
+		ulong max_redirs;
 	//user-data
 		string user_agent;
 	//proxy
@@ -101,6 +103,8 @@ class Tnetwork{
 			low_connection_speed_time(10),
 			max_connection_speed(0),
 			current_speed_time_interval_msecs(1000),
+			follow_location(1),
+			max_redirs(5),
 		//user-data
 			user_agent("segget"),
 		//proxy
