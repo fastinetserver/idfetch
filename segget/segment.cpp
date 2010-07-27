@@ -158,6 +158,12 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 			if ((network_array[network_num].bind_interface!="none") 
 					and (network_array[network_num].bind_interface!=""))
 				curl_easy_setopt(easyhandle, CURLOPT_INTERFACE, network_array[network_num].bind_interface.c_str());
+
+			if (network_array[network_num].bind_local_port){
+				curl_easy_setopt(easyhandle, CURLOPT_LOCALPORT, network_array[network_num].bind_local_port);
+				curl_easy_setopt(easyhandle, CURLOPT_LOCALPORTRANGE, network_array[network_num].bind_local_port_range);
+			}
+
 			//set connection timeout
 			curl_easy_setopt(easyhandle, CURLOPT_CONNECTTIMEOUT, network_array[network_num].connection_timeout);
 			curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, write_data);

@@ -67,6 +67,8 @@ class Tnetwork{
 		ulong network_mode;
 	//network_bind
 		string bind_interface;
+		ulong bind_local_port;
+		ulong bind_local_port_range;
 	//connections
 		ulong max_connections;
 		ulong connection_timeout;
@@ -103,6 +105,8 @@ class Tnetwork{
 			network_mode(0),
 		//network_bind
 			bind_interface("none"),
+			bind_local_port(0),
+			bind_local_port_range(20),
 		//connections
 			max_connections(6),
 			connection_timeout(15),

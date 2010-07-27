@@ -175,7 +175,6 @@ int download_pkgs(){
 		struct timeval T;
 
 		try{
-			curl_global_init(CURL_GLOBAL_ALL);
 			cm = curl_multi_init();
 			// we can optionally limit the total amount of connections this multi handle uses
 			curl_multi_setopt(cm, CURLMOPT_MAXCONNECTS, (long)MAX_CONNECTS);
@@ -378,6 +377,12 @@ int routine(){
 			init_connections();
 		}catch(...){
 			error_log("error while init_connections");
+		}
+		try{
+			// This function is NOT thread-safe => call it before any other thread is launched
+			curl_global_init(CURL_GLOBAL_ALL);
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp: routine: while calling curl_global_init()");
 		}
 		try{
 			launch_ui_server_thread();
