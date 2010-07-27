@@ -274,6 +274,7 @@ void Tdistfile::split_into_segments(){
 			segment_size=size;
 			segments_count=1;
 		};
+		stats.segments_count+=segments_count;
 		dn_segments = new Tsegment [segments_count];
 		//none downloaded yet
 		for (uint segment_num=0; segment_num<segments_count; segment_num++){
@@ -649,6 +650,7 @@ void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 		stats.inc_dld_size(current_segment->segment_size);
 		if (++dld_segments_count==segments_count)
 			combine_segments();
+		stats.dld_segments_count++;
 	}catch(...){
 		error_log("Error: distfile.cpp: inc_dld_segments_count()");
 	}

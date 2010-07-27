@@ -69,6 +69,8 @@ void Tstats::show_totals(){
 //			+field(" = DFs:",			dld_distfiles_count,4)
 			+" = DF:"+toString(dld_distfiles_count)
 			+field("/",				distfiles_count,4)
+			+" = Sg:"+toString(dld_segments_count)
+			+field("/",				segments_count,5)
 //			+field(" = Size:",			dld_size/1000,7)
 			+" = Size:"+toString(dld_size/1000)
 			+field("(",				((double)dld_size/show_total_size)*100,3)+"%)"
