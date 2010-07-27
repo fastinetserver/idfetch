@@ -38,7 +38,7 @@ using namespace std;
 string trim(std::string const& source, char const* delims = " \t\r\n");
 int lower_char(int c);
 string noupper(string s);
-
+bool split(string splitter, string str, string &before, string &after);
 string toString(uint t);
 string toString(int t);
 string toString(ulong t);

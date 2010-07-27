@@ -42,6 +42,7 @@ using namespace std;
 #define MODE_REMOTE 0
 #define MODE_PROXY_FETCHER 1
 #define MODE_LOCAL 2
+#define MODE_CORAL_CDN 3
 
 class Tnetwork{
 	static uint network_count;

@@ -152,7 +152,7 @@ class Tdistfile{
 		void split_into_segments();
 		uint provide_local_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
 		uint request_proxy_fetcher_network(uint network_priority);
-		uint provide_remote_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
+		uint provide_remote_or_coral_cdn_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
 		void inc_dld_segments_count(Tsegment * current_segment);
 		void symlink_distfile_to_provide_mirror_dir();

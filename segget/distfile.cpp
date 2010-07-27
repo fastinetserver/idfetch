@@ -302,6 +302,7 @@ Tdistfile::~Tdistfile(){
 		error_log("Error: distfile.cpp: ~Tdistfile()");
 	}
 }
+
 bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num){
 	try{
 		Tmirror *Pcurr_mirror;
@@ -310,10 +311,16 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 
 		ulong best_mirror_self_rating=-1;
 		ulong curr_mirror_self_rating;
-
+		string url_str;
 		for (url_num=0; url_num<url_count; url_num++){
-			Pcurr_mirror=find_mirror(strip_mirror_name(url_list[url_num]));
-			debug("Evaluating url:"+url_list[url_num]
+			if (network_array[network_num].network_mode==MODE_CORAL_CDN){
+				url_str=convert_to_coral_cdn_url(url_list[url_num]);
+				if (url_str=="") continue;
+			}else{ // MODE_REMOTE
+				url_str=url_list[url_num];
+			}
+			Pcurr_mirror=find_mirror(strip_mirror_name(url_str));
+			debug("Evaluating url:"+url_str
 					+" active_connections:"+toString(Pcurr_mirror->get_active_num())
 					+" connection limit:"+toString(settings.max_connections_num_per_mirror));
 			if (Pcurr_mirror->get_active_num()<settings.max_connections_num_per_mirror){
@@ -330,7 +337,7 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			}
 		}
 		if (Pbest_mirror){
-			debug("Downloading from BEST_MIRROR:"+url_list[best_mirror_num]);
+			debug("Downloading from BEST_MIRROR:"+url_str);
 //			Pbest_mirror->start();
 //			active_connections_num++;
 			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
@@ -560,7 +567,7 @@ uint Tdistfile::request_proxy_fetcher_network(uint network_priority){
 	}
 }
 
-uint Tdistfile::provide_remote_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority){
+uint Tdistfile::provide_remote_or_coral_cdn_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority){
 	try{
 		debug("network_priority="+toString(network_priority));
 		//choose network
@@ -574,7 +581,7 @@ uint Tdistfile::provide_remote_network(CURLM* cm, uint connection_num, uint seg_
 		int best_remote_network_num=-1;
 		for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
 			if (network_array[network_num].priority==network_priority){
-				if (network_array[network_num].network_mode==MODE_REMOTE){
+				if ((network_array[network_num].network_mode==MODE_REMOTE) or (network_array[network_num].network_mode==MODE_CORAL_CDN)){
 					if (network_array[network_num].has_free_connections()){
 						if 
 						((best_remote_network_num==-1)
@@ -614,7 +621,7 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 					switch (result){
 						case ALLOW_REMOTE_NETWORKS:{
 							debug("Switching to remote networks with priority:"+toString(network_priority));
-							result=provide_remote_network(cm, connection_num, seg_num, network_priority);
+							result=provide_remote_or_coral_cdn_network(cm, connection_num, seg_num, network_priority);
 							// if not lower_priority_networks => result found => return it
 							if (result!=ALLOW_LOWER_PRIORITY_NETWORKS){
 								return result;

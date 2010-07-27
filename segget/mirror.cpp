@@ -28,6 +28,45 @@
 
 map<string,Tmirror *> mirror_list;
 
+string strip_mirror_name(string path){
+	try{
+		string mirror_name;
+		mirror_name=path.substr(0,path.find("/",(path.find("://",0)+3)));
+		return mirror_name;
+	}catch(...){
+		error_log("Error in mirror.cpp: strip_mirror_name()");
+		return "";
+	}
+}
+
+string convert_to_coral_cdn_url(string url_address){
+	try{
+		string protocol, after_protocol;
+		if (split("://",url_address, protocol, after_protocol)){
+			error_log("Can't convert url:"+url_address+"to CoralCDN url");
+			return "";
+		}
+		if (protocol!="http") return "";
+		string site_name_and_port, path;
+		if (split("/",after_protocol,site_name_and_port,path)){
+			error_log("Can't convert url:"+url_address+"to CoralCDN url");
+			return "";
+		}
+		string site_name,site_port;
+		string new_coral_cdn_url;
+		if (split(":",site_name_and_port,site_name,site_port)){
+			string site_name=site_name_and_port;
+			new_coral_cdn_url=protocol+"://"+site_name+".nyud.net/"+path;
+		}else{;
+			new_coral_cdn_url=protocol+"://"+site_name+"."+site_port+".nyud.net/"+path;
+		}
+		return new_coral_cdn_url;
+	}catch(...){
+		error_log("Error in mirror.cpp: convert_to_coral_cdn_url()");
+	}
+	return "";
+}
+
 double Tmirror::mirror_on_the_wall(){
 	try{
 		double criterion=honesty*1000000000*dld_time/dld_size;
@@ -85,13 +124,3 @@ Tmirror* find_mirror(string mirror_url){
 	}
 }
 
-string strip_mirror_name(string path){
-	try{
-		string mirror_name;
-		mirror_name=path.substr(0,path.find("/",(path.find("://",0)+3)));
-		return mirror_name;
-	}catch(...){
-		error_log("Error in mirror.cpp: strip_mirror_name()");
-		return "";
-	}
-}

@@ -106,6 +106,19 @@ string noupper(string s){
 	}
 }
 
+bool split(string splitter, string str, string &before, string &after){
+	try{
+		uint splitter_pos=str.find(splitter);
+		if (splitter_pos==str.npos) return 1;
+		before=str.substr(0,splitter_pos);
+		after=str.substr(splitter_pos+splitter.length());
+		return 0;
+	}catch(...){
+		error_log("Error in str.cpp: split()");
+		return 1;
+	}
+}
+
 string trim(std::string const& source, char const* delims) {
 	try{
 		string result(source);

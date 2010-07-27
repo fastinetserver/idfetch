@@ -58,4 +58,5 @@ class Tmirror{
 extern map<string,Tmirror *> mirror_list;
 string strip_mirror_name(string path);
 Tmirror* find_mirror(string mirror_url);
+string convert_to_coral_cdn_url(string url_address);
 #endif

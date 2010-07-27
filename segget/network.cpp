@@ -66,7 +66,7 @@ void Tnetwork::init(uint priority_value){
 	try{
 		priority=priority_value;
 		Tconfig conf("network"+toString(network_num)+".conf");
-		conf.set("mode","network_mode",network_mode,0,2);
+		conf.set("mode","network_mode",network_mode,0,3);
 		conf.set("network_bind","bind_interface",bind_interface);
 		conf.set("network_connections","max_connections",max_connections,1,MAX_CONNECTS);
 		conf.set("network_connections","connection_timeout",connection_timeout,1,1000);

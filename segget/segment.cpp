@@ -136,6 +136,9 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 			}
 			curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, network_array[network_num].user_agent.c_str());
 
+			curl_easy_setopt(easyhandle, CURLOPT_FOLLOWLOCATION, 1);
+			curl_easy_setopt(easyhandle, CURLOPT_MAXREDIRS, 5);
+
 			if (network_array[network_num].proxy_off)
 				curl_easy_setopt(easyhandle, CURLOPT_NOPROXY, "*");
 			else{

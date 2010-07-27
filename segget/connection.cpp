@@ -56,12 +56,21 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 
 		Tmirror *Pcurr_mirror;
 		string url;
-		if (network_array[network_num].network_mode==MODE_REMOTE){
-			url=segment->parent_distfile->url_list[mirror_num];
-			Pcurr_mirror=find_mirror(strip_mirror_name(url));
-		}else{
-			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
-			url=Pcurr_mirror->url+segment->parent_distfile->name;
+		switch (network_array[network_num].network_mode){
+			case MODE_REMOTE:{
+				url=segment->parent_distfile->url_list[mirror_num];
+				Pcurr_mirror=find_mirror(strip_mirror_name(url));
+				break;
+			}
+			case MODE_CORAL_CDN:{
+				url=convert_to_coral_cdn_url(segment->parent_distfile->url_list[mirror_num]);
+				Pcurr_mirror=find_mirror(strip_mirror_name(url));
+				break;
+			}
+			default:{
+				Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+				url=Pcurr_mirror->url+segment->parent_distfile->name;
+			}
 		}
 		debug("  URL:"+url);
 
@@ -123,10 +132,15 @@ void Tconnection::stop(CURLcode connection_result){
 */
 		
 		Tmirror *Pcurr_mirror;
-		if (network_array[network_num].network_mode==MODE_REMOTE){
-			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
-		}else{
-			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+		switch (network_array[network_num].network_mode){
+			case MODE_REMOTE:
+			case MODE_CORAL_CDN:{
+				Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
+				break;
+			}
+			default:{
+				Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+			}
 		}
 
 		timeval now_time;
