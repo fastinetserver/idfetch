@@ -52,53 +52,14 @@ void msg(uint y, uint x, string msg_text){
 //	}
 }
 
-void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed){
+void msg_segment_progress(uint connection_num, string progress_text){
 	try{
-
-		string eta_string;
-		if (speed==0){
-			eta_string=" ETA: inf";
-		}else{
-			eta_string=" ETA: "+secsToString((total_bytes-dld_bytes)/speed);
-		}
-
-		string speed_str;
-		string avg_speed_str;
-/*
-		if (speed<1000)
-			speed_str=field(" Speed:",speed,7)+" b/s";
-		else
-			speed_str=field(" Speed:",speed/1000,7)+" Kb/s";
-*/
-
-		speed_str=" Speed: "+speedToString(speed);
-/*
-		if (avg_speed<1000)
-			avg_speed_str=field(" AVG",avg_speed,7)+" b/s";
-		else
-			avg_speed_str=field(" AVG",avg_speed/1000,7)+" Kb/s";
-*/
-		avg_speed_str=" AVG speed: "+speedToString(avg_speed);
-		
-		int percent=dld_bytes*100/total_bytes;
-
-		
 		msg(connection_num*CONNECTION_LINES,0,
-			field("[",connection_num,2)+"]"
-			+field(" Net",network_num,1)
-			+field(" Segment:",segment_num, 5)
-			+field(" Try:",try_num,4)
-			+field(" Bytes:",dld_bytes,7)
-			+field(" / ",total_bytes,7)
-			+field(" = ",percent,3)+"%"
-			+speed_str
-			+avg_speed_str
-			+eta_string);
+			field("[",connection_num,2)+"]"+progress_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_segment_progress()");
 	}
 }
-
 void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text){
 	try{
 		msg(connection_num*CONNECTION_LINES+1,0,"DF#"+toString(distfile_num)+" Seg#"+toString(segment_num)+" "+msg_text);
@@ -106,22 +67,6 @@ void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, st
 		error_log_no_msg("Error in tui.cpp: msg_connecting()");
 	}
 }
-/*
-void msg_status1(uint connection_num, uint segment_num, string msg_text){
-	try{
-		msg(connection_num*CONNECTION_LINES+2,0,"Seg#"+toString(segment_num)+" "+msg_text);
-	}catch(...){
-		error_log_no_msg("Error in tui.cpp: msg_status1()");
-	}
-}
-void msg_status2(uint connection_num, string msg_text){
-	try{
-		msg(connection_num*CONNECTION_LINES+3,0,msg_text);
-	}catch(...){
-		error_log_no_msg("Error in tui.cpp: msg_status2()");
-	}
-}
-*/
 
 void msg_clean_connection(uint connection_num){
 	try{
@@ -129,11 +74,6 @@ void msg_clean_connection(uint connection_num){
 		msg(connection_num*CONNECTION_LINES+1,0,"");
 		msg(connection_num*CONNECTION_LINES+2,0,"");
 		msg(connection_num*CONNECTION_LINES+3,0,"");
-
-//		msg(connection_num*CONNECTION_LINES,0,"                                                                                                                  ");
-//		msg(connection_num*CONNECTION_LINES+1,0,"                                                                                                                  ");
-//		msg(connection_num*CONNECTION_LINES+2,0,"                                                                                                                  ");
-//		msg(connection_num*CONNECTION_LINES+3,0,"                                                                                                                  ");
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_clean_connection()");
 	}

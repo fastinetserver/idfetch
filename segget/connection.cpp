@@ -204,15 +204,37 @@ void Tconnection::inc_bytes_per_last_interval(ulong new_bytes_count){
 void Tconnection::show_connection_progress(ulong time_diff){
 	try{
 		stats.total_bytes_per_last_interval+=bytes_per_last_interval;
-		msg_segment_progress(
-			segment->connection_num,
-			network_num,
-			segment->segment_num,
-			segment->try_num,
-			segment->downloaded_bytes,
-			segment->segment_size,
-			(bytes_per_last_interval*1000)/time_diff,
-			(total_dld_bytes*1000)/time_left_from(start_time));
+		ulong speed=(bytes_per_last_interval*1000)/time_diff;
+		ulong avg_speed=(total_dld_bytes*1000)/time_left_from(start_time);
+		string eta_string;
+		if (speed==0){
+			eta_string=" ETA: inf";
+		}else{
+			eta_string=" ETA: "+secsToString((segment->segment_size-segment->downloaded_bytes)/speed);
+		}
+		string speed_str;
+		string avg_speed_str;
+		speed_str=" Speed: "+speedToString(speed);
+		avg_speed_str=" AVG speed: "+speedToString(avg_speed);
+		int percent=segment->downloaded_bytes*100/segment->segment_size;
+		string network_type_str;
+		switch (network_array[network_num].network_mode){
+			case MODE_REMOTE: network_type_str="REM"; break;
+			case MODE_PROXY_FETCHER: network_type_str="P-F"; break;
+			case MODE_LOCAL: network_type_str="LOC"; break;
+			case MODE_CORAL_CDN: network_type_str="CDN"; break;
+		}
+		string progress_text=field("[Net",network_num,1)
+			+":"+network_type_str+"]"
+			+field(" Segment:",segment->segment_num, 5)
+			+field(" Try:",segment->try_num,4)
+			+field(" Bytes:",segment->downloaded_bytes,7)
+			+field(" / ",segment->segment_size,7)
+			+field(" = ",percent,3)+"%"
+			+speed_str
+			+avg_speed_str
+			+eta_string;
+		msg_segment_progress(segment->connection_num, progress_text);
 		bytes_per_last_interval=0;
 	}catch(...){
 		error_log("Error in connection.cpp: show_connection_progress()");

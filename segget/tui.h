@@ -51,7 +51,7 @@ extern uint log_lines_counter;
 void msg_total(string msg_text);
 void msg(uint y, uint x, string msg_text);
 void msg_connecting(uint connection_num, uint distfile_num, uint segment_num, string msg_text);
-void msg_segment_progress(uint connection_num, uint network_num, uint segment_num, uint try_num, ulong dld_bytes, ulong total_bytes, ulong speed, ulong avg_speed);
+void msg_segment_progress(uint connection_num, string progress_text);
 void msg_status1(uint connection_num, uint segment_num, string msg_text);
 void msg_status2(uint connection_num, string msg_text);
 void msg_clean_connection(uint connection_num);
