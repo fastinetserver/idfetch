@@ -26,6 +26,22 @@
 
 #include "log.h"
 
+string get_time(string time_format){
+	try{
+		time_format=time_format+" ";
+		time_t rawtime;
+		struct tm * timeinfo;
+		char buffer [80];
+		time ( &rawtime );
+		timeinfo = localtime ( &rawtime );
+		strftime(buffer,80,time_format.c_str(),timeinfo);
+		return buffer;
+	}catch(...){
+		error_log("Error in log.cpp: get_time()");
+		return "";
+	}
+}
+
 void log_no_msg(string log_msg_text){
 	try{
 		if (settings.general_log_file!="none"){
@@ -38,7 +54,7 @@ void log_no_msg(string log_msg_text){
 				return;
 			}
 			try{
-				file << log_msg_text << endl;
+				file << get_time(settings.general_log_time_format) << log_msg_text << endl;
 				file.close();
 			}
 			catch(...){
@@ -47,16 +63,16 @@ void log_no_msg(string log_msg_text){
 			}
 		}
 	}catch(...){
-		error_log("Error in tui.cpp: log()");
+		error_log("Error in log.cpp: log()");
 	}
 }
 
 void log(string log_msg_text){
 	log_no_msg(log_msg_text);
 	try{
-		msg_log(log_msg_text);
+		msg_log(get_time(settings.general_log_time_format)+log_msg_text);
 	}catch(...){
-		error_log("Error in tui.cpp: log()");
+		error_log("Error in log.cpp: log()");
 	}
 }
 			
@@ -73,7 +89,7 @@ void debug_no_msg(string debug_msg_text){
 				return;
 			}
 			try{
-				file << debug_msg_text << endl;
+				file << get_time(settings.debug_log_time_format) << debug_msg_text << endl;
 				file.close();
 			}
 			catch(...){
@@ -82,16 +98,16 @@ void debug_no_msg(string debug_msg_text){
 			}
 		}
 	}catch(...){
-		error_log("Error in tui.cpp: debug()");
+		error_log("Error in log.cpp: debug()");
 	}
 }
 
 void debug(string debug_msg_text){
 	debug_no_msg(debug_msg_text);
 	try{
-//		msg(DEBUG_LINE_NUM,0, "DEBUG:"+debug_msg_text);
+//		msg(DEBUG_LINE_NUM,0, "DEBUG:"+get_time(settings.debug_time_format)+debug_msg_text);
 	}catch(...){
-		error_log("Error in tui.cpp: debug()");
+		error_log("Error in log.cpp: debug()");
 	}
 }
 
@@ -99,7 +115,7 @@ void error_log_no_msg(string error_msg_text){
 	try{
 		if (settings.error_log_file!="none"){
 			ofstream file ((settings.logs_dir+"/"+settings.error_log_file).c_str(), ios::app);
-			file << error_msg_text << endl;
+			file << get_time(settings.error_log_time_format) << error_msg_text << endl;
 			file.close();
 		}
 	}catch(...){
@@ -111,8 +127,8 @@ void error_log_no_msg(string error_msg_text){
 void error_log(string error_msg_text){
 	error_log_no_msg(error_msg_text);
 	try{
-		msg_error_log(error_msg_text);
+		msg_error_log(get_time(settings.error_log_time_format)+error_msg_text);
 	}catch(...){
-		error_log_no_msg("Error in tui.cpp: error_log()");
+		error_log_no_msg("Error in log.cpp: error_log()");
 	}
 }

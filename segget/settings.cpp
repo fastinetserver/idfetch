@@ -72,6 +72,10 @@ void Tsettings::init(){
 		conf.set("logs","logs_dir",logs_dir);
 		conf.set("logs","error_log_file",error_log_file);
 		conf.set("logs","debug_log_file",debug_log_file);
+		conf.set_keep_case("logs","general_log_time_format",general_log_time_format);
+		conf.set_keep_case("logs","error_log_time_format",error_log_time_format);
+		conf.set_keep_case("logs","debug_log_time_format",debug_log_time_format);
+
 		conf.set("connections","max_connections",max_connections,1,MAX_CONNECTS);
 
 		conf.set("folders","distfiles_dir",distfiles_dir);

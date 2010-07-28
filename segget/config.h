@@ -45,6 +45,7 @@ class Tconfig {
 			{config_file_name=file_name;load_settings_from_config_file();};
 		void load_settings_from_config_file();
 		int set(string const& section, string const& entry, string &dst) const;
+		int set_keep_case(string const& section, string const& entry, string &dst) const;
 		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
 		int set(string const& section, string const& entry, bool &dst) const;
 		void clear();

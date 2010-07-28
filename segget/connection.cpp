@@ -207,10 +207,10 @@ void Tconnection::show_connection_progress(ulong time_diff){
 		ulong speed=(bytes_per_last_interval*1000)/time_diff;
 		ulong avg_speed=(total_dld_bytes*1000)/time_left_from(start_time);
 		string eta_string;
-		if (speed==0){
+		if (avg_speed==0){
 			eta_string=" ETA: inf";
 		}else{
-			eta_string=" ETA: "+secsToString((segment->segment_size-segment->downloaded_bytes)/speed);
+			eta_string=" ETA: "+secsToString((segment->segment_size-segment->downloaded_bytes)/avg_speed);
 		}
 		string speed_str;
 		string avg_speed_str;

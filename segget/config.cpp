@@ -49,15 +49,14 @@ void Tconfig::load_settings_from_config_file(){
 				if (! line.length()) continue;
 				if (line[0] == '#') continue;
 				if (line[0] == ';') continue;
-				line=noupper(line);
 			if (line[0] == '[') {
-					inSection=trim(line.substr(1,line.find(']')-1));
+					inSection=noupper(trim(line.substr(1,line.find(']')-1)));
 					continue;
 				}
 				posEqual=line.find('=');
-				name  = trim(line.substr(0,posEqual));
+				name  = noupper(trim(line.substr(0,posEqual)));
 				value = trim(line.substr(posEqual+1));
-				content_[inSection+'/'+name]=noupper(value);
+				content_[inSection+'/'+name]=value;
 			}
 		}catch(ifstream::failure e){
 			if (!file.eof()){
@@ -81,6 +80,25 @@ int Tconfig::set(string const& section, string const& entry, string &dst) const 
 			return 1;
 		}
 		else{
+			dst=noupper(ci->second);
+			log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+dst);
+			return 0;
+		}
+	}catch(...){
+		error_log("Error in config.cpp: set(string &dst, string const& section, string const& entry)");
+		return 1;
+	}
+}
+
+int Tconfig::set_keep_case(string const& section, string const& entry, string &dst) const {
+	try{
+		map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
+		if (ci == content_.end()){
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has not been set.");
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+dst+". Default value forced.");
+			return 1;
+		}
+		else{
 			dst=ci->second;
 			log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+dst);
 			return 0;
@@ -90,6 +108,7 @@ int Tconfig::set(string const& section, string const& entry, string &dst) const 
 		return 1;
 	}
 }
+
 int Tconfig::set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const {
 	try{
 		uint return_value;

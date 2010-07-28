@@ -84,6 +84,9 @@ class Tsettings{
 		string general_log_file;
 		string error_log_file;
 		string debug_log_file;
+		string general_log_time_format;
+		string error_log_time_format;
+		string debug_log_time_format;
 
 	Tsettings():
 			conf_dir("/etc/seggetd"),
@@ -130,7 +133,10 @@ class Tsettings{
 			logs_dir("./logs"),
 			general_log_file("segget.log"),
 			error_log_file("error.log"),
-			debug_log_file("debug.log")
+			debug_log_file("debug.log"),
+			general_log_time_format("%m/%d %X"),
+			error_log_time_format("%m/%d %X"),
+			debug_log_time_format("%m/%d %X")
 			{};
 		void set_resume(bool resume_setting){resume_on=resume_setting;};
 		bool get_resume(){return resume_on;};
