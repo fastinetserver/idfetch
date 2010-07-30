@@ -340,8 +340,12 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			debug("Downloading from BEST_MIRROR:"+url_str);
 //			Pbest_mirror->start();
 //			active_connections_num++;
-			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
-			return R_R_DOWNLOAD_STARTED;
+			int result=connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
+			if (result){
+				return result;
+			}else{
+				return R_R_DOWNLOAD_STARTED;
+			}
 		}
 		else{
 			error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
@@ -384,7 +388,12 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 		if (best_mirror_num!=-1){
 			debug("Downloading from BEST_LOCAL_MIRROR:"+network_array[network_num].benchmarked_mirror_list[best_mirror_num].url);
 //			active_connections_num++;
-			connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
+			int result=connection_array[connection_num].start(cm, network_num, num, &dn_segments[seg_num], best_mirror_num);
+			if (result){
+				return result;
+			}else{
+				return R_R_DOWNLOAD_STARTED;
+			}
 			return R_R_DOWNLOAD_STARTED;
 		}
 		else{

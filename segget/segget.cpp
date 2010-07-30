@@ -336,7 +336,18 @@ void launch_request_server_thread(){
 		debug_no_msg("request_server_thread launched");
 	}
 }
-
+/*
+void launch_script_server_thread(){
+//	if (settings.request_ip!="none"){
+		pthread_t script_server_thread;
+		int iret1;
+		debug_no_msg("Creating script_server_thread.");
+//		proxy_fetcher_server_thread.init();
+		iret1 = pthread_create( &script_server_thread, NULL, run_script_server, (void*) NULL);
+		debug_no_msg("script_server_thread launched");
+//	}
+}
+*/
 void segget_exit(int sig){
 	try{
 		endwin();
@@ -394,6 +405,13 @@ int routine(){
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_proxy_fetcher_server_thread failed");
 		}
+/*
+		try{
+			launch_script_server_thread();
+		}catch(...){
+			error_log_no_msg("Error in segget.cpp launch_script_server_thread failed");
+		}
+*/
 		try{
 			launch_proxy_fetcher_server_thread();
 		}catch(...){

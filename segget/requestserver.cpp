@@ -24,7 +24,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "proxyfetcher.h"
+#include "requestserver.h"
 
 void *run_request_server(void * ){
 	try{

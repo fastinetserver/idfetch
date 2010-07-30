@@ -53,8 +53,12 @@ void Tnetwork::load_mirror_list(){
 				benchmarked_mirror_list.push_back(cur_mirror);
 				debug("LOCAL_MIRROR_ADDED:"+mirror_line);
 			}
-		}
-		catch(...){
+		}catch(ifstream::failure e){
+			if (!file.eof()){
+				error_log("Mirror list file: "+mirror_list_file_name+" was opened, but an error occured while reading from it.");
+				return;
+			}
+		}catch(...){
 			error_log("Mirror list file: "+mirror_list_file_name+" was opened, but an error occured while reading from it.");
 		}
 	}catch(...){
@@ -106,7 +110,7 @@ void Tnetwork::init(uint priority_value){
 				{
 					conf.set("network_mirrors","only_local_when_possible",only_local_when_possible);
 					load_mirror_list();
-					log("Settings: Network"+toString(network_num)+" local mirror_list size:"+toString(mirror_list.size()));
+					log("Settings in file:network"+toString(network_num)+"_mirrors.conf local mirror_list size:"+toString(benchmarked_mirror_list.size()));
 					break;
 				};
 			case MODE_PROXY_FETCHER:

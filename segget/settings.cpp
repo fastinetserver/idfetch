@@ -127,6 +127,9 @@ void Tsettings::init(){
 		conf.set("request_server","request_ip",request_ip);
 		conf.set("request_server","request_port",request_port,1,65535);
 
+		conf.set("scripting_and_scheduling","python_path",python_path);
+		conf.set("scripting_and_scheduling","scripts_dir",scripts_dir);
+
 		conf.clear();
 	}catch(...){
 		error_log_no_msg("Error in settings.cpp: init()");

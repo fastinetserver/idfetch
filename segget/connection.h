@@ -33,6 +33,7 @@ class Tsegment;
 #include "segment.h"
 #include "utils.h"
 #include "networkbroker.h"
+#include "scriptserver.h"
 
 using namespace std;
 
@@ -40,12 +41,14 @@ class Tconnection{
 	static uint total_connections;
 	private:
 		Tnetwork_distfile_broker_phases connection_start_time_network_phase_for_pf_networks;
+	public:
 		uint network_num;
 		uint mirror_num;
-	public:
+		string url;
 		ulong total_dld_bytes;
 		ulong bytes_per_last_interval;
 		uint connection_num;
+		ulong max_speed_limit;
 		bool active;
 		timeval start_time;
 		Tsegment *segment;
@@ -53,18 +56,24 @@ class Tconnection{
 			connection_start_time_network_phase_for_pf_networks(E_USE_AS_LOCAL_MIRRORS),
 			network_num(0),
 			mirror_num(0),
+			url(""),
 			total_dld_bytes(0),
 			bytes_per_last_interval(0),
 			connection_num(0),
+			max_speed_limit(0),
 			active(0),
 			start_time(),
-			segment(0){};
-		void start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
+			segment(0)
+			{};
+		Tconnection(const Tconnection &L);             // copy constructor
+		Tconnection & operator=(const Tconnection &L);
+		int start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num);
 		void stop(CURLcode connection_result);
 		void inc_bytes_per_last_interval(ulong new_bytes_count);
 		void show_connection_progress(ulong time_diff);
 };
 
+extern long script_waiting_connection_num;
 extern time_t prev_time;
 extern Tconnection connection_array[MAX_CONNECTS];
 void init_connections();

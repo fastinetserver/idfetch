@@ -56,6 +56,9 @@ using namespace std;
 #define DO_NOT_ALLOW_REMOTE_NETWORKS					204
 #define ALLOW_LOWER_PRIORITY_NETWORKS					205
 
+#define REJECTED_BY_USER_PYTHON_SCRIPT					301
+#define ERROR_WHILE_PREPARING_CONNECTION				302
+
 int decode_server_response(string server_response);
 
 #endif

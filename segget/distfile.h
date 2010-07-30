@@ -91,10 +91,10 @@ long is_symlink_restricted(string distfile_name);
 
 class Tdistfile{
 	private:
-		uint dld_segments_count;
 		bool choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 	public:
+		uint dld_segments_count;
 		Tnetwork_distfile_broker network_distfile_brokers_array[MAX_NETWORKS];
 		string json_data;
 //		bool downloaded;

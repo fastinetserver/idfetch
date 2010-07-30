@@ -79,6 +79,9 @@ class Tsettings{
 	//request_server
 		string request_ip;
 		ulong request_port;
+	//scripting_and_scheduling
+		string python_path;
+		string scripts_dir;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -129,6 +132,9 @@ class Tsettings{
 		//request_server
 			request_ip("127.0.0.1"),
 			request_port(10000),
+		//scripting_and_scheduling
+			python_path("/usr/bin/python"),
+			scripts_dir("./scripts"),
 		//logs
 			logs_dir("./logs"),
 			general_log_file("segget.log"),

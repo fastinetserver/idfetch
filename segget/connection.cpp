@@ -25,6 +25,7 @@
 */
 #include "connection.h"
 
+long script_waiting_connection_num=-1;
 uint Tconnection::total_connections=0;
 Tconnection connection_array[MAX_CONNECTS];
 time_t prev_time;
@@ -35,9 +36,8 @@ void init_connections(){
 	};
 }
 
-void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
+int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
 	try{
-		stats.active_connections_counter++;
 		segment=started_segment;
 		debug("Starting connection for distfile: "+segment->parent_distfile->name);
 		mirror_num=best_mirror_num;
@@ -55,7 +55,6 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 		}
 
 		Tmirror *Pcurr_mirror;
-		string url;
 		switch (network_array[network_num].network_mode){
 			case MODE_REMOTE:{
 				url=segment->parent_distfile->url_list[mirror_num];
@@ -74,16 +73,24 @@ void Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegm
 		}
 		debug("  URL:"+url);
 
+		if (run_user_python_script(connection_num)){
+			return REJECTED_BY_USER_PYTHON_SCRIPT;
+		}
+
 		debug("aaaaa");
 		Pcurr_mirror->start();
 		debug("bbbbb");
 		network_array[network_num].connect();
 		debug("ccccc");
+
+		stats.active_connections_counter++;
 		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, url);
 		debug("Started connection for distfile: "+segment->parent_distfile->name);
+		return 0;
 	}catch(...){
 		error_log("Error in connection.cpp: start()");
 	}
+	return ERROR_WHILE_PREPARING_CONNECTION;
 }
 /*
 string explain_curl_error(int error_code){
@@ -98,6 +105,17 @@ string explain_curl_error(int error_code){
 void Tconnection::stop(CURLcode connection_result){
 	try{
 		stats.active_connections_counter--;
+		Tmirror *Pcurr_mirror;
+		switch (network_array[network_num].network_mode){
+			case MODE_REMOTE:
+			case MODE_CORAL_CDN:{
+				Pcurr_mirror=find_mirror(strip_mirror_name(url));
+				break;
+			}
+			default:{
+				Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
+			}
+		}
 		debug("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
 		if (connection_result){
 			string error_str=curl_easy_strerror(connection_result);
@@ -105,21 +123,26 @@ void Tconnection::stop(CURLcode connection_result){
 			error_log("Finished connection for distfile: "+segment->parent_distfile->name+" Segment#:"+toString(segment->segment_num)+" Network#"+toString(network_num)+" Status: "+toString(connection_result));
 			error_log("  ERROR "+toString(connection_result)+": "+error_str);
 		}
-		
-		msg_clean_connection(connection_num);
 		active=false;
 		network_array[network_num].disconnect();
 //		network_array[network_num].benchmarked_mirror_list[mirror_num].stop();
 		segment->segment_file.close();
 		if (connection_result==0){
 			if (! segment->segment_verification_is_ok()){
+				connection_result=CURLE_READ_ERROR;
+				Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 				debug("curl_lies - there is a problem downloading segment");
 				error_log("curl_lies - there is a problem downloading segment");
-				connection_result=CURLE_READ_ERROR;
+			}else{
+				Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
 			}
+		}else{
+			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 		}
-
 		segment->parent_distfile->active_connections_num--;
+
+		msg_clean_connection(connection_num);
+
 /*
 		Tmirror *Pcurr_mirror;
 		if (network_array[network_num].network_mode==MODE_LOCAL){
@@ -131,18 +154,6 @@ void Tconnection::stop(CURLcode connection_result){
 		}
 */
 		
-		Tmirror *Pcurr_mirror;
-		switch (network_array[network_num].network_mode){
-			case MODE_REMOTE:
-			case MODE_CORAL_CDN:{
-				Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
-				break;
-			}
-			default:{
-				Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
-			}
-		}
-
 		timeval now_time;
 		gettimeofday(&now_time,NULL);
 
@@ -170,7 +181,6 @@ void Tconnection::stop(CURLcode connection_result){
 			// error -> start downloading again
 //			msg_status2(segment->connection_num, toString(connection_result)+"]- Failed download "+segment->file_name);
 			debug(toString(connection_result)+"]- Failed download "+segment->url);
-			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
 			if (segment->try_num>=settings.max_tries){
 				segment->status=SFAILED;
 				segment->parent_distfile->status=DFAILED;
@@ -183,7 +193,6 @@ void Tconnection::stop(CURLcode connection_result){
 			log("Succesfully downloaded "+segment->file_name+" on connection#"+toString(connection_num));
 			debug(" Successful download "+segment->url);
 // already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
-			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
 			segment->status=SDOWNLOADED;
 			segment->parent_distfile->inc_dld_segments_count(segment);
 		};

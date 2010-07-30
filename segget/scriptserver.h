@@ -24,58 +24,50 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __SEGGET_H__
-#define __SEGGET_H__
+#ifndef __SCRIPTSERVER_H__
+#define __SCRIPTSERVER_H__
 
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <json/json.h>
-#include <ncurses.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "checksum.h"
-#include "config.h"
-#include "distfile.h"
-#include "mirror.h"
-#include "network.h"
-#include "networkbroker.h"
-#include "pkg.h"
-#include "segment.h"
-#include "settings.h"
-//#include "stats.h"
-#include "str.h"
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <stdio.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <json/json.h>
 #include "tui.h"
-#include "utils.h"
-#include "ui_server.h"
-#include "proxyfetcher.h"
-#include "requestserver.h"
-#include "scriptserver.h"
+#include "pkg.h"
 
-using namespace std;
+enum Tvar_nums{
+	CONNECTION_NUM,
+	CONNECTION_URL,
+	CONNECTION_MAX_SPEED_LIMIT,
+	NETWORK_NUM,
+	NETWORK_MODE,
+	NETWORK_ACTIVE_CONNECTIONS_COUNT,
+	DISTFILE_NAME,
+	DISTFILE_SIZE,
+	DISTFILE_DLD_SEGMENTS_COUNT,
+	DISTFILE_SEGMENTS_COUNT,
+	DISTFILE_ACTIVE_CONNECTIONS_COUNT,
+	SEGMENT_NUM,
+	SEGMENT_TRY_NUM,
+	SEGMENT_SIZE,
+	SEGMENT_RANGE
+};
 
-CURLM *cm;
+extern map<std::string, Tvar_nums> variables_;
 
-int routine();
-void start_daemon_mode();
-int parse_cli_arguments(int argc, char* argv[]);
-int init_curses();
-int load_pkgs();
-void show_pkgs();
-int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
-int choose_segment(uint connection_num);
-int download_pkgs();
-int main(int argc, char* argv[]);
-void *refresh_tui_screen( void *);
-void launch_tui_thread();
-void launch_ui_server_thread();
-void launch_proxy_fetcher_server_thread();
-void launch_request_server_thread();
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
 
+//void *run_script_server(void * );
+bool run_user_python_script(uint connection_num);
 #endif
