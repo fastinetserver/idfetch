@@ -24,33 +24,35 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "scrollwindow.h"
+#include "distfilewindow.h"
 
-//Tscroll_window::~Tscroll_window(){};
-
-void Tscroll_window::compose(){
-//		msg_text=msg_text+" ";
-//	
-	getmaxyx(window,height,width);
-	bottom_screenline_num=height-2;
-	color_scroll_window(window);
+void Tdistfile_window::compose(){
+	color_default_window(window);
 	make_frame();
-	color_downloads(window);
+//	box(window, ACS_VLINE, ACS_HLINE);
+//	getmaxyx(window,height,width);
+	bottom_screenline_num=height-2;
+//	color_status();
+//	msg_status();
+//	color_info();
+//	for (uint y=bottom_screenline_num,status_line_num=0; y<height-2; y++,status_line_num++){
+//		msg_line(y+1,screen_info_lines[status_line_num]);
+//	}
+//	color_downloads(window);
 //	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
-	top_position=scroll_lines.size()-height+2; // +2 for border lines
-	if (top_position<0) {top_position=0;};
-	uint line_num=top_position;
-	for (int y=0; (y<bottom_screenline_num && line_num<scroll_lines.size()); y++, line_num++){
-		msg_line(y+1,scroll_lines[line_num]);
+	ulong distfile_num=top_position;
+	for (int y=0; y<bottom_screenline_num and distfile_num<tuidistfiles.size(); y++, distfile_num++){
+		msg_line(y+1,field("",distfile_num+1,4)+") "
+			+"("+toString(tuidistfiles[distfile_num].dld_bytes*100/tuidistfiles[distfile_num].size)+"%) "
+			+tuidistfiles[distfile_num].name
+			+" Segments: "+toString(tuidistfiles[distfile_num].dld_segments)
+			+"/"+toString(tuidistfiles[distfile_num].segments_count)
+			+" Bytes: "+toString(tuidistfiles[distfile_num].dld_bytes)
+			+"/"+toString(tuidistfiles[distfile_num].size));
 	}
 	wrefresh(window);
+//	mainwindow.distfiles_win.add_line(parts[0]+"("+toString(atol(parts[3].c_str())*100/)+"%)"+" "+parts[1]+"/"+parts[2]+" "+parts[3]+"/"+parts[4]);
 }
 
 
-void Tscroll_window::add_line(string line){
-		max_received_screenline_num=scroll_lines.size();
-		scroll_lines.push_back(line);
-		if (scroll_lines.size()>SCROLL_LINES_MAX_NUM){
-			scroll_lines.erase(scroll_lines.begin(),scroll_lines.begin()+scroll_lines.size()-SCROLL_LINES_MAX_NUM);
-		}
-}
+

@@ -95,6 +95,7 @@ class Tdistfile{
 		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 	public:
 		uint dld_segments_count;
+		ulong dld_bytes;
 		Tnetwork_distfile_broker network_distfile_brokers_array[MAX_NETWORKS];
 		string json_data;
 //		bool downloaded;
@@ -119,6 +120,7 @@ class Tdistfile{
 		uint segment_size;
 		Tdistfile():
 			dld_segments_count(0),
+			dld_bytes(0),
 			json_data(""),
 //			downloaded(0),
 			status(DNEW),

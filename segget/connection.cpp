@@ -45,7 +45,6 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 		total_dld_bytes=0;
 		bytes_per_last_interval=0;
 		gettimeofday(&start_time,NULL);
-		active=true;
 		debug("Connecting network"+toString(network_num));
 
 		segment->parent_distfile->active_connections_num++;
@@ -76,7 +75,7 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 		if (run_user_python_script(connection_num)){
 			return REJECTED_BY_USER_PYTHON_SCRIPT;
 		}
-
+		active=true;
 		debug("aaaaa");
 		Pcurr_mirror->start();
 		debug("bbbbb");
@@ -153,7 +152,7 @@ void Tconnection::stop(CURLcode connection_result){
 			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 		}
 */
-		
+		debug("before gettimeofday");
 		timeval now_time;
 		gettimeofday(&now_time,NULL);
 
@@ -161,7 +160,9 @@ void Tconnection::stop(CURLcode connection_result){
 			switch (network_array[network_num].network_mode){
 				case MODE_LOCAL:{
 	//				prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
+					debug("before setting mirror fail");
 					segment->parent_distfile->network_distfile_brokers_array[network_num].local_mirror_failed(mirror_num);
+					debug("after setting mirror fail");
 	//				find_mirror(strip_mirror_name(segment->url));
 					break;
 				}

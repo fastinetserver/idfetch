@@ -38,13 +38,14 @@ Tpkg request_server_pkg;
 
 int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 	try{
-		distfile_count++;
 		Tdistfile * Pcur_distfile=new Tdistfile();
 		if (Pcur_distfile->load_distfile_from_json(json_obj_distfile)){
 			error_log("Error in pkg.cpp: push_back_distfile(): while loading distfile");
 			return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 		}else{
+			debug("pkg.cpp: push_back_distfile(): json import ok - pushback distfile");
 			Pdistfile_list.push_back(Pcur_distfile);
+			distfile_count++;
 			return R_PF_ADDED_TO_PROXY_QUEUE;
 		}
 	}catch(...){

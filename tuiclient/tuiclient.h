@@ -45,6 +45,8 @@
 #include "config.cpp"
 #include "log.cpp"
 #include "settings.cpp"
+#include "tuidistfile.cpp"
+#include "distfilewindow.cpp"
 
 #define BUFFER_SIZE 2000
 
@@ -55,18 +57,9 @@
 
 using namespace std;
 
-class Tparts{
-	public:
-		string before, after;
-		Tparts():
-			before(""),
-			after("")
-		{};
-};
-
-
 Tmainwindow mainwindow;
 
+int cur_window_num=0;
 int sockfd;
 void quit();
 void * watch_keyboard_thread_function(void * ptr);

@@ -26,6 +26,8 @@
 
 #include "twindow.h"
 
+string sms;
+
 void Twindow::init(string caption_, int height_, int width_, int y_, int x_){
 	caption=caption_;
 	height=height_;
@@ -67,6 +69,8 @@ void Twindow::up(int inc){
 	}else{
 		top_position=tmp_top_position; 
 	}
+	sms="UP"+toString(top_position);
+
 }
 void Twindow::down(uint inc){
 	int tmp_top_position=top_position+inc;
@@ -80,6 +84,7 @@ void Twindow::down(uint inc){
 			top_position=tmp_top_position; 
 		}
 	}
+	sms="DOWN "+toString(top_position)+"------>"+toString(bottom_screenline_num);
 }
 
 void Twindow::center(uint max_y, uint max_x){
@@ -101,8 +106,9 @@ void Twindow::make_frame(){
 	wclear(window);
 	box(window, ACS_VLINE, ACS_HLINE);
 	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
+	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(max_received_screenline_num)+"]");
+	msg_short(height-1,width-27,"[Up/Dn/PgUp/PgDn - scroll]");
 }
-
 
 void Twindow::refresh(){
 	if (notfresh){

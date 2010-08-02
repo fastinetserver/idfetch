@@ -27,6 +27,35 @@
 #include "str.h"
 using namespace std;
 
+int atoi(string num_str){
+	return atoi(num_str.c_str());
+}
+
+long atol(string num_str){
+	return atol(num_str.c_str());
+}
+
+
+Tparts split(string splitter, string str){
+	Tparts result;
+	int splitter_pos=str.find(splitter);
+	result.before=str.substr(0,splitter_pos);
+	result.after=str.substr(splitter_pos+splitter.length());
+	return result;
+}
+
+vector <string> split_to_vector(string splitter, string str){
+	vector <string> parts;
+	uint splitter_pos=str.find(splitter);
+	while (splitter_pos!=str.npos){
+		parts.push_back(str.substr(0,splitter_pos));
+		str=str.substr(splitter_pos+splitter.length());
+		splitter_pos=str.find(splitter);
+	}
+	parts.push_back(str);
+	return parts;
+}
+
 template<typename T> string toString(T t){
 	stringstream s;
 	s << t;
@@ -80,6 +109,20 @@ string trim(std::string const& source, char const* delims) {
 		return result;
 	}catch(...){
 		error_log("Error in str.cpp: trim()");
+		return "";
+	}
+}
+
+string field(string prefix,ulong t, int width){
+	try{
+		stringstream s1,s2;
+		s1 << t;
+		width=width+prefix.length();
+		s2.width(width);
+		s2 << prefix+s1.str();
+		return s2.str();
+	}catch(...){
+		error_log("Error in str.cpp: field()");
 		return "";
 	}
 }

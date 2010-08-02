@@ -53,13 +53,12 @@ class Tui_server{
 		uint max_fd_num;
 		fd_set readfds, testfds;
 		void init();
-		string encode_connection_msg(uint y, string msg);
-		string encode_log_msg(string msg);
-		string encode_error_log_msg(string msg);
 		ulong send_to_fd(uint fd, string msg);
+		void send_connection_msg_to_fd(uint fd, uint y, string msg);
 		void send_connection_msg_to_all_clients(uint y, string msg);
 		void send_log_msg_to_all_clients(string msg);
 		void send_error_log_msg_to_all_clients(string msg);
+		void send_distfile_progress_msg_to_all_clients(string msg);
 };
 
 extern Tui_server ui_server;

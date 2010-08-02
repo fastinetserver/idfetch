@@ -1,4 +1,4 @@
-/*
+ /*
 * Copyright (C) 2010 Robin H.Johnson, Ovechko Kostyantyn <fastinetserver@gmail.com>.
 *
 * Project: IDFetch.
@@ -24,51 +24,32 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef _MAINWINDOW_H_
-#define _MAINWINDOW_H_
-
-#include <ncurses.h>
-#include <sys/types.h>
-#include "twindow.h"
-#include "helpwindow.h"
-#include "distfilewindow.h"
-#include "scrollwindow.h"
+#ifndef __TUIDISTFILE_H__
+#define __TUIDISTFILE_H__
+#include <string>
+#include <vector>
 
 using namespace std;
 
-const uint CONNECTION_LINES=5;
-const uint MAX_LINES=200;
-
-class Tmainwindow: public Twindow{
+class Ttuidistfile{
 	public:
-		
-		Thelp_window help_win;
-		Tscroll_window log_win;
-		Tscroll_window error_log_win;
-		Tdistfile_window distfiles_win;
-		bool exit_flag;
-		bool connected_status;
-		string screenlines[200];
-		string screen_info_lines[4];
-		ulong attempt_num;
-		Tmainwindow():
-			help_win(),
-			log_win(),
-			error_log_win(),
-			distfiles_win(),
-			exit_flag(FALSE),
-			connected_status(FALSE),
-			attempt_num(0)
+		string name;
+		ulong size;
+		ulong dld_bytes;
+		ulong dld_segments;
+		ulong segments_count;
+		Ttuidistfile():
+			name(""),
+			size(0),
+			dld_bytes(0),
+			dld_segments(0),
+			segments_count(0)
 			{};
-		~Tmainwindow(){};
-		Tmainwindow(const Twindow &L); // copy constructor
-		Tmainwindow & operator=(const Twindow &L);
-		void msg_status();
-		void compose();
-		void set_status(string str);
-		void set_line(int y, string msg_text);
-		void init();
-		void connected();
-		void disconnected();
+		~Ttuidistfile(){};
 };
+
+vector <Ttuidistfile> tuidistfiles;
+//vector <string> tuidistfiles;
+//string tuidistfiles;
+
 #endif

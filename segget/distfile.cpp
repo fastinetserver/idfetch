@@ -209,6 +209,7 @@ bool Tdistfile::check_if_dld(){
 
 bool Tdistfile::load_distfile_from_json(json_object* json_obj_distfile){
 	try{
+		debug("Entered distfile.cpp: load_distfile_from_json()");
 		json_object* json_obj_buffer;
 		json_obj_buffer=json_object_object_get(json_obj_distfile,"name");
 		if (json_obj_buffer){
@@ -664,8 +665,11 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	try{
 		stats.inc_dld_size(current_segment->segment_size);
-		if (++dld_segments_count==segments_count)
+		dld_bytes+=current_segment->segment_size;
+		ui_server.send_distfile_progress_msg_to_all_clients(name+" "+toString(dld_segments_count)+" "+toString(segments_count)+" "+toString(dld_bytes)+" "+toString(size));
+		if (++dld_segments_count==segments_count){
 			combine_segments();
+		}
 		stats.dld_segments_count++;
 	}catch(...){
 		error_log("Error: distfile.cpp: inc_dld_segments_count()");

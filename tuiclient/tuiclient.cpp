@@ -47,27 +47,61 @@ void quit(){
 		//error while ending curses
 	}
 }
+Twindow * next_window(){
+	cur_window_num++;
+	if (cur_window_num>3) cur_window_num=0;
+	switch (cur_window_num){
+		case 0:
+				mainwindow.log_win.visible=false;
+				mainwindow.error_log_win.visible=false;
+				mainwindow.distfiles_win.visible=false;
+				return &mainwindow;
+		case 1:
+				mainwindow.log_win.visible=true;
+				mainwindow.error_log_win.visible=false;
+				mainwindow.distfiles_win.visible=false;
+				return &mainwindow.log_win;
+		case 2:
+				mainwindow.log_win.visible=false;
+				mainwindow.error_log_win.visible=true;
+				mainwindow.distfiles_win.visible=false;
+				return &mainwindow.error_log_win;
+		case 3:
+				mainwindow.log_win.visible=false;
+				mainwindow.error_log_win.visible=false;
+				mainwindow.distfiles_win.visible=true;
+				return &mainwindow.distfiles_win;
+	}
+	return &mainwindow;
+}
+
 
 void * watch_keyboard_thread_function(void *){
+	Twindow * cur_window=&mainwindow.distfiles_win;
 	while (true){
 		char key=getch();
 		switch (key){
+			//tab - move between windows
+			case (char)9:cur_window=next_window();
 			//KEY_DOWN
-			case (char)2:mainwindow.down(1);break;
+			case (char)2:cur_window->down(1);mainwindow.screenlines[25]=toString((int)key);break;
 			//KEY_RIGHT
-			case (char)5:mainwindow.down(1);break;
+			case (char)5:cur_window->down(1);mainwindow.screenlines[25]=toString((int)key);break;
 			//KEY_UP
-			case (char)3:mainwindow.up(1);break;
+			case (char)3:cur_window->up(1);mainwindow.screenlines[25]=toString((int)key);break;
 			//KEY_LEFT
-			case (char)4:mainwindow.up(1);break;
+			case (char)4:cur_window->up(1);mainwindow.screenlines[25]=toString((int)key);break;
 			//KEY_PG_DOWN
-			case (char)82:mainwindow.down(mainwindow.bottom_screenline_num);break;
+			case (char)82:cur_window->down(mainwindow.bottom_screenline_num);break;
 			//KEY_PG_UP
-			case (char)83:mainwindow.up(mainwindow.bottom_screenline_num);break;
-			case 'u':
-			case 'U':mainwindow.up(1);break;
+			case (char)83:cur_window->up(mainwindow.bottom_screenline_num);break;
 			case 'd':
-			case 'D':mainwindow.down(1);break;
+			case 'D':mainwindow.distfiles_win.toggle();
+					mainwindow.log_win.visible=false;
+					mainwindow.error_log_win.visible=false;
+					cur_window=&mainwindow.distfiles_win;
+					mainwindow.show();
+					break;
 			case 'q':
 			case 'Q':quit();break;
 			case 'h':
@@ -76,7 +110,7 @@ void * watch_keyboard_thread_function(void *){
 			case 'L':mainwindow.log_win.toggle(); mainwindow.show();break;
 			case 'e':
 			case 'E':mainwindow.error_log_win.toggle(); mainwindow.show();break;
-//			default: screenlines[25]=toString((int)key);
+			default: mainwindow.screenlines[25]=toString((int)key);
 		}
 	}
 	return 0;
@@ -93,15 +127,6 @@ void * refresh_screen_thread_function(void *){
 	return 0;
 }
 
-
-Tparts split(string splitter, string str){
-	Tparts result;
-	int splitter_pos=str.find(splitter);
-	result.before=str.substr(0,splitter_pos);
-	result.after=str.substr(splitter_pos+splitter.length());
-	return result;
-}
-
 void decode_connection_msg(string msg_body){
 	Tparts parts=split("<y>",msg_body);
 	int line_num=atoi(parts.before.c_str());
@@ -114,6 +139,30 @@ void decode_connection_msg(string msg_body){
 	}
 }
 
+void decode_downloaded_distfile_msg(string msg_body){
+	vector <string> parts;
+	parts=split_to_vector(" ", msg_body);
+	if (parts.size()>4){
+		for (ulong cur_distfile=0;cur_distfile<tuidistfiles.size();cur_distfile++){
+			if (tuidistfiles[cur_distfile].name==parts[0]){
+				tuidistfiles[cur_distfile].dld_segments=atol(parts[1]);
+				tuidistfiles[cur_distfile].segments_count=atol(parts[2]);
+				tuidistfiles[cur_distfile].dld_bytes=atol(parts[3]);
+				tuidistfiles[cur_distfile].size=atol(parts[4]);
+				return;
+			}
+		}
+		Ttuidistfile a_tuidistfile;
+		a_tuidistfile.name=parts[0];
+		a_tuidistfile.dld_segments=atol(parts[1]);
+		a_tuidistfile.segments_count=atol(parts[2]);
+		a_tuidistfile.dld_bytes=atol(parts[3]);
+		a_tuidistfile.size=atol(parts[4]);
+		tuidistfiles.push_back(a_tuidistfile);
+		mainwindow.distfiles_win.max_received_screenline_num=tuidistfiles.size();
+	}
+}
+		
 void decode_log_msg(string msg_body){
 	mainwindow.log_win.add_line(msg_body);
 }
@@ -223,6 +272,7 @@ int main()
 									case 'c': decode_connection_msg(msg_parts.before); break;
 									case 'l': decode_log_msg(msg_parts.before);break;
 									case 'e': decode_error_log_msg(msg_parts.before);break;
+									case 'd': decode_downloaded_distfile_msg(msg_parts.before);break;
 								}
 							}
 						};

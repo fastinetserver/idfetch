@@ -29,13 +29,26 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <vector>
 #include "log.h"
 using namespace std;
 
+class Tparts{
+	public:
+		string before, after;
+		Tparts():
+			before(""),
+			after("")
+		{};
+};
+
 template<typename T> string toString(T t);
 
+Tparts split(string splitter, string str);
+vector <string> split_to_vector(string splitter, string str);
 string trim(std::string const& source, char const* delims = " \t\r\n");
 int lower_char(int c);
 string noupper(string s);
+string field(string prefix,ulong t, int width);
 
 #endif

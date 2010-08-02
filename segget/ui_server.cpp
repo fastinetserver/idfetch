@@ -61,24 +61,8 @@ void Tui_server::init(){
 	FD_SET(server_sockfd, &readfds);
 	send_to_fd_busy=false;
 }
+
 //prevent simultaneous writes
-string Tui_server::encode_connection_msg(uint y, string msg){
-//	if (send_to_fd_idle) {
-	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
-	return message;
-}
-
-string Tui_server::encode_log_msg(string msg){
-//	if (send_to_fd_idle) {
-	string message="<m>l<t>"+msg+"<.>";
-	return message;
-}
-
-string Tui_server::encode_error_log_msg(string msg){
-//	if (send_to_fd_idle) {
-	string message="<m>e<t>"+msg+"<.>";
-	return message;
-}
 
 ulong Tui_server::send_to_fd(uint fd, string msg){
 //	if (send_to_fd_idle) {
@@ -98,21 +82,36 @@ ulong Tui_server::send_to_fd(uint fd, string msg){
 	return 0;
 }
 
+void Tui_server::send_connection_msg_to_fd(uint fd, uint y, string msg){
+	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
+	send_to_fd(fd, message);
+}
+
 void Tui_server::send_connection_msg_to_all_clients(uint y, string msg){
+	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		send_to_fd(fd, encode_connection_msg(y, msg));
+		send_to_fd(fd, message);
 	}
 }
 
 void Tui_server::send_log_msg_to_all_clients(string msg){
+	string message="<m>l<t>"+msg+"<.>";
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		send_to_fd(fd, encode_log_msg(msg));
+		send_to_fd(fd, message);
 	}
 }
 
 void Tui_server::send_error_log_msg_to_all_clients(string msg){
+	string message="<m>e<t>"+msg+"<.>";
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		send_to_fd(fd, encode_error_log_msg(msg));
+		send_to_fd(fd, message);
+	}
+}
+
+void Tui_server::send_distfile_progress_msg_to_all_clients(string msg){
+	string message="<m>d<t>"+msg+"<.>";
+	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+		send_to_fd(fd, message);
 	}
 }
 
@@ -151,7 +150,7 @@ void *run_ui_server(void * ){
 
 					// Get this info to catch up!
 					for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
-							ui_server.send_to_fd(client_sockfd, ui_server.encode_connection_msg(line_num, screenlines[line_num]));
+							ui_server.send_connection_msg_to_fd(client_sockfd, line_num, screenlines[line_num]);
 							debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
 //							ui_server.send(line_num,screenlines[line_num]);
 						}

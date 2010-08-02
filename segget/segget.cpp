@@ -100,8 +100,10 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 	try{
 		uint distfile_num(0);
 		uint segment_num(0);
+		debug("Entered pkg_choose_segment()");
 		while(distfile_num<cur_pkg->distfile_count){
 //			if (Ppkg_array[pkg_num]->distfile_vector[distfile_num].allows_new_actions()){
+			debug("considering distfile:"+toString(distfile_num));
 			if (cur_pkg->Pdistfile_list[distfile_num]->allows_new_actions()){
 				debug("segment_num:"+toString(segment_num));
 				debug("segment_count:"+toString(cur_pkg->Pdistfile_list[distfile_num]->segments_count));
@@ -140,15 +142,18 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 
 int choose_segment(uint connection_num){
 	try{
+		debug("Entered choose_segment()");
 //		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
 //			debug("pkg_num:"+toString(pkg_num));
 //			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
 //				return 0;
 //			}
 //		}
+		
 		if (0==pkg_choose_segment(&request_server_pkg, connection_num)){
 			return 0;
 		}
+		debug("choose_segment() goes for proxy-fetcher distfiles");
 		// download distfiles as a proxy-fetcher
 		if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
 			return 0;
@@ -217,6 +222,7 @@ int download_pkgs(){
 				};
 				debug("Exit connection activation sycle");
 			}
+			debug("After attempt to start connection activation cycle");
 			U=stats.active_connections_counter;
 			debug("before multi_perform");
 //			while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};

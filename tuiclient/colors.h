@@ -10,7 +10,8 @@
 * This file is part of Segget.
 *
 * Segget is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
+* modify it under t	color_downloads(window);
+he terms of the GNU Lesser General Public
 * License as published by the Free Software Foundation; either
 * version 2.1 of the License, or (at your option) any later version.
 *
@@ -29,9 +30,11 @@
 
 #include <ncurses.h>
 
-void color_downloads();
-void color_info();
-void color_status();
+void color_default_window(WINDOW * window);
+void color_scroll_window(WINDOW * window);
+void color_downloads(WINDOW * window);
+void color_info(WINDOW * window);
+void color_status(WINDOW * window);
 void colors_connected();
 void colors_disconnected();
 #endif

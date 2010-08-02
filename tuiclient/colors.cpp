@@ -26,24 +26,43 @@
 
 #include "colors.h"
 
-void color_downloads(){
+void color_default_window(WINDOW * window){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(1));
+		wbkgd(window, COLOR_PAIR(4));
+		wattron(window, COLOR_PAIR(4));
 	}
 }
 
-void color_info(){
+void color_scroll_window(WINDOW * window){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(2));
+		wbkgd(window, COLOR_PAIR(5));
+		wattron(window, COLOR_PAIR(5));
 	}
 }
 
-void color_status(){
+void color_downloads(WINDOW * window){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
-		attron(COLOR_PAIR(3));
+//		wbkgd(window, COLOR_PAIR(1));
+		wattron(window, COLOR_PAIR(1));
+	}
+}
+
+void color_info(WINDOW * window){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+//		wbkgd(window, COLOR_PAIR(2));
+		wattron(window,COLOR_PAIR(2));
+	}
+}
+
+void color_status(WINDOW * window){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+//		wbkgd(window, COLOR_PAIR(3));
+		wattron(window,COLOR_PAIR(3));
 	}
 }
 
@@ -54,6 +73,9 @@ void colors_connected(){
 		init_pair(1, COLOR_WHITE, COLOR_BLUE);
 		init_pair(2, COLOR_BLACK, COLOR_CYAN);
 		init_pair(3, COLOR_GREEN, COLOR_BLUE);
+		init_pair(4, COLOR_BLACK, COLOR_GREEN);
+		init_pair(5, COLOR_GREEN, COLOR_BLACK);
+//		init_pair(4, COLOR_BLACK, COLOR_WHITE);
 //		attrset(A_REVERSE);
 		attrset(A_DIM);
 	}
@@ -66,7 +88,9 @@ void colors_disconnected(){
 		init_pair(1, COLOR_BLACK, COLOR_WHITE);
 		init_pair(2, COLOR_WHITE, COLOR_BLACK);
 		init_pair(3, COLOR_BLACK, COLOR_RED);
-//		attrset(A_BOLD);
+		init_pair(4, COLOR_WHITE, COLOR_BLACK);
+		init_pair(5, COLOR_RED, COLOR_BLACK);
+///		attrset(A_BOLD);
 //		attrset(A_REVERSE);
 	}
 }

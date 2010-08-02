@@ -30,6 +30,7 @@
 #include <ncurses.h>
 #include <sys/types.h>
 #include "colors.h"
+//#include "tuiclient.h"
 
 using namespace std;
 
@@ -78,4 +79,6 @@ class Twindow{
 		void show();
 		virtual void compose(){};
 };
+
+extern string sms;
 #endif

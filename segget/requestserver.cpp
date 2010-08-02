@@ -61,13 +61,13 @@ void *run_request_server(void * ){
 			int nread;
 			testfds = readfds;
 
-			debug("proxyfether is waiting for connections");
+			debug("requestserver is waiting for connections");
 			result = select(FD_SETSIZE, &testfds, (fd_set *)0, (fd_set *)0, (struct timeval *) 0);
 //			debug("proxyfether done waiting");
 
 
 			if(result < 1) {
-				error_log("Error in proxyfetcher.cpp : run");
+				error_log("Error in requestserver.cpp : run");
 				exit(1);
 			}
 
@@ -78,12 +78,12 @@ void *run_request_server(void * ){
 				//If the activity is on server_sockfd, it must be a request for a new connection, and you add the associated client_sockfd to the descriptor set:
 
 					if(fd == server_sockfd) {
-						debug("new client - read");
+						debug("requestserver: new client - read");
 						client_len = sizeof(client_address);
 						client_sockfd = accept(server_sockfd,
 						(struct sockaddr *)&client_address, &client_len);
 						FD_SET(client_sockfd, &readfds);
-						debug("adding client on fd:"+toString(client_sockfd));
+						debug("requestserver: adding client on fd:"+toString(client_sockfd));
 
 						//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 					}else{
@@ -92,27 +92,32 @@ void *run_request_server(void * ){
 						if(nread == 0) {
 							close(fd);
 							FD_CLR(fd, &readfds);
-							debug("removing client on fd:"+toString(fd));
+							debug("requestserver: removing client on fd:"+toString(fd));
 						}else{
 							char buffer[100000]="";
 							if (nread!=read(fd, &buffer, nread)){
-								error_log("Error in proxyfetcher.cpp : run_proxy_fetcher_server(): Not all data has been read from proxy-fetcher-client");
+								error_log("Error in requestserver.cpp : run_request_server(): Not all data has been read from proxy-fetcher-client");
 							}
 //							debug("serving client - read");
 //							debug("serving client on fd"+toString(fd));
 							string recv_msg=buffer;
 //							error_log("Received a msg from the client:"+recv_msg);
 //							char send_buffer[10]="";
+							debug("trying to add distfile via requestserver");
 							json_object* json_obj_distfile=json_tokener_parse(buffer);
 							string distfile_name=json_object_get_string(json_object_object_get(json_obj_distfile,"name"));
 							int result=proxy_fetcher_pkg.find_distfile(distfile_name);
+							debug("search for distfile ended");
 							switch (result){
 								case R_PF_NOT_REQUESTED_YET:
 								case R_PF_ERROR_ADDING_TO_PROXY_QUEUE: // if error - try with request_server
 								{
+									debug("Search in proxy_fetcher distfiles list");
 									result=proxy_fetcher_pkg.find_distfile(distfile_name);
+									debug("ENDED search in proxy_fetcher distfiles list");
 									switch (result){
 										case R_PF_NOT_REQUESTED_YET:{
+											debug("push_back distfile to the queue");
 											result=request_server_pkg.push_back_distfile(json_obj_distfile);
 											break;
 										}
@@ -122,10 +127,11 @@ void *run_request_server(void * ){
 								}
 								default: break;
 							}
+							debug("Ended trying to add distfile");
 							string send_response=toString(result);
 //							if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
 							if (write(fd, send_response.c_str(), send_response.length())!=(int)send_response.length()){
-								error_log("Error in proxyfetcher.cpp: run_proxy_fetcher_server(): response msg size and sent data size are different.");
+								error_log("Error in requestserver.cpp: run_request_server(): response msg size and sent data size are different.");
 							};
 						}
 					}
@@ -133,7 +139,7 @@ void *run_request_server(void * ){
 			}
 		}
 	}catch(...){
-		error_log("Error in proxyfetcher.cpp: run_proxy_fetcher_server()");
+		error_log("Error in requestserver.cpp: run_request_server()");
 		return (void*)1;
 	}
 }

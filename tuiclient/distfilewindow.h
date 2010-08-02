@@ -24,51 +24,17 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef _MAINWINDOW_H_
-#define _MAINWINDOW_H_
+#ifndef _DISTFILEWINDOW_H_
+#define _DISTFILEWINDOW_H_
 
-#include <ncurses.h>
-#include <sys/types.h>
 #include "twindow.h"
-#include "helpwindow.h"
-#include "distfilewindow.h"
-#include "scrollwindow.h"
+#include "tuidistfile.h"
 
 using namespace std;
 
-const uint CONNECTION_LINES=5;
-const uint MAX_LINES=200;
-
-class Tmainwindow: public Twindow{
+class Tdistfile_window: public Twindow{
 	public:
-		
-		Thelp_window help_win;
-		Tscroll_window log_win;
-		Tscroll_window error_log_win;
-		Tdistfile_window distfiles_win;
-		bool exit_flag;
-		bool connected_status;
-		string screenlines[200];
-		string screen_info_lines[4];
-		ulong attempt_num;
-		Tmainwindow():
-			help_win(),
-			log_win(),
-			error_log_win(),
-			distfiles_win(),
-			exit_flag(FALSE),
-			connected_status(FALSE),
-			attempt_num(0)
-			{};
-		~Tmainwindow(){};
-		Tmainwindow(const Twindow &L); // copy constructor
-		Tmainwindow & operator=(const Twindow &L);
-		void msg_status();
 		void compose();
-		void set_status(string str);
-		void set_line(int y, string msg_text);
-		void init();
-		void connected();
-		void disconnected();
 };
+
 #endif

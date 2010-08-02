@@ -26,10 +26,10 @@
 
 #ifndef _HELPWINDOW_H_
 #define _HELPWINDOW_H_
-
 #include "twindow.h"
 
 using namespace std;
+
 class Thelp_window: public Twindow{
 	public:
 //		Thelp_window(int height_, int width_, int y_, int x_);
