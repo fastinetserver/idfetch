@@ -31,6 +31,7 @@
 #include <fstream>
 #include <iostream>
 #include <json/json.h>
+class Tdistfile;
 #include "distfile.h"
 
 using namespace std;

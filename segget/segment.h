@@ -44,7 +44,8 @@ class Tdistfile;
 #include "stats.h"
 
 
-extern Tsettings settings;
+#define MAX_CONNECTS 20
+//extern Tsettings settings;
 //unsigned long downloaded_bytes=0;
 size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment);
 

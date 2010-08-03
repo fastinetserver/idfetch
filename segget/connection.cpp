@@ -24,6 +24,8 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 #include "connection.h"
+#include "utils.h"
+#include "settings.h"
 
 long script_waiting_connection_num=-1;
 uint Tconnection::total_connections=0;

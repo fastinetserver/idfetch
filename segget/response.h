@@ -26,8 +26,7 @@
 
 #ifndef __RESPONSE_H__
 #define __RESPONSE_H__
-
-#include "tui.h"
+#include <string>
 
 using namespace std;
 

@@ -25,6 +25,7 @@
 */
 
 #include "networkbroker.h"
+#include "network.h"
 
 string phaseToString(int phase_num);
 

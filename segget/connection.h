@@ -31,11 +31,12 @@
 #include <curl/curl.h>
 class Tsegment;
 #include "segment.h"
-#include "utils.h"
 #include "networkbroker.h"
 #include "scriptserver.h"
 
 using namespace std;
+
+#define MAX_CONNECTS 20
 
 class Tconnection{
 	static uint total_connections;

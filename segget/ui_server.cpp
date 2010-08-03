@@ -101,15 +101,20 @@ void Tui_server::send_log_msg_to_all_clients(string msg){
 	}
 }
 
-void Tui_server::send_error_log_msg_to_all_clients(string msg){
-	string message="<m>e<t>"+msg+"<.>";
+void Tui_server::send_distfile_progress_msg_to_fd(uint fd, string msg){
+	string message="<m>d<t>"+msg+"<.>";
+	send_to_fd(fd, message);
+}
+
+void Tui_server::send_distfile_progress_msg_to_all_clients(string msg){
+	string message="<m>d<t>"+msg+"<.>";
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
 		send_to_fd(fd, message);
 	}
 }
 
-void Tui_server::send_distfile_progress_msg_to_all_clients(string msg){
-	string message="<m>d<t>"+msg+"<.>";
+void Tui_server::send_error_log_msg_to_all_clients(string msg){
+	string message="<m>e<t>"+msg+"<.>";
 	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
 		send_to_fd(fd, message);
 	}
@@ -150,12 +155,15 @@ void *run_ui_server(void * ){
 
 					// Get this info to catch up!
 					for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
-							ui_server.send_connection_msg_to_fd(client_sockfd, line_num, screenlines[line_num]);
-							debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
-//							ui_server.send(line_num,screenlines[line_num]);
-						}
-
-					
+						ui_server.send_connection_msg_to_fd(client_sockfd, line_num, screenlines[line_num]);
+						debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
+//						ui_server.send(line_num,screenlines[line_num]);
+					}
+					for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
+						ui_server.send_distfile_progress_msg_to_fd(client_sockfd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+					}
+//					if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
+				
 				//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 				}else{
 					ioctl(fd, FIONREAD, &nread);

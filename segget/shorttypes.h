@@ -28,5 +28,6 @@
 #define _TYPES_H_
 
 typedef unsigned long ulong;
+typedef unsigned int uint;
 
 #endif

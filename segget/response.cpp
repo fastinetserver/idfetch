@@ -25,6 +25,8 @@
 */
 
 #include "response.h"
+#include "tui.h"
+
 int decode_server_response(string server_response){
 	int int_server_response=atoi(server_response.c_str());
 	switch (int_server_response){

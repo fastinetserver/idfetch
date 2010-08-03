@@ -27,8 +27,8 @@
 #define __NETWORK_DISTFILE_BROKER_H__
 
 #include <vector>
+#include <sys/time.h>
 #include "shorttypes.h"
-#include "network.h"
 #include "response.h"
 #include "phase.h"
 using namespace std;

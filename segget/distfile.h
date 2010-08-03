@@ -46,13 +46,11 @@
 	#include <unistd.h>
 	#define GetCurrentDir getcwd
 #endif
+//class Tui_server;
 #include "segment.h"
-#include "mirror.h"
-#include "checksum.h"
-#include "network.h"
 #include "networkbroker.h"
-#include "segment.h"
-#include "response.h"
+//#include "settings.h"
+//class Tsettings;
 class Tsegment;
 
 //#include <sys/types.h>
@@ -71,6 +69,7 @@ class Tsegment;
 
 using namespace std;
 
+#define MAX_NETWORKS 10
 typedef unsigned int uint;
 
 enum Tdistfile_status{
@@ -141,7 +140,8 @@ class Tdistfile{
 			MD5(""),
 			CRC32(""),
 			url_count(0),
-			segment_size(settings.max_segment_size)
+//			segment_size(settings.max_segment_size)
+			segment_size(500000)
 			{init();};
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
@@ -156,6 +156,7 @@ class Tdistfile{
 		uint request_proxy_fetcher_network(uint network_priority);
 		uint provide_remote_or_coral_cdn_network(CURLM* cm, uint connection_num, uint seg_num, uint network_priority);
 		int provide_segment(CURLM* cm, uint connection_num, uint seg_num);
+		string get_distfile_progress_str();
 		void inc_dld_segments_count(Tsegment * current_segment);
 		void symlink_distfile_to_provide_mirror_dir();
 		int combine_segments();

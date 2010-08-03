@@ -37,9 +37,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
-#include "settings.h"
-#include "tui.h"
-
+//#include "settings.h"
+//class Tpkg;
+//class Tdistfile;
+//#include "tui.h"
+#include "pkg.h"
 using namespace std;
 
 #define MAX_BIND_ATTEMPTS 5
@@ -58,6 +60,7 @@ class Tui_server{
 		void send_connection_msg_to_all_clients(uint y, string msg);
 		void send_log_msg_to_all_clients(string msg);
 		void send_error_log_msg_to_all_clients(string msg);
+		void send_distfile_progress_msg_to_fd(uint fd, string msg);
 		void send_distfile_progress_msg_to_all_clients(string msg);
 };
 
