@@ -26,20 +26,43 @@
 
 #include "mainwindow.h"
 
+string get_time(string time_format){
+	try{
+		time_format=time_format+" ";
+		time_t rawtime;
+		struct tm * timeinfo;
+		char buffer [80];
+		time ( &rawtime );
+		timeinfo = localtime ( &rawtime );
+		strftime(buffer,80,time_format.c_str(),timeinfo);
+		return buffer;
+	}catch(...){
+		error_log("Error in log.cpp: get_time()");
+		return "";
+	}
+}
+
 void Tmainwindow::connected(){
-	scroll_lines.clear();
+	if (disconnected_flag){
+		scroll_lines.clear();
+		max_received_screenline_num=0;
+		tuidistfiles.clear();
+		colors_connected();
+		set_status("[Connected]");
+		disconnected_flag=false;
+//		set_line(2," CONNECTED "+get_time("%X"));
+	}
 //	for (int line_num=0; line_num<=max_received_screenline_num; line_num++){
 //		screenlines[line_num]="";
 //	}
-	max_received_screenline_num=0;
-	colors_connected();
-	set_status("[Connected]");
+
 //	notfresh=true;
 }
 
 void Tmainwindow::disconnected(){
 	colors_disconnected();
 	set_status("[Connecting... Attempt:"+toString(attempt_num)+". Waiting for 1 sec, before next reconnect.]");
+	disconnected_flag=true;
 //	notfresh=true;
 }
 void Tmainwindow::msg_status(){

@@ -49,9 +49,7 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 		gettimeofday(&start_time,NULL);
 		debug("Connecting network"+toString(network_num));
 
-		segment->parent_distfile->active_connections_num++;
-
-		segment->parent_distfile->status=DDOWNLOADING;
+		segment->parent_distfile->set_status(DDOWNLOADING);
 
 		if (network_array[network_num].network_mode==MODE_PROXY_FETCHER){
 			connection_start_time_network_phase_for_pf_networks=segment->parent_distfile->network_distfile_brokers_array[network_num].phase;
@@ -77,8 +75,13 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 		debug("  URL:"+url);
 
 		if (run_user_python_script(connection_num)){
+			if (segment->parent_distfile->active_connections_num<=0){
+				segment->parent_distfile->set_status(DSCRIPTREJECTED);
+			}
 			return REJECTED_BY_USER_PYTHON_SCRIPT;
 		}
+
+		segment->parent_distfile->active_connections_num++;
 		active=true;
 		debug("aaaaa");
 		Pcurr_mirror->start();
@@ -188,7 +191,7 @@ void Tconnection::stop(CURLcode connection_result){
 			debug(toString(connection_result)+"]- Failed download "+segment->url);
 			if (segment->try_num>=settings.max_tries){
 				segment->status=SFAILED;
-				segment->parent_distfile->status=DFAILED;
+				segment->parent_distfile->set_status(DFAILED);
 				error_log("Segget failed to download distfile: "+segment->parent_distfile->name);
 				error_log("Segment:"+segment->file_name+" has reached max_tries limit - segment.status set to FAILED");
 			}
@@ -199,14 +202,14 @@ void Tconnection::stop(CURLcode connection_result){
 			debug(" Successful download "+segment->url);
 // already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			segment->status=SDOWNLOADED;
-			if (segment->parent_distfile->status!=DFAILED){
+			segment->parent_distfile->inc_dld_segments_count(segment);
+			if ((segment->parent_distfile->get_status()!=DFAILED) and (segment->parent_distfile->get_status()!=DDOWNLOADED)){
 				if (segment->parent_distfile->active_connections_num>0){
-					segment->parent_distfile->status=DDOWNLOADING;
+					segment->parent_distfile->set_status(DDOWNLOADING);
 				}else{
-					segment->parent_distfile->status=DWAITING;
+					segment->parent_distfile->set_status(DWAITING);
 				}
 			}
-			segment->parent_distfile->inc_dld_segments_count(segment);
 		};
 	}catch(...){
 		error_log("Error in connection.cpp: stop()");

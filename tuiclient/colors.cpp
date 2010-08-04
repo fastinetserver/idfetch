@@ -40,6 +40,13 @@ void color_distfile_waiting(WINDOW * window){
 	}
 }
 
+void color_distfile_script_rejected(WINDOW * window){
+	if(has_colors()){
+		start_color();			/* Start color 			*/
+		wattron(window, COLOR_PAIR(9));
+	}
+}
+
 void color_distfile_downloading(WINDOW * window){
 	if(has_colors()){
 		start_color();			/* Start color 			*/
@@ -109,9 +116,10 @@ void colors_connected(){
 		init_pair(3, COLOR_GREEN, COLOR_BLUE);
 		init_pair(4, COLOR_WHITE, COLOR_BLACK);
 		init_pair(5, COLOR_GREEN, COLOR_BLACK);
-		init_pair(6, COLOR_BLUE,  COLOR_BLACK);
+		init_pair(6, COLOR_CYAN,  COLOR_BLACK);
 		init_pair(7, COLOR_RED,   COLOR_BLACK);
-		init_pair(8, COLOR_YELLOW,   COLOR_BLACK);
+		init_pair(8, COLOR_BLUE,   COLOR_BLACK);
+		init_pair(9, COLOR_YELLOW,   COLOR_BLACK);
 //		init_pair(4, COLOR_BLACK, COLOR_WHITE);
 //		attrset(A_REVERSE);
 		attrset(A_DIM);
@@ -130,6 +138,7 @@ void colors_disconnected(){
 		init_pair(6, COLOR_WHITE, COLOR_BLACK);
 		init_pair(7, COLOR_WHITE, COLOR_BLACK);
 		init_pair(8, COLOR_WHITE, COLOR_BLACK);
+		init_pair(9, COLOR_WHITE, COLOR_BLACK);
 ///		attrset(A_BOLD);
 //		attrset(A_REVERSE);
 	}

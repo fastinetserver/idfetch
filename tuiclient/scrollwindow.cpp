@@ -46,6 +46,14 @@ void Tscroll_window::compose(){
 	wrefresh(window);
 }
 
+void Tscroll_window::make_frame(){
+	wclear(window);
+	box(window, ACS_VLINE, ACS_HLINE);
+	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
+//	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(max_received_screenline_num)+"]");
+	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(scroll_lines.size())+"]");
+	msg_short(height-1,width-27,"[Up/Dn/PgUp/PgDn - scroll]");
+}
 
 void Tscroll_window::add_line(string line){
 		max_received_screenline_num=scroll_lines.size();

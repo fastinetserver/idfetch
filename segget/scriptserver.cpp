@@ -234,7 +234,7 @@ bool run_user_python_script(uint connection_num){
 			}
 		}
 
-		error_log("Created pid:"+toString(pID));
+		debug("Launched python script, pid:"+toString(pID));
 		// parent
 		//Now wait for clients and requests. Because you have passed a null pointer as the timeout parameter, no timeout will occur. The program will exit and report an error if select returns a value less than 1:
 		struct timeval user_script_start_time;

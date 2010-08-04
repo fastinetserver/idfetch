@@ -26,7 +26,17 @@
 
 #include "distfilewindow.h"
 
+void Tdistfile_window::make_frame(){
+	wclear(window);
+	box(window, ACS_VLINE, ACS_HLINE);
+	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
+//	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(max_received_screenline_num)+"]");
+	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(tuidistfiles.size())+"]");
+	msg_short(height-1,width-27,"[Up/Dn/PgUp/PgDn - scroll]");
+}
+
 void Tdistfile_window::compose(){
+//	max_received_screenline_num=
 //	color_distfiles_window(window);
 	make_frame();
 //	box(window, ACS_VLINE, ACS_HLINE);
@@ -49,17 +59,11 @@ void Tdistfile_window::compose(){
 			percent="(n/a%)";
 
 		switch (tuidistfiles[distfile_num].status){
-			case DNEW:
-			case D_NOT_PROXY_REQUESTED:
-			case DPROXY_REJECTED:
-			case DPROXY_QUEUED:
-			case DPROXY_DOWNLOADING:
-			case DPROXY_DOWNLOADED:
-			case DPROXY_FAILED:
-										color_distfile_added(window);
-										break;
 			case DWAITING:
 										color_distfile_waiting(window);
+										break;
+			case DSCRIPTREJECTED:
+										color_distfile_script_rejected(window);
 										break;
 			case DDOWNLOADING:
 										color_distfile_downloading(window);
@@ -69,6 +73,16 @@ void Tdistfile_window::compose(){
 										break;
 			case DFAILED:
 										color_distfile_failed(window);
+										break;
+			case DNEW:
+			case D_NOT_PROXY_REQUESTED:
+			case DPROXY_REJECTED:
+			case DPROXY_QUEUED:
+			case DPROXY_DOWNLOADING:
+			case DPROXY_DOWNLOADED:
+			case DPROXY_FAILED:
+			default:
+										color_distfile_added(window);
 										break;
 		}
 		msg_line(y+1,field("",distfile_num+1,4)+") "

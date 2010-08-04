@@ -42,6 +42,7 @@ class Tscroll_window: public Twindow{
 			scroll_lines_counter(0)
 			{};
 		~Tscroll_window(){};
+		void make_frame();
 		void add_line(string line);
 		void compose();
 };

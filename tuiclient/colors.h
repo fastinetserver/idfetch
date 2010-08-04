@@ -32,6 +32,7 @@ he terms of the GNU Lesser General Public
 
 void color_distfile_added(WINDOW * window);
 void color_distfile_waiting(WINDOW * window);
+void color_distfile_script_rejected(WINDOW * window);
 void color_distfile_downloading(WINDOW * window);
 void color_distfile_downloaded(WINDOW * window);
 void color_distfile_failed(WINDOW * window);

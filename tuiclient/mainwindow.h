@@ -51,6 +51,7 @@ class Tmainwindow: public Tscroll_window{
 //		string screenlines[200];
 		string screen_info_lines[4];
 		ulong attempt_num;
+		bool disconnected_flag;
 		Tmainwindow():
 			help_win(),
 			log_win(),
@@ -58,7 +59,8 @@ class Tmainwindow: public Tscroll_window{
 			distfiles_win(),
 //			exit_flag(FALSE),
 			connected_status(FALSE),
-			attempt_num(0)
+			attempt_num(0),
+			disconnected_flag(true)
 			{};
 		~Tmainwindow(){};
 		Tmainwindow(const Twindow &L); // copy constructor

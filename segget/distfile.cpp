@@ -59,6 +59,15 @@ using namespace std;
 #define ALLOW_LOWER_PRIORITY_NETWORKS					205
 */
 
+void Tdistfile::set_status(Tdistfile_status new_status){
+	try{
+		status=new_status;
+		ui_server.send_distfile_progress_msg_to_all_clients(get_distfile_progress_str());
+	}catch(...){
+		error_log("Error: distfile.cpp: set_status()");
+	}
+}
+
 int Tdistfile::request(ulong network_num, string msg){
 	gettimeofday(&network_distfile_brokers_array[network_num].last_request_time, NULL);
 	int sockfd;
@@ -681,11 +690,11 @@ string Tdistfile::get_distfile_progress_str(){
 
 void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	try{
+		stats.dld_segments_count++;
 		stats.inc_dld_size(current_segment->segment_size);
 		if (++dld_segments_count==segments_count){
 			combine_segments();
 		}
-		stats.dld_segments_count++;
 		dld_bytes+=current_segment->segment_size;
 		ui_server.send_distfile_progress_msg_to_all_clients(get_distfile_progress_str());
 	}catch(...){

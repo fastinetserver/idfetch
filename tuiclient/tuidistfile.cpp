@@ -38,6 +38,7 @@ string Ttuidistfile::statusToString(){
 			case DPROXY_DOWNLOADED: return "Downloaded via proxy";
 			case DPROXY_FAILED: return "Failed";
 			case DWAITING: return "Waiting";
+			case DSCRIPTREJECTED: return "Rejected by script";
 			case DDOWNLOADING: return "Downloading";
 			case DDOWNLOADED: return "Downloaded";
 			case DFAILED: return "Failed";

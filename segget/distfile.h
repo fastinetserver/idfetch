@@ -81,6 +81,7 @@ enum Tdistfile_status{
 	DPROXY_DOWNLOADED,
 	DPROXY_FAILED,
 	DWAITING,
+	DSCRIPTREJECTED,
 	DDOWNLOADING,
 	DDOWNLOADED,
 	DFAILED
@@ -92,13 +93,13 @@ class Tdistfile{
 	private:
 		bool choose_best_local_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
 		bool choose_best_mirror(CURLM* cm, uint connection_num, uint network_num, uint seg_num);
+		Tdistfile_status status;
 	public:
 		uint dld_segments_count;
 		ulong dld_bytes;
 		Tnetwork_distfile_broker network_distfile_brokers_array[MAX_NETWORKS];
 		string json_data;
 //		bool downloaded;
-		Tdistfile_status status;
 		uint active_connections_num;
 		string *url_list;
 		uint url_num;
@@ -118,11 +119,11 @@ class Tdistfile{
 		uint url_count;
 		uint segment_size;
 		Tdistfile():
+			status(DNEW),
 			dld_segments_count(0),
 			dld_bytes(0),
 			json_data(""),
 //			downloaded(0),
-			status(DNEW),
 			active_connections_num(0),
 			url_list(0),
 			url_num(0),
@@ -148,6 +149,8 @@ class Tdistfile{
 		~Tdistfile();
 		int request(ulong network_num, string msg);
 		void init();
+		void set_status(Tdistfile_status new_status);
+		Tdistfile_status get_status(){return status;};
 		bool allows_new_actions();
 		bool load_distfile_from_json(json_object* json_obj_distfile);
 		void load_url_list(json_object* json_array_distfile_urllist);

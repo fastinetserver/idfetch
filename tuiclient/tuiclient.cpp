@@ -233,7 +233,6 @@ void decode_downloaded_distfile_msg(string msg_body){
 		a_tuidistfile.dld_bytes=atol(parts[4]);
 		a_tuidistfile.size=atol(parts[5]);
 		tuidistfiles.push_back(a_tuidistfile);
-		mainwindow.distfiles_win.max_received_screenline_num=tuidistfiles.size();
 	}
 }
 		
@@ -365,6 +364,7 @@ int main(int argc, char* argv[])
 					}
 				}
 
+				debug("connected");
 				mainwindow.connected();
 				if (settings.arg_wait_distfile.length()>999){
 					quit(1,"Error in argument --wait-distfile="+settings.arg_wait_distfile+" : Distfile name is too long");
@@ -398,36 +398,42 @@ int main(int argc, char* argv[])
 //							printf("removing client on fd %d\n", sockfd);
 							run_flag=false;
 						}else {
-							char recv_buffer[BUFFER_SIZE+1]="";
+							char recv_buffer[BUFFER_SIZE+1]=" ";
 							if (nread!=read(sockfd, recv_buffer, BUFFER_SIZE)){
 								error_log("Error in tuiclient.cpp : main() read bytes count does NOT match declared count.");
 							};
 							//recv_msg=recv_msg+recv_buffer;
-							rest_of_the_msg=rest_of_the_msg+recv_buffer;
+//							rest_of_the_msg=rest_of_the_msg+recv_buffer;
+							rest_of_the_msg=recv_buffer;
+							debug("RECEIVED:"+rest_of_the_msg);
+							debug("END============================");
 							Tparts msg_parts;
-							while (rest_of_the_msg.find("<.>")!=rest_of_the_msg.npos){
-								msg_parts=split("<m>",rest_of_the_msg);
-								msg_parts=split("<t>",msg_parts.after);
-								char msg_type=msg_parts.before[0];
-								debug("msg_type="+msg_type);
-								msg_parts=split("<.>",msg_parts.after);
-								string msg_body=msg_parts.before;
-								debug("msg_body="+msg_body);
-								rest_of_the_msg=msg_parts.after;
-								switch (msg_type){
-									case 'c': decode_connection_msg(msg_parts.before); break;
-									case 'l': decode_log_msg(msg_parts.before);break;
-									case 'e': decode_error_log_msg(msg_parts.before);break;
-									case 'd': decode_downloaded_distfile_msg(msg_parts.before);break;
-									// yes-distfile present in the queue
-									case 'y': break; // continue waiting for catchup info
-									// no distfile in the queue
-									case 'n': 
-										quit(1,"Distfile: "+settings.arg_wait_distfile+" is not in the queue - quit");
-										break; //shouldn't get to this point - but just in case
-									case 'N': 
-										quit(0,"Distfile: "+settings.arg_wait_distfile+" is already downloaded - quit");
-										break; //shouldn't get to this point - but just in case
+							vector<string> submsgs=split_to_vector("<.>", rest_of_the_msg);
+							for (ulong submsg_num=0; submsg_num<submsgs.size(); submsg_num++){
+								vector<string> before_msg_and_msg=split_to_vector("<m>",submsgs[submsg_num]);
+								if (before_msg_and_msg.size()>1){
+									vector<string> msg_type_and_body=split_to_vector("<t>",before_msg_and_msg[1]);
+									if (msg_type_and_body.size()>1){
+										debug("msg_type="+msg_type_and_body[0]);
+										debug("msg_body="+msg_type_and_body[1]);
+										char msg_type=msg_type_and_body[0][0];
+//										debug("msg_type="+msg_type_str);
+										switch (msg_type){
+											case 'c': decode_connection_msg(msg_type_and_body[1]); break;
+											case 'l': decode_log_msg(msg_type_and_body[1]);break;
+											case 'e': decode_error_log_msg(msg_type_and_body[1]);break;
+											case 'd': decode_downloaded_distfile_msg(msg_type_and_body[1]);break;
+											// yes-distfile present in the queue
+											case 'y': break; // continue waiting for catchup info
+											// no distfile in the queue
+											case 'n': 
+												quit(1,"Distfile: "+settings.arg_wait_distfile+" is not in the queue - quit");
+												break; //shouldn't get to this point - but just in case
+											case 'N': 
+												quit(0,"Distfile: "+settings.arg_wait_distfile+" is already downloaded - quit");
+												break; //shouldn't get to this point - but just in case
+										}
+									}
 								}
 							}
 						};

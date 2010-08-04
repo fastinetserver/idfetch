@@ -34,6 +34,7 @@ using namespace std;
 
 class Tdistfile_window: public Twindow{
 	public:
+		void make_frame();
 		void compose();
 };
 

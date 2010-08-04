@@ -70,7 +70,8 @@ void debug_no_msg(string debug_msg_text){
 		ofstream file;
 		file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
-			file.open((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
+//			file.open((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
+			file.open("./logs/debug.log", ios::app);
 		}
 		catch(...){
 			error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+".");

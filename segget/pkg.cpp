@@ -58,7 +58,7 @@ int Tpkg::find_distfile(string distfile_name){
 	try{
 		for (ulong distfile_num=0; distfile_num<distfile_count; distfile_num++){
 			if (Pdistfile_list[distfile_num]->name==distfile_name){
-				switch (Pdistfile_list[distfile_num]->status){
+				switch (Pdistfile_list[distfile_num]->get_status()){
 					case DDOWNLOADED: {
 						debug("find_distfile(): distfile: "+distfile_name+" was downloaded");
 						return R_PF_DOWNLOADED;
