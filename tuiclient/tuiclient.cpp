@@ -120,13 +120,13 @@ void * watch_keyboard_thread_function(void *){
 			//tab - move between windows
 			case (char)9:cur_window=next_window();
 			//KEY_DOWN
-			case (char)2:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
+			case (char)2:cur_window->down(1);break;
 			//KEY_RIGHT
-			case (char)5:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
+			case (char)5:cur_window->down(1);break;
 			//KEY_UP
-			case (char)3:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
+			case (char)3:cur_window->up(1);break;
 			//KEY_LEFT
-			case (char)4:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
+			case (char)4:cur_window->up(1);break;
 			//KEY_PG_DOWN
 			case (char)82:cur_window->down(mainwindow.bottom_screenline_num);break;
 			//KEY_PG_UP

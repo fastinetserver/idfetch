@@ -151,17 +151,18 @@ void Tmainwindow::init(){
 	//don't wait for enter
 	cbreak();
 	//enable arrow keys
-	keypad(stdscr,TRUE);
-	keypad(window,TRUE);
+	keypad(stdscr,true);
+	keypad(window,true);
 //	exit_flag=FALSE;
-	visible=TRUE;
-	notfresh=TRUE;
+	visible=true;
+	notfresh=true;
 //	wclear(window);
 //	wrefresh(window);
 //	refresh();
 	help_win.init(" HELP ",14,31,5,5);
 	log_win.init(" LOG ",12,50,5,5);
 	distfiles_win.init(" DISTFILES ",12,50,5,5);
+	distfiles_win.visible=true;
 	error_log_win.init(" ERROR LOG ",12,50,5,5);
 	disconnected();
 	show();

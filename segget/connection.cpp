@@ -203,14 +203,16 @@ void Tconnection::stop(CURLcode connection_result){
 // already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			segment->status=SDOWNLOADED;
 			segment->parent_distfile->inc_dld_segments_count(segment);
-			if ((segment->parent_distfile->get_status()!=DFAILED) and (segment->parent_distfile->get_status()!=DDOWNLOADED)){
-				if (segment->parent_distfile->active_connections_num>0){
-					segment->parent_distfile->set_status(DDOWNLOADING);
-				}else{
-					segment->parent_distfile->set_status(DWAITING);
-				}
-			}
 		};
+		if ((segment->parent_distfile->get_status()!=DFAILED)
+		and (segment->parent_distfile->get_status()!=DDOWNLOADED)
+		and (segment->parent_distfile->get_status()!=DALL_LM_AND_PF_MIRRORS_FAILED)){
+			if (segment->parent_distfile->active_connections_num>0){
+				segment->parent_distfile->set_status(DDOWNLOADING);
+			}else{
+				segment->parent_distfile->set_status(DWAITING);
+			}
+		}
 	}catch(...){
 		error_log("Error in connection.cpp: stop()");
 	}

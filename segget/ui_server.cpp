@@ -169,14 +169,14 @@ void *run_ui_server(void * ){
 						close(fd);
 						debug("Client parted from fd:"+toString(fd));
 					}else{
-						error_log("reading buffer");
+						debug("reading buffer");
 						char buffer[1000]="";
 						if (nread!=read(fd, &buffer, nread)){
 							debug("Not all data has been read from ui_client()");
 						}
 						string request_str_before,request_str_after;
-						error_log("received_from tuiclient:");
-						error_log(buffer);
+						debug("received_from tuiclient:");
+						debug(buffer);
 						split("<d>",buffer,request_str_before,request_str_after);
 						split("<.>",request_str_after,request_str_before,request_str_after);
 						string distfile_by_name_lookup_request=request_str_before;
@@ -217,24 +217,20 @@ void *run_ui_server(void * ){
 								ui_server.send_to_fd(fd, "<m>N<t><.>"); //distfile is not in the list quit
 								break;
 							case IN_QUEUE:
-								string err_msg="Found distfile by name:";
-								err_msg=err_msg+buffer;
-								error_log_no_msg(err_msg);
 								ui_server.send_to_fd(fd, "<m>y<t><.>"); //distfile is in the list continue
 								// Get this info to catch up!
 								for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
 									ui_server.send_connection_msg_to_fd(fd, line_num, screenlines[line_num]);
-									error_log_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
-									debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
+									debug("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
 								}
-								error_log_no_msg("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
+								debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
 								for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
 									ui_server.send_distfile_progress_msg_to_fd(fd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-									error_log_no_msg("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+									debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 								}
 								for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
 									ui_server.send_distfile_progress_msg_to_fd(fd, proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-									error_log_no_msg("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+									debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 								}
 						}
 					}

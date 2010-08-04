@@ -143,6 +143,10 @@ bool Tdistfile::allows_new_actions(){
 		debug("No new connection for distfile:"+name+". Distfile has DFAILED status");
 		return false;
 	}
+	if (status==DALL_LM_AND_PF_MIRRORS_FAILED){
+		debug("No new connection for distfile:"+name+". Distfile has DALL_LM_AND_PF_MIRRORS_FAILED status");
+		return false;
+	}
 //	debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
 //	debug("	distfile_num:"+toString(distfile_num));
 	if (active_connections_num<settings.max_connection_num_per_distfile){
@@ -495,6 +499,32 @@ uint Tdistfile::provide_local_network(CURLM* cm, uint connection_num, uint seg_n
 			debug("             So best LOCAL network is network#:"+toString(best_local_network_num));
 			return choose_best_local_mirror(cm, connection_num, best_local_network_num, seg_num);
 		}else{
+			debug("             Haven't found best local network");
+			// if only local and pf networs present, some distfiles may fail all local mirrors => check
+			if (settings.only_local_and_proxy_fetcher_mode_networks_flag){
+				debug("             Checking if all possible mirrors have failed");
+				bool all_neworks_are_local_with_failed_mirrors=true;
+				for (uint network_num=0; network_num<MAX_NETWORKS; network_num++){
+					if (network_array[network_num].priority>0){
+						debug("checking network:"+toString(network_num));
+						if (network_array[network_num].network_mode==MODE_LOCAL){
+							if (network_distfile_brokers_array[network_num].phase!=E_ALL_LOCAL_MIRRORS_FAILED){
+								all_neworks_are_local_with_failed_mirrors=false;
+								break;
+							}
+						}else{ // mode=MODE_PROXY_FETCHER (because only these 2 modes were defined in settings
+							if (network_distfile_brokers_array[network_num].phase!=E_ALL_PROXY_FETCHER_MIRRORS_FAILED){
+								all_neworks_are_local_with_failed_mirrors=false;
+								break;
+							}
+						}
+					}
+				}
+				if (all_neworks_are_local_with_failed_mirrors){
+					set_status(DALL_LM_AND_PF_MIRRORS_FAILED);
+					return R_LM_PF_ALL_MIRRORS_FAILED;
+				}
+			}
 			if (allow_proxy_fetcher_mirrors){
 				return ALLOW_REQUESTS_TO_PROXY_FETCHERS;
 			}else{

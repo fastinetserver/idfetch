@@ -118,9 +118,12 @@ void Tsettings::init(){
 			conf.set("networks","network"+toString(network_num)+"_priority",cur_network_priority,0,10);
 			if (cur_network_priority>0){
 				network_array[network_num].init(cur_network_priority);
+				if ((network_array[network_num].network_mode==MODE_REMOTE)
+				or (network_array[network_num].network_mode==MODE_CORAL_CDN)){
+					only_local_and_proxy_fetcher_mode_networks_flag=false;
+				}
 			}
 		}
-
 		conf.set("ui_server","ui_ip",ui_ip);
 		conf.set("ui_server","ui_port",ui_port,1,65535);
 

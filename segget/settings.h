@@ -73,6 +73,8 @@ class Tsettings{
 	//provide_proxy_fether_to_others
 		string provide_proxy_fetcher_ip;
 		ulong provide_proxy_fetcher_port;
+	//networks
+		bool only_local_and_proxy_fetcher_mode_networks_flag;
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
@@ -126,6 +128,8 @@ class Tsettings{
 		//provide_proxy_fether_to_others
 			provide_proxy_fetcher_ip("127.0.0.1"),
 			provide_proxy_fetcher_port(9888),
+		//networks
+			only_local_and_proxy_fetcher_mode_networks_flag(true),
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),

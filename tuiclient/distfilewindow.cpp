@@ -72,6 +72,7 @@ void Tdistfile_window::compose(){
 										color_distfile_downloaded(window);
 										break;
 			case DFAILED:
+			case DALL_LM_AND_PF_MIRRORS_FAILED:
 										color_distfile_failed(window);
 										break;
 			case DNEW:
