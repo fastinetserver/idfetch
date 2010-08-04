@@ -57,10 +57,17 @@
 
 using namespace std;
 
+bool exit_flag=false;
+bool thread_exited=false;
+string exit_msg="";
+int exit_code=0;
+int watch_keyboard_thread_status=10;
+pthread_t watch_keyboard_thread;
 Tmainwindow mainwindow;
 
 int cur_window_num=0;
 int sockfd;
-void quit();
+void exit_curses_and_show_msg();
+void quit(int exit_code, string error_msg);
 void * watch_keyboard_thread_function(void * ptr);
 void * refresh_screen_thread_function(void * ptr);

@@ -30,7 +30,12 @@ he terms of the GNU Lesser General Public
 
 #include <ncurses.h>
 
-void color_default_window(WINDOW * window);
+void color_distfile_added(WINDOW * window);
+void color_distfile_waiting(WINDOW * window);
+void color_distfile_downloading(WINDOW * window);
+void color_distfile_downloaded(WINDOW * window);
+void color_distfile_failed(WINDOW * window);
+void color_distfiles_window(WINDOW * window);
 void color_scroll_window(WINDOW * window);
 void color_downloads(WINDOW * window);
 void color_info(WINDOW * window);

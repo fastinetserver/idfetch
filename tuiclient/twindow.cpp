@@ -73,7 +73,7 @@ void Twindow::up(int inc){
 
 }
 void Twindow::down(uint inc){
-	int tmp_top_position=top_position+inc;
+	uint tmp_top_position=top_position+inc;
 	// if we need to scroll down
 	if (max_received_screenline_num>bottom_screenline_num){
 		notfresh=TRUE;

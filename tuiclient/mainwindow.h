@@ -39,16 +39,16 @@ using namespace std;
 const uint CONNECTION_LINES=5;
 const uint MAX_LINES=200;
 
-class Tmainwindow: public Twindow{
+class Tmainwindow: public Tscroll_window{
 	public:
 		
 		Thelp_window help_win;
 		Tscroll_window log_win;
 		Tscroll_window error_log_win;
 		Tdistfile_window distfiles_win;
-		bool exit_flag;
+//		bool exit_flag;
 		bool connected_status;
-		string screenlines[200];
+//		string screenlines[200];
 		string screen_info_lines[4];
 		ulong attempt_num;
 		Tmainwindow():
@@ -56,7 +56,7 @@ class Tmainwindow: public Twindow{
 			log_win(),
 			error_log_win(),
 			distfiles_win(),
-			exit_flag(FALSE),
+//			exit_flag(FALSE),
 			connected_status(FALSE),
 			attempt_num(0)
 			{};
@@ -66,7 +66,7 @@ class Tmainwindow: public Twindow{
 		void msg_status();
 		void compose();
 		void set_status(string str);
-		void set_line(int y, string msg_text);
+		void set_line(uint y, string msg_text);
 		void init();
 		void connected();
 		void disconnected();

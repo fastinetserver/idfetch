@@ -27,17 +27,20 @@
 #include "mainwindow.h"
 
 void Tmainwindow::connected(){
-	for (int line_num=0; line_num<=max_received_screenline_num; line_num++){
-		screenlines[line_num]="";
-	}
+	scroll_lines.clear();
+//	for (int line_num=0; line_num<=max_received_screenline_num; line_num++){
+//		screenlines[line_num]="";
+//	}
 	max_received_screenline_num=0;
 	colors_connected();
 	set_status("[Connected]");
+//	notfresh=true;
 }
 
 void Tmainwindow::disconnected(){
 	colors_disconnected();
 	set_status("[Connecting... Attempt:"+toString(attempt_num)+". Waiting for 1 sec, before next reconnect.]");
+//	notfresh=true;
 }
 void Tmainwindow::msg_status(){
 	msg_short(0,2,"Tuiclient "+status_str);
@@ -48,19 +51,28 @@ void Tmainwindow::msg_status(){
 }
 
 void Tmainwindow::compose(){
-	//clear();
-	box(window, ACS_VLINE, ACS_HLINE);
+//	wclear(window);
+//	box(window, ACS_VLINE, ACS_HLINE);
 	getmaxyx(window,height,width);
-	screenlines[27]=sms;
+//	resize(height,width,0,0);
+//	screenlines[27]=sms;
 	bottom_screenline_num=height-2;
 	color_status(window);
+	make_frame();
 	msg_status();
 	color_info(window);
 	msg_short(height-1,2,screen_info_lines[0]);
 	color_downloads(window);
 //	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
-	for (int y=0, line_num=top_position; y<bottom_screenline_num; y++, line_num++){
-		msg_line(y+1,screenlines[line_num]);
+//	for (int y=0, line_num=top_position; y<bottom_screenline_num; y++, line_num++){
+//		msg_line(y+1,screenlines[line_num]);
+//	}
+	for (uint y=0, line_num=top_position; y<bottom_screenline_num; y++, line_num++){
+		if (line_num<scroll_lines.size()){
+			msg_line(y+1,scroll_lines[line_num]);
+		}else{
+			msg_line(y+1,"");
+		}
 	}
 	wrefresh(window);
 	//and show children
@@ -91,8 +103,11 @@ void Tmainwindow::set_status(string str){
 	//show_lines();
 }
 
-void Tmainwindow::set_line(int y, string msg_text){
-	screenlines[y]=msg_text;
+void Tmainwindow::set_line(uint y, string msg_text){
+	while (scroll_lines.size()<=y){
+		scroll_lines.push_back("");
+	};
+	scroll_lines[y]=msg_text;
 	notfresh=TRUE;
 	if (max_received_screenline_num<y) max_received_screenline_num=y;
 }
@@ -101,6 +116,7 @@ void Tmainwindow::init(){
 	top_position=0;
 	max_received_screenline_num=0;
 	window=initscr();
+//	clear();
 //			help_win=Twindow(20,50,5,5);
 //			box(help_window, ACS_VLINE, ACS_HLINE);
 //			wrefresh(help_window);
@@ -108,17 +124,23 @@ void Tmainwindow::init(){
 	//don't echo keyboard to the screen	visible=TRUE;
 
 	noecho();
+//	nodelay(window,1);
 	//don't wait for enter
 	cbreak();
 	//enable arrow keys
 	keypad(stdscr,TRUE);
 	keypad(window,TRUE);
-	exit_flag=FALSE;
+//	exit_flag=FALSE;
 	visible=TRUE;
 	notfresh=TRUE;
+//	wclear(window);
+//	wrefresh(window);
+//	refresh();
 	help_win.init(" HELP ",14,31,5,5);
 	log_win.init(" LOG ",12,50,5,5);
 	distfiles_win.init(" DISTFILES ",12,50,5,5);
 	error_log_win.init(" ERROR LOG ",12,50,5,5);
-
+	disconnected();
+	show();
+//	sleep(1);
 }

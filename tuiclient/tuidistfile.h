@@ -31,21 +31,38 @@
 
 using namespace std;
 
+enum Tdistfile_status{
+	DNEW,
+	D_NOT_PROXY_REQUESTED,
+	DPROXY_REJECTED,
+	DPROXY_QUEUED,
+	DPROXY_DOWNLOADING,
+	DPROXY_DOWNLOADED,
+	DPROXY_FAILED,
+	DWAITING,
+	DDOWNLOADING,
+	DDOWNLOADED,
+	DFAILED
+};
+
 class Ttuidistfile{
 	public:
 		string name;
 		ulong size;
+		Tdistfile_status status;
 		ulong dld_bytes;
 		ulong dld_segments;
 		ulong segments_count;
 		Ttuidistfile():
 			name(""),
 			size(0),
+			status(DNEW),
 			dld_bytes(0),
 			dld_segments(0),
 			segments_count(0)
 			{};
 		~Ttuidistfile(){};
+		string statusToString();
 };
 
 vector <Ttuidistfile> tuidistfiles;

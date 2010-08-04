@@ -28,6 +28,12 @@
 
 Tui_server ui_server;
 
+enum TDFsearch_rusults{
+	NOT_FOUND,
+	DOWNLOADED,
+	IN_QUEUE
+};
+
 void Tui_server::init(){
 	socklen_t server_len;
 	struct sockaddr_in server_address;
@@ -153,28 +159,79 @@ void *run_ui_server(void * ){
 
 					FD_SET(client_sockfd, &ui_server.readfds);
 
-					// Get this info to catch up!
-					for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
-						ui_server.send_connection_msg_to_fd(client_sockfd, line_num, screenlines[line_num]);
-						debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
-//						ui_server.send(line_num,screenlines[line_num]);
-					}
-					for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
-						ui_server.send_distfile_progress_msg_to_fd(client_sockfd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-					}
-//					if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
-				
 				//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 				}else{
+					debug("else");
 					ioctl(fd, FIONREAD, &nread);
 					if(nread == 0) {
-						close(fd);
+						debug("nothing to read");
 						FD_CLR(fd, &ui_server.readfds);
+						close(fd);
 						debug("Client parted from fd:"+toString(fd));
 					}else{
+						error_log("reading buffer");
 						char buffer[1000];
 						if (nread!=read(fd, &buffer, nread)){
 							debug("Not all data has been read from ui_client()");
+						}
+						string request_str_before,request_str_after;
+						error_log("received_from tuiclient:");
+						error_log(buffer);
+						split("<d>",buffer,request_str_before,request_str_after);
+						split("<.>",request_str_after,request_str_before,request_str_after);
+						string distfile_by_name_lookup_request=request_str_before;
+						TDFsearch_rusults distfile_search_result=NOT_FOUND;
+						if (distfile_by_name_lookup_request.length()>0){
+							for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
+								if (distfile_by_name_lookup_request==request_server_pkg.Pdistfile_list[distfile_num]->name){
+									if (request_server_pkg.Pdistfile_list[distfile_num]->status==DDOWNLOADED){
+										distfile_search_result=DOWNLOADED;
+									}else{
+										distfile_search_result=IN_QUEUE;
+									}
+									break;
+								}
+							}
+							if (distfile_search_result==NOT_FOUND){
+								for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.distfile_count; distfile_num++){
+									if (distfile_by_name_lookup_request==proxy_fetcher_pkg.Pdistfile_list[distfile_num]->name){
+										if (proxy_fetcher_pkg.Pdistfile_list[distfile_num]->status==DDOWNLOADED){
+											distfile_search_result=DOWNLOADED;
+										}else{
+											distfile_search_result=IN_QUEUE;
+										}
+										break;
+									}
+								}
+							}
+						}else{
+							// if no name for distfile specified -> no need to find distfile
+							// just keep an eye on the ones in queue
+							distfile_search_result=IN_QUEUE;
+						}
+						switch (distfile_search_result){
+							case NOT_FOUND:
+								ui_server.send_to_fd(fd, "<m>n<t><.>"); //distfile is not in the list quit
+								break;
+							case DOWNLOADED:
+								ui_server.send_to_fd(fd, "<m>N<t><.>"); //distfile is not in the list quit
+								break;
+							case IN_QUEUE:
+								string err_msg="Found distfile by name:";
+								err_msg=err_msg+buffer;
+								error_log(err_msg);
+								ui_server.send_to_fd(fd, "<m>y<t><.>"); //distfile is in the list continue
+								// Get this info to catch up!
+								for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
+									ui_server.send_connection_msg_to_fd(fd, line_num, screenlines[line_num]);
+									debug_no_msg("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
+								}
+								for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
+									ui_server.send_distfile_progress_msg_to_fd(fd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+								}
+								for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.distfile_count; distfile_num++){
+									ui_server.send_distfile_progress_msg_to_fd(fd, proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+								}
 						}
 					}
 				}

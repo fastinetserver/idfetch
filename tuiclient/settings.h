@@ -36,6 +36,8 @@ using namespace std;
 class Tsettings{
 	private:
 	public:
+	// cli arguments
+		string arg_wait_distfile;
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
@@ -46,6 +48,8 @@ class Tsettings{
 		string debug_log_file;
 
 		Tsettings():
+		// cli arguments
+			arg_wait_distfile(""),
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),

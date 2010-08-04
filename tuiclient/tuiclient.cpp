@@ -25,28 +25,8 @@
 */
 
 #include "tuiclient.h"
+#include <iostream>
 
-void quit(){
-	mainwindow.exit_flag=TRUE;
-	try{
-		close(sockfd);
-	}
-	catch(...)
-	{
-		//error while closing socket
-	}
-	try{
-		close(sockfd);
-//		sleep(1);
-		nocbreak();
-		endwin();
-		exit(0);
-	}
-	catch(...)
-	{
-		//error while ending curses
-	}
-}
 Twindow * next_window(){
 	cur_window_num++;
 	if (cur_window_num>3) cur_window_num=0;
@@ -75,22 +55,78 @@ Twindow * next_window(){
 	return &mainwindow;
 }
 
+/*
+void * watch_keyboard_thread_function(void *){
+	Twindow * cur_window=&mainwindow.distfiles_win;
+	while (not exit_flag){
+		int key=getch();
+		if (key==ERR){
+			mainwindow.refresh();
+			struct timeval delay;
+			delay.tv_sec=0;
+			delay.tv_usec=300000;
+			select(FD_SETSIZE, (fd_set *)0, (fd_set *)0,(fd_set *)0, (struct timeval *) &delay);//&timeout
+		}else{
+			switch (key){
+				//tab - move between windows
+				case (char)9:cur_window=next_window();
+				//KEY_DOWN
+				case (char)2:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
+				//KEY_RIGHT
+				case (char)5:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
+				//KEY_UP
+				case (char)3:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
+				//KEY_LEFT
+				case (char)4:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
+				//KEY_PG_DOWN
+				case (char)82:cur_window->down(mainwindow.bottom_screenline_num);break;
+				//KEY_PG_UP
+				case (char)83:cur_window->up(mainwindow.bottom_screenline_num);break;
+				case 'd':
+				case 'D':mainwindow.distfiles_win.toggle();
+						mainwindow.log_win.visible=false;
+						mainwindow.error_log_win.visible=false;
+						cur_window=&mainwindow.distfiles_win;
+						mainwindow.show();
+						break;
+				case 'q':
+				case 'Q':quit(0,"Interrupted by user");break;
+				case 'h':
+				case 'H':mainwindow.help_win.toggle(); mainwindow.show();break;
+				case 'l':
+				case 'L':mainwindow.log_win.toggle(); mainwindow.show();break;
+				case 'e':
+				case 'E':mainwindow.error_log_win.toggle(); mainwindow.show();break;
+				default: mainwindow.set_line(25,toString((int)key));
+			}
+		}
+	}
+//	pthread_exit((void*)watch_keyboard_thread_status);
+	exit_curses_and_show_msg();
+	return (void*)0;
+	//watch_keyboard_thread_status;
+}
+
+void * refresh_screen_thread_function(void *){
+	return (void*)0;
+}
+*/
 
 void * watch_keyboard_thread_function(void *){
 	Twindow * cur_window=&mainwindow.distfiles_win;
-	while (true){
+	while (not exit_flag){
 		char key=getch();
 		switch (key){
 			//tab - move between windows
 			case (char)9:cur_window=next_window();
 			//KEY_DOWN
-			case (char)2:cur_window->down(1);mainwindow.screenlines[25]=toString((int)key);break;
+			case (char)2:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
 			//KEY_RIGHT
-			case (char)5:cur_window->down(1);mainwindow.screenlines[25]=toString((int)key);break;
+			case (char)5:cur_window->down(1);mainwindow.set_line(25,toString((int)key));break;
 			//KEY_UP
-			case (char)3:cur_window->up(1);mainwindow.screenlines[25]=toString((int)key);break;
+			case (char)3:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
 			//KEY_LEFT
-			case (char)4:cur_window->up(1);mainwindow.screenlines[25]=toString((int)key);break;
+			case (char)4:cur_window->up(1);mainwindow.set_line(25,toString((int)key));break;
 			//KEY_PG_DOWN
 			case (char)82:cur_window->down(mainwindow.bottom_screenline_num);break;
 			//KEY_PG_UP
@@ -103,27 +139,31 @@ void * watch_keyboard_thread_function(void *){
 					mainwindow.show();
 					break;
 			case 'q':
-			case 'Q':quit();break;
+			case 'Q':quit(0,"Interrupted by user");break;
 			case 'h':
 			case 'H':mainwindow.help_win.toggle(); mainwindow.show();break;
 			case 'l':
 			case 'L':mainwindow.log_win.toggle(); mainwindow.show();break;
 			case 'e':
 			case 'E':mainwindow.error_log_win.toggle(); mainwindow.show();break;
-			default: mainwindow.screenlines[25]=toString((int)key);
+			default: mainwindow.set_line(25,toString((int)key));
 		}
 	}
-	return 0;
+//	pthread_exit((void*)watch_keyboard_thread_status);
+	return (void*)watch_keyboard_thread_status;
 }
 
 void * refresh_screen_thread_function(void *){
-	while (! mainwindow.exit_flag){
-			mainwindow.refresh();
+	while (! exit_flag){
+		mainwindow.refresh();
+		mainwindow.refresh();
+//		sleep(1);
 		struct timeval delay;
 		delay.tv_sec=0;
 		delay.tv_usec=300000;
 		select(FD_SETSIZE, (fd_set *)0, (fd_set *)0,(fd_set *)0, (struct timeval *) &delay);//&timeout
 	}
+	exit_curses_and_show_msg();
 	return 0;
 }
 
@@ -138,11 +178,18 @@ void decode_connection_msg(string msg_body){
 		mainwindow.screen_info_lines[line_num-200]=parts.after;
 	}
 }
+/*
 
 void decode_downloaded_distfile_msg(string msg_body){
 	vector <string> parts;
 	parts=split_to_vector(" ", msg_body);
 	if (parts.size()>4){
+//		if (settings.arg_wait_distfile!=""){
+//			if (parts[0]==settings.arg_wait_distfile){
+//				cant_find_distfile_exit_flag==false;
+//				if
+//			}
+//		}
 		for (ulong cur_distfile=0;cur_distfile<tuidistfiles.size();cur_distfile++){
 			if (tuidistfiles[cur_distfile].name==parts[0]){
 				tuidistfiles[cur_distfile].dld_segments=atol(parts[1]);
@@ -162,6 +209,33 @@ void decode_downloaded_distfile_msg(string msg_body){
 		mainwindow.distfiles_win.max_received_screenline_num=tuidistfiles.size();
 	}
 }
+*/
+
+void decode_downloaded_distfile_msg(string msg_body){
+	vector <string> parts;
+	parts=split_to_vector("<>", msg_body);
+	if (parts.size()>5){
+		for (ulong cur_distfile=0;cur_distfile<tuidistfiles.size();cur_distfile++){
+			if (tuidistfiles[cur_distfile].name==parts[0]){
+				tuidistfiles[cur_distfile].status=(Tdistfile_status)atoi(parts[1]);
+				tuidistfiles[cur_distfile].dld_segments=atol(parts[2]);
+				tuidistfiles[cur_distfile].segments_count=atol(parts[3]);
+				tuidistfiles[cur_distfile].dld_bytes=atol(parts[4]);
+				tuidistfiles[cur_distfile].size=atol(parts[5]);
+				return;
+			}
+		}
+		Ttuidistfile a_tuidistfile;
+		a_tuidistfile.name=parts[0];
+		a_tuidistfile.status=(Tdistfile_status)atoi(parts[1]);
+		a_tuidistfile.dld_segments=atol(parts[2]);
+		a_tuidistfile.segments_count=atol(parts[3]);
+		a_tuidistfile.dld_bytes=atol(parts[4]);
+		a_tuidistfile.size=atol(parts[5]);
+		tuidistfiles.push_back(a_tuidistfile);
+		mainwindow.distfiles_win.max_received_screenline_num=tuidistfiles.size();
+	}
+}
 		
 void decode_log_msg(string msg_body){
 	mainwindow.log_win.add_line(msg_body);
@@ -170,39 +244,102 @@ void decode_log_msg(string msg_body){
 void decode_error_log_msg(string msg_body){
 	mainwindow.error_log_win.add_line(msg_body);
 }
+int parse_cli_arguments(int argc, char* argv[]){
+	try{
+		string option,name,value;
+		cout << "argc = " << argc << endl;
+		int posEqual;
+		for(int i = 0; i < argc; i++){
+			cout << "argv[" << i << "] = " << argv[i] << endl; 
+			option=argv[i];
+			posEqual=option.find('=');
+			name  = trim(option.substr(0,posEqual));
+			value = trim(option.substr(posEqual+1));
+			if (name=="--wait-distfile"){
+				settings.arg_wait_distfile=value;
+				continue;
+			};
+//		//f (name=="--pkglist-file") {settings.pkg_list_file=value; continue;};
+		}
+		return 0;
+	}catch(...){
+		perror("Error in segget.cpp: init_curses()");
+	}
+	return 1;
+}
 
-int main()
+void no_curses_msg(string msg){
+	cout << msg << endl;
+}
+
+void exit_curses_and_show_msg(){
+	try{
+		nocbreak();
+		endwin();
+		try{
+			close(sockfd);
+		}catch(...){
+			no_curses_msg("error while closing socket");
+		}
+		no_curses_msg(exit_msg);
+		exit(exit_code);
+	}catch(...){
+		//error while ending curses
+	}
+}
+
+void quit(int exit_code_, string exit_msg_){
+//		mainwindow.exit_flag=TRUE;
+		exit_code=exit_code_;
+		exit_msg=exit_msg_;
+		exit_flag=true;
+		//wait to exit
+		while (1){
+			sleep(10);
+		}
+	//		nodelay(mainwindow.window,0);
+//		sleep(1); // wait for thread to finish its job
+//		void *status;
+//		pthread_join(watch_keyboard_thread, &status);
+//		if ((int)status != watch_keyboard_thread_status) {
+//			printf("Secondary thread failed\n");
+//		exit(1);
+//		}
+//		pthread_join(watch_keyboard_thread, 0);
+}
+
+int main(int argc, char* argv[])
 {
+	try{
+		parse_cli_arguments(argc, argv);
+	}catch(...){
+		perror("error while parsing arguments");
+	}
 	try{
 		try{
 			//init curses
 			settings.init();
 			mainwindow.init();
 //			init_color(COLOR_BLUE, 0, 0, 0); 
-
-		}catch(...)
-		{
+		}catch(...){
 			//error while init curses
-		}
-		try{
-			pthread_t watch_keyboard_thread;
-			int iret1;
-			iret1 = pthread_create( &watch_keyboard_thread, NULL, watch_keyboard_thread_function, (void*) NULL);
-		}catch(...)
-		{
-			//error while init curses watch_keyboard_thread;
 		}
 		try{
 			pthread_t refresh_screen_thread;
 			int iret1;
 			iret1 = pthread_create( &refresh_screen_thread, NULL, refresh_screen_thread_function, (void*) NULL);
-		}catch(...)
-		{
+		}catch(...){
 			//error while init refresh_screen_thread;
 		}
 		try{
+			int iret1;
+			iret1 = pthread_create( &watch_keyboard_thread, NULL, watch_keyboard_thread_function, (void*) NULL);
+		}catch(...){
+			//error while init curses watch_keyboard_thread;
+		}
+		try{
 //			struct timeval timeout;
-			while ( ! mainwindow.exit_flag ){
+			while ( ! exit_flag ){
 				int len;
 
 				struct sockaddr_in address;
@@ -228,8 +365,17 @@ int main()
 					}
 				}
 
-				
 				mainwindow.connected();
+				if (settings.arg_wait_distfile.length()>999){
+					quit(1,"Error in argument --wait-distfile="+settings.arg_wait_distfile+" : Distfile name is too long");
+				};
+				char send_buffer[10000];
+				string send_msg="<d>"+settings.arg_wait_distfile+"<.>";
+				strcpy(send_buffer,send_msg.c_str());
+				if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)send_msg.length()){
+					perror("Error in request.cpp: request(): request msg size and sent data size are different.");
+				}
+
 				fd_set readfds, testfds;
 
 				FD_ZERO(&readfds);
@@ -273,6 +419,15 @@ int main()
 									case 'l': decode_log_msg(msg_parts.before);break;
 									case 'e': decode_error_log_msg(msg_parts.before);break;
 									case 'd': decode_downloaded_distfile_msg(msg_parts.before);break;
+									// yes-distfile present in the queue
+									case 'y': break; // continue waiting for catchup info
+									// no distfile in the queue
+									case 'n': 
+										quit(1,"Distfile: "+settings.arg_wait_distfile+" is not in the queue - quit");
+										break; //shouldn't get to this point - but just in case
+									case 'N': 
+										quit(0,"Distfile: "+settings.arg_wait_distfile+" is already downloaded - quit");
+										break; //shouldn't get to this point - but just in case
 								}
 							}
 						};
@@ -283,17 +438,12 @@ int main()
 		}catch(...){
 //			error_log_no_msg("Error in segget.cpp launch_tui_theread() failed");
 		}
+	
+	}catch(...){
+		perror("error during init and downloading process");
 	}
-	catch(...){
-		//error during init and downloading process
+	while (1){
+		sleep(10);
 	}
-	try{
-		nocbreak();
-		endwin();
-	}
-	catch(...)
-	{
-		//error while ending curses
-	}
-	return 0;
+	quit(0,"");
 }

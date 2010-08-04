@@ -51,6 +51,8 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 
 		segment->parent_distfile->active_connections_num++;
 
+		segment->parent_distfile->status=DDOWNLOADING;
+
 		if (network_array[network_num].network_mode==MODE_PROXY_FETCHER){
 			connection_start_time_network_phase_for_pf_networks=segment->parent_distfile->network_distfile_brokers_array[network_num].phase;
 		}
@@ -197,6 +199,13 @@ void Tconnection::stop(CURLcode connection_result){
 			debug(" Successful download "+segment->url);
 // already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			segment->status=SDOWNLOADED;
+			if (segment->parent_distfile->status!=DFAILED){
+				if (segment->parent_distfile->active_connections_num>0){
+					segment->parent_distfile->status=DDOWNLOADING;
+				}else{
+					segment->parent_distfile->status=DWAITING;
+				}
+			}
 			segment->parent_distfile->inc_dld_segments_count(segment);
 		};
 	}catch(...){

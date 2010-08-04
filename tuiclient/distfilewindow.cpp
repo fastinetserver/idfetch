@@ -27,7 +27,7 @@
 #include "distfilewindow.h"
 
 void Tdistfile_window::compose(){
-	color_default_window(window);
+//	color_distfiles_window(window);
 	make_frame();
 //	box(window, ACS_VLINE, ACS_HLINE);
 //	getmaxyx(window,height,width);
@@ -41,15 +41,46 @@ void Tdistfile_window::compose(){
 //	color_downloads(window);
 //	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
 	ulong distfile_num=top_position;
-	for (int y=0; y<bottom_screenline_num and distfile_num<tuidistfiles.size(); y++, distfile_num++){
+	string percent;
+	for (uint y=0; y<bottom_screenline_num and distfile_num<tuidistfiles.size(); y++, distfile_num++){
+		if (tuidistfiles[distfile_num].size>0)
+			percent="("+toString(tuidistfiles[distfile_num].dld_bytes*100/tuidistfiles[distfile_num].size)+"%) ";
+		else
+			percent="(n/a%)";
+
+		switch (tuidistfiles[distfile_num].status){
+			case DNEW:
+			case D_NOT_PROXY_REQUESTED:
+			case DPROXY_REJECTED:
+			case DPROXY_QUEUED:
+			case DPROXY_DOWNLOADING:
+			case DPROXY_DOWNLOADED:
+			case DPROXY_FAILED:
+										color_distfile_added(window);
+										break;
+			case DWAITING:
+										color_distfile_waiting(window);
+										break;
+			case DDOWNLOADING:
+										color_distfile_downloading(window);
+										break;
+			case DDOWNLOADED:
+										color_distfile_downloaded(window);
+										break;
+			case DFAILED:
+										color_distfile_failed(window);
+										break;
+		}
 		msg_line(y+1,field("",distfile_num+1,4)+") "
-			+"("+toString(tuidistfiles[distfile_num].dld_bytes*100/tuidistfiles[distfile_num].size)+"%) "
+			+percent
 			+tuidistfiles[distfile_num].name
+			+" ["+tuidistfiles[distfile_num].statusToString()+"]"
 			+" Segments: "+toString(tuidistfiles[distfile_num].dld_segments)
 			+"/"+toString(tuidistfiles[distfile_num].segments_count)
 			+" Bytes: "+toString(tuidistfiles[distfile_num].dld_bytes)
 			+"/"+toString(tuidistfiles[distfile_num].size));
 	}
+//	color_distfiles_window(window);
 	wrefresh(window);
 //	mainwindow.distfiles_win.add_line(parts[0]+"("+toString(atol(parts[3].c_str())*100/)+"%)"+" "+parts[1]+"/"+parts[2]+" "+parts[3]+"/"+parts[4]);
 }

@@ -44,9 +44,9 @@ class Twindow{
 		uint x;
 		bool notfresh;
 		bool visible;
-		int top_position;
-		int bottom_screenline_num;
-		int max_received_screenline_num;
+		uint top_position;
+		uint bottom_screenline_num;
+		uint max_received_screenline_num;
 		string status_str;
 
 		Twindow():

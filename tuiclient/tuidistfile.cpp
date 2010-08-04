@@ -27,5 +27,35 @@
 #include "tuidistfile.h"
 
 
+string Ttuidistfile::statusToString(){
+	try{
+		switch(status){
+			case DNEW: return "Added";
+			case D_NOT_PROXY_REQUESTED: return "Not proxy requested";
+			case DPROXY_REJECTED: return "Proxy rejected";
+			case DPROXY_QUEUED: return "Proxy queued";
+			case DPROXY_DOWNLOADING: return "Downloading via proxy";
+			case DPROXY_DOWNLOADED: return "Downloaded via proxy";
+			case DPROXY_FAILED: return "Failed";
+			case DWAITING: return "Waiting";
+			case DDOWNLOADING: return "Downloading";
+			case DDOWNLOADED: return "Downloaded";
+			case DFAILED: return "Failed";
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: statusToString()");
+	}
+	return "UNKNOWN status";
+}
+
+long find_distfile_by_name(string distfile_name){
+	try{
+		for (ulong cur_distfile=0;cur_distfile<tuidistfiles.size();cur_distfile++)
+			if (tuidistfiles[cur_distfile].name==distfile_name) return cur_distfile;
+	}catch(...){
+		perror("Error in tuidistfile.cpp: find_distfile_by_name()");
+	}
+	return -1;
+}
 
 

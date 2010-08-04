@@ -671,7 +671,8 @@ int Tdistfile::provide_segment(CURLM* cm, uint connection_num, uint seg_num){
 
 string Tdistfile::get_distfile_progress_str(){
 	try{
-		return name+" "+toString(dld_segments_count)+" "+toString(segments_count)+" "+toString(dld_bytes)+" "+toString(size);
+		return name+"<>"+toString(status)+"<>"+toString(dld_segments_count)+"<>"+toString(segments_count)\
+			+"<>"+toString(dld_bytes)+"<>"+toString(size);
 	}catch(...){
 		error_log("Error: distfile.cpp: get_distfile_progress_str()");
 		return "";
@@ -681,12 +682,12 @@ string Tdistfile::get_distfile_progress_str(){
 void Tdistfile::inc_dld_segments_count(Tsegment* current_segment){
 	try{
 		stats.inc_dld_size(current_segment->segment_size);
-		dld_bytes+=current_segment->segment_size;
-		ui_server.send_distfile_progress_msg_to_all_clients(get_distfile_progress_str());
 		if (++dld_segments_count==segments_count){
 			combine_segments();
 		}
 		stats.dld_segments_count++;
+		dld_bytes+=current_segment->segment_size;
+		ui_server.send_distfile_progress_msg_to_all_clients(get_distfile_progress_str());
 	}catch(...){
 		error_log("Error: distfile.cpp: inc_dld_segments_count()");
 	}
