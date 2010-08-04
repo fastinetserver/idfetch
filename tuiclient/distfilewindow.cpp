@@ -36,7 +36,7 @@ void Tdistfile_window::make_frame(){
 }
 
 void Tdistfile_window::compose(){
-//	max_received_screenline_num=
+	max_received_screenline_num=tuidistfiles.size();
 //	color_distfiles_window(window);
 	make_frame();
 //	box(window, ACS_VLINE, ACS_HLINE);
