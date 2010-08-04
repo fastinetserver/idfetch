@@ -28,7 +28,7 @@
 #define __TUIDISTFILE_H__
 #include <string>
 #include <vector>
-
+#include "shorttypes.h"
 using namespace std;
 
 enum Tdistfile_status{
@@ -67,7 +67,7 @@ class Ttuidistfile{
 		string statusToString();
 };
 
-vector <Ttuidistfile> tuidistfiles;
+extern vector <Ttuidistfile> tuidistfiles;
 //vector <string> tuidistfiles;
 //string tuidistfiles;
 

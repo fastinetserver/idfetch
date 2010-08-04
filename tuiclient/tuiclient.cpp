@@ -24,8 +24,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "tuiclient.h"
 #include <iostream>
+#include "tuiclient.h"
+#include "str.h"
+
 
 Twindow * next_window(){
 	cur_window_num++;

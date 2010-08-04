@@ -35,7 +35,6 @@ long atol(string num_str){
 	return atol(num_str.c_str());
 }
 
-
 Tparts split(string splitter, string str){
 	Tparts result;
 	int splitter_pos=str.find(splitter);
@@ -55,8 +54,35 @@ vector <string> split_to_vector(string splitter, string str){
 	parts.push_back(str);
 	return parts;
 }
-
+/*
 template<typename T> string toString(T t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+*/
+
+string toString(uint t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(int t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(ulong t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(long t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
+string toString(bool t){
 	stringstream s;
 	s << t;
 	return s.str();

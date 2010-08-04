@@ -38,8 +38,11 @@ all: clean $(BINS)
 #                                                                                 
 %.o: %.cxx
 	$(CXX) -c -o $@ $(CXXFLAGS) $^
-%: %.o
-	$(CXX) -o $@ $(LIBS) $(CIBS) $^
+#%: %.o
+#	$(CXX) -o $@ $(LIBS) $(CIBS) $^
+
+tuiclient: tuiclient.o config.o colors.o distfilewindow.o helpwindow.o log.o mainwindow.o tuidistfile.o twindow.o scrollwindow.o settings.o str.o
+	$(CXX) -o $@ -lncurses -lpthread $(LIBS) $(CIBS) $^
 
 make clean_log:
 	-rm -f ./logs/*.log

@@ -24,30 +24,10 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef _TYPES_H_
+#define _TYPES_H_
 
-#include <string>
-#include <map>
-#include <fstream>
-#include "str.h"
-//#include "log.h"
-using namespace std;
-
-class Tconfig {
-	private:
-		map<string,string> content_;
-		string config_file_name;
-	public:
-		Tconfig(string const& file_name):
-			content_(),
-			config_file_name("")
-			{config_file_name=file_name;load_settings_from_config_file();};
-		void load_settings_from_config_file();
-		int set(string const& section, string const& entry, string &dst) const;
-		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
-		int set(string const& section, string const& entry, bool &dst) const;
-		void clear();
-};
+typedef unsigned long ulong;
+typedef unsigned int uint;
 
 #endif

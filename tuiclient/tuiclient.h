@@ -36,17 +36,17 @@
 #include <string.h>
 #include <ncurses.h>
 #include <pthread.h>
-#include "str.cpp"
-#include "twindow.cpp"
-#include "mainwindow.cpp"
-#include "helpwindow.cpp"
-#include "scrollwindow.cpp"
-#include "colors.cpp"
-#include "config.cpp"
-#include "log.cpp"
-#include "settings.cpp"
-#include "tuidistfile.cpp"
-#include "distfilewindow.cpp"
+#include "str.h"
+#include "twindow.h"
+#include "mainwindow.h"
+#include "helpwindow.h"
+#include "scrollwindow.h"
+#include "colors.h"
+#include "config.h"
+#include "log.h"
+#include "settings.h"
+#include "tuidistfile.h"
+#include "distfilewindow.h"
 
 #define BUFFER_SIZE 2000
 

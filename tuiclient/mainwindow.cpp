@@ -25,6 +25,8 @@
 */
 
 #include "mainwindow.h"
+#include "log.h"
+#include "str.h"
 
 string get_time(string time_format){
 	try{

@@ -25,6 +25,7 @@
 */
 
 #include "scrollwindow.h"
+#include "str.h"
 
 //Tscroll_window::~Tscroll_window(){};
 

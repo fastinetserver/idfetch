@@ -42,7 +42,16 @@ class Tparts{
 		{};
 };
 
-template<typename T> string toString(T t);
+
+int atoi(string num_str);
+long atol(string num_str);
+
+//template<typename T> string toString(T t);
+string toString(uint t);
+string toString(int t);
+string toString(ulong t);
+string toString(long t);
+string toString(bool t);
 
 Tparts split(string splitter, string str);
 vector <string> split_to_vector(string splitter, string str);

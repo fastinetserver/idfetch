@@ -25,7 +25,9 @@
 */
 
 #include "tuidistfile.h"
+#include "log.h"
 
+vector <Ttuidistfile> tuidistfiles;
 
 string Ttuidistfile::statusToString(){
 	try{

@@ -33,8 +33,7 @@ using namespace std;
 class Thelp_window: public Twindow{
 	public:
 //		Thelp_window(int height_, int width_, int y_, int x_);
-//		Thelp_window();
-		~Thelp_window(){};
+//		Thelp_window(){};
 		void compose();
 };
 

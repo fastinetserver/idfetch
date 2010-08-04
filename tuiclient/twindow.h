@@ -28,6 +28,7 @@
 #define _TWINDOW_H_
 
 #include <ncurses.h>
+#include <string>
 #include <sys/types.h>
 #include "colors.h"
 //#include "tuiclient.h"

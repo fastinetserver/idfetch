@@ -27,10 +27,11 @@
 #ifndef _SCROLLWINDOW_H_
 #define _SCROLLWINDOW_H_
 
-const uint SCROLL_LINES_MAX_NUM=200;
-
-#include "twindow.h"
 #include <vector>
+#include "twindow.h"
+#include "shorttypes.h"
+
+const uint SCROLL_LINES_MAX_NUM=200;
 
 using namespace std;
 class Tscroll_window: public Twindow{

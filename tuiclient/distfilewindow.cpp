@@ -25,6 +25,7 @@
 */
 
 #include "distfilewindow.h"
+#include "str.h"
 
 void Tdistfile_window::make_frame(){
 	wclear(window);

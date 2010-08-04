@@ -25,7 +25,7 @@
 */
 
 #include "twindow.h"
-
+#include "str.h"
 string sms;
 
 void Twindow::init(string caption_, int height_, int width_, int y_, int x_){
@@ -108,7 +108,6 @@ void Twindow::make_frame(){
 	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
 //	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(max_received_screenline_num)+"]");
 //	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(screen_lines.size())+"]");
-	msg_short(height-1,width-27,"[Up/Dn/PgUp/PgDn - scroll]");
 }
 
 void Twindow::refresh(){
