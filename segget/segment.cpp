@@ -131,8 +131,12 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 			}
 			curl_easy_setopt(easyhandle, CURLOPT_LOW_SPEED_TIME, network_array[network_num].low_connection_speed_time);
 
-			if ((network_array[network_num].max_connection_speed!=0) and (network_array[network_num].max_connection_speed!=(ulong)-1)){
+			if (connection_array[connection_num].max_speed_limit!=0){
 				curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, network_array[network_num].max_connection_speed);
+			}else{
+				if ((network_array[network_num].max_connection_speed!=0) and (network_array[network_num].max_connection_speed!=(ulong)-1)){
+					curl_easy_setopt(easyhandle, CURLOPT_MAX_RECV_SPEED_LARGE, network_array[network_num].max_connection_speed);
+				}
 			}
 			curl_easy_setopt(easyhandle, CURLOPT_USERAGENT, network_array[network_num].user_agent.c_str());
 

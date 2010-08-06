@@ -59,6 +59,53 @@ using namespace std;
 #define ALLOW_LOWER_PRIORITY_NETWORKS					205
 */
 
+string Tdistfile::statusToString(){
+	try{
+		switch(status){
+			case DNEW: return "Added";
+			case D_NOT_PROXY_REQUESTED: return "Not proxy requested";
+			case DPROXY_REJECTED: return "Proxy rejected";
+			case DPROXY_QUEUED: return "Proxy queued";
+			case DPROXY_DOWNLOADING: return "Downloading via proxy";
+			case DPROXY_DOWNLOADED: return "Downloaded via proxy";
+			case DPROXY_FAILED: return "Failed";
+			case DALL_LM_AND_PF_MIRRORS_FAILED: return "All mirrors failed";
+			case DWAITING: return "Waiting";
+			case DSCRIPTREJECTED: return "Rejected by script";
+			case DDOWNLOADING: return "Downloading";
+			case DDOWNLOADED: return "Downloaded";
+			case DFAILED: return "Failed";
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: statusToString()");
+	}
+	return "UNKNOWN status";
+}
+
+string Tdistfile::statusToColor(){
+	try{
+		switch(status){
+			case DNEW: return "#FFFFFF";
+			case D_NOT_PROXY_REQUESTED: return "#FFFFFF";
+			case DPROXY_REJECTED: return "#FFAAAA";
+			case DPROXY_QUEUED: return "#AAAAFF";
+			case DPROXY_DOWNLOADING: return "#AAAAFF";
+			case DPROXY_DOWNLOADED: return "#AAAAFF";
+			case DPROXY_FAILED: return "#FFAAAA";
+			case DALL_LM_AND_PF_MIRRORS_FAILED: return "#FFAAAA";
+			case DWAITING: return "#AAAAFF";
+			case DSCRIPTREJECTED: return "#FFFFAA";
+			case DDOWNLOADING: return "#77DDFF";
+			case DDOWNLOADED: return "#AAFFAA";
+			case DFAILED: return "#FF8888";
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: statusToString()");
+	}
+	return "#FFFFFF";
+}
+
+
 void Tdistfile::set_status(Tdistfile_status new_status){
 	try{
 		status=new_status;
@@ -368,7 +415,7 @@ bool Tdistfile::choose_best_mirror(CURLM* cm, uint connection_num, uint network_
 			}
 		}
 		else{
-			error_log("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
+			debug("Can't choose mirror for segment:"+dn_segments[seg_num].file_name);
 			return 1;
 		}
 	}catch(...){
@@ -418,10 +465,10 @@ bool Tdistfile::choose_best_local_mirror(CURLM* cm, uint connection_num, uint ne
 		}
 		else{
 			debug("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
-			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
+//			error_log("Can't choose LOCAL mirror for segment:"+dn_segments[seg_num].file_name);
 			if (all_mirrors_failed){
 				debug("All local mirrors failed in network#"+toString(network_num));
-				error_log("All local mirrors failed in network#"+toString(network_num));
+//				error_log("All local mirrors failed in network#"+toString(network_num));
 			}
 			return 1;
 		}

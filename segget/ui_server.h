@@ -53,7 +53,7 @@ class Tui_server{
 		bool send_to_fd_busy;
 		uint server_sockfd;
 		uint max_fd_num;
-		fd_set readfds, testfds;
+		fd_set readfds, tuiclient_fds_set, testfds;
 		void init();
 		ulong send_to_fd(uint fd, string msg);
 		void send_connection_msg_to_fd(uint fd, uint y, string msg);
@@ -62,6 +62,13 @@ class Tui_server{
 		void send_error_log_msg_to_all_clients(string msg);
 		void send_distfile_progress_msg_to_fd(uint fd, string msg);
 		void send_distfile_progress_msg_to_all_clients(string msg);
+		void serve_tuiclient(uint fd, string msg);
+		ulong send_binary_to_fd(uint fd, string image_file_name);
+		string get_header(string title);
+		string get_footer();
+		string serve_browser_distfile_progress(Tdistfile * a_distfile);
+		string get_connections_info();
+		void serve_browser(uint fd, string msg);
 };
 
 extern Tui_server ui_server;

@@ -29,7 +29,7 @@ extern Tsettings settings;
 
 const uint CONNECTION_LINES=3;
 string screenlines[DEBUG_LINE_NUM+1];
-vector<string> log_lines;
+//vector<string> log_lines;
 uint log_lines_counter=0;
 uint max_published_screenline_num;
 
@@ -78,13 +78,10 @@ void msg_clean_connection(uint connection_num){
 		error_log_no_msg("Error in tui.cpp: msg_clean_connection()");
 	}
 }
+
 void msg_log(string log_text){
 	try{
 		ui_server.send_log_msg_to_all_clients(log_text);
-		log_lines.push_back(log_text);
-		if (log_lines.size()>LOG_LINES_MAX_NUM){
-			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
-		}
 //		msg(20,0, error_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_error()");
@@ -93,15 +90,12 @@ void msg_log(string log_text){
 void msg_error_log(string error_log_text){
 	try{
 		ui_server.send_error_log_msg_to_all_clients(error_log_text);
-		log_lines.push_back(error_log_text);
-		if (log_lines.size()>LOG_LINES_MAX_NUM){
-			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
-		}
 //		msg(20,0, error_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_error()");
 	}
 }
+
 void msg_total(string msg_text){
 	try{
 		msg(TOTAL_LINE_NUM,0,msg_text);

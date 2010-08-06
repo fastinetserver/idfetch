@@ -28,8 +28,11 @@
 #define __LOG_H__
 #include "settings.h"
 #include "utils.h"
+#define LOG_LINES_MAX_NUM 200
 
 using namespace std;
+extern vector<string> log_lines;
+extern vector<string> error_log_lines;
 
 void log_no_msg(string log_msg_text);
 void log(string log_msg_text);

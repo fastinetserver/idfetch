@@ -40,7 +40,7 @@ const uint TOTAL_LINE_NUM=MAX_LINES;
 const uint ERROR_LINE_NUM=MAX_LINES+1;
 const uint LOG_LINE_NUM=MAX_LINES+2;
 const uint DEBUG_LINE_NUM=MAX_LINES+3;
-const uint LOG_LINES_MAX_NUM=200;
+//const uint LOG_LINES_MAX_NUM=200;
 
 extern string screenlines[DEBUG_LINE_NUM+1];
 extern uint max_published_screenline_num;

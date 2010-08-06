@@ -83,11 +83,8 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 
 		segment->parent_distfile->active_connections_num++;
 		active=true;
-		debug("aaaaa");
 		Pcurr_mirror->start();
-		debug("bbbbb");
 		network_array[network_num].connect();
-		debug("ccccc");
 
 		stats.active_connections_counter++;
 		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, url);
@@ -265,4 +262,76 @@ void Tconnection::show_connection_progress(ulong time_diff){
 	}catch(...){
 		error_log("Error in connection.cpp: show_connection_progress()");
 	}
+}
+
+string Tconnection::get_html_connection_progress(){
+	try{
+		ulong time_diff=time_left_from(stats.previous_time);
+//		stats.total_bytes_per_last_interval+=bytes_per_last_interval;
+		ulong speed=(bytes_per_last_interval*1000)/time_diff;
+		ulong avg_speed=(total_dld_bytes*1000)/time_left_from(start_time);
+		string eta_string;
+		if (avg_speed==0){
+			eta_string="inf";
+		}else{
+			eta_string=secsToString((segment->segment_size-segment->downloaded_bytes)/avg_speed);
+		}
+		string speed_str;
+		string avg_speed_str;
+		speed_str=speedToString(speed);
+		avg_speed_str=speedToString(avg_speed);
+		int segment_percent;
+		if (segment->segment_size>0){
+			segment_percent=segment->downloaded_bytes*100/segment->segment_size;
+		}else{
+			segment_percent=100;
+		}
+		int distfile_percent;
+		if (segment->parent_distfile->size>0){
+			distfile_percent=segment->parent_distfile->dld_bytes*100/segment->parent_distfile->size;
+		}else{
+			distfile_percent=100;
+		}
+		
+		int unfinished_segments_distfile_percent;
+		//TO-DO: it's necessary to check all connections and add dld bytes to be correct !!!
+		if (segment->parent_distfile->size>0){
+			unfinished_segments_distfile_percent=segment->downloaded_bytes*100/segment->parent_distfile->size;
+		}else{
+			unfinished_segments_distfile_percent=0;
+		}
+		string network_type_str;
+		switch (network_array[network_num].network_mode){
+			case MODE_REMOTE: network_type_str="Remote"; break;
+			case MODE_PROXY_FETCHER: network_type_str="Proxy-Fetcher"; break;
+			case MODE_LOCAL: network_type_str="Local"; break;
+			case MODE_CORAL_CDN: network_type_str="CDN"; break;
+		}
+		string progress_text=
+			(string)"<td>"
+				+"<img src=\"/img/blue_progress.jpg\" alt=\"blue_progress\" height=20 width="+toString(distfile_percent)+"/>"
+				+"<img src=\"/img/green_progress.jpg\" alt=\"green_progress\" height=20 width="+toString(unfinished_segments_distfile_percent)+"/>"
+				+"<img src=\"/img/bw_progress.jpg\" alt=\"bw_progress\" height=20 width="+toString(100-distfile_percent-unfinished_segments_distfile_percent)+" />"
+//			+"&nbsp;"+toString(distfile_percent+unfinished_segments_distfile_percent)+"%"
+			+"&nbsp;"+toString(distfile_percent)+"%"
+			+"</td><td>"+segment->parent_distfile->name
+			+"</td><td>"
+				+"<img src=\"/img/green_progress.jpg\" alt=\"green_progress\" height=20 width="+toString(segment_percent)+"/>"
+				+"<img src=\"/img/bw_progress.jpg\" alt=\"bw_progress\" height=20 width="+toString(100-segment_percent)+" />"
+				+"&nbsp;"+toString(segment_percent)+"%"
+			+"</td><td align=right>"+toString(segment->segment_num)
+			+"</td><td align=right>"+toString(segment->try_num)
+			+"</td><td align=right>"+toString(network_num)
+			+"</td><td align=center>"+network_type_str
+			+"</td><td align=right>"+toString(segment->downloaded_bytes)
+			+"</td><td align=right>"+toString(segment->segment_size)
+			+"</td><td align=right>"+speed_str
+			+"</td><td align=right>"+avg_speed_str
+			+"</td><td align=right>"+eta_string
+			+"</td>";
+		return progress_text;
+	}catch(...){
+		error_log("Error in connection.cpp: show_connection_progress()");
+	}
+	return "";
 }

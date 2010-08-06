@@ -26,6 +26,9 @@
 
 #include "log.h"
 
+vector<string> log_lines;
+vector<string> error_log_lines;
+
 string get_time(string time_format){
 	try{
 		time_format=time_format+" ";
@@ -70,6 +73,10 @@ void log_no_msg(string log_msg_text){
 void log(string log_msg_text){
 	log_no_msg(log_msg_text);
 	try{
+		log_lines.push_back(log_msg_text);
+		if (log_lines.size()>LOG_LINES_MAX_NUM){
+			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
+		}
 		msg_log(get_time(settings.general_log_time_format)+log_msg_text);
 	}catch(...){
 		error_log("Error in log.cpp: log()");
@@ -127,6 +134,10 @@ void error_log_no_msg(string error_msg_text){
 void error_log(string error_msg_text){
 	error_log_no_msg(error_msg_text);
 	try{
+		error_log_lines.push_back(error_msg_text);
+		if (error_log_lines.size()>LOG_LINES_MAX_NUM){
+			error_log_lines.erase(error_log_lines.begin(),error_log_lines.begin()+error_log_lines.size()-LOG_LINES_MAX_NUM);
+		}
 		msg_error_log(get_time(settings.error_log_time_format)+error_msg_text);
 	}catch(...){
 		error_log_no_msg("Error in log.cpp: error_log()");

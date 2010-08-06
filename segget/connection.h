@@ -72,6 +72,7 @@ class Tconnection{
 		void stop(CURLcode connection_result);
 		void inc_bytes_per_last_interval(ulong new_bytes_count);
 		void show_connection_progress(ulong time_diff);
+		string get_html_connection_progress();
 };
 
 extern long script_waiting_connection_num;

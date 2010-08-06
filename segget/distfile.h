@@ -148,6 +148,8 @@ class Tdistfile{
 		Tdistfile(const Tdistfile &L);             // copy constructor
 		Tdistfile & operator=(const Tdistfile &L);
 		~Tdistfile();
+		string statusToString();
+		string statusToColor();
 		int request(ulong network_num, string msg);
 		void init();
 		void set_status(Tdistfile_status new_status);
