@@ -248,16 +248,19 @@ void Tui_server::serve_tuiclient(uint fd, string msg){
 
 string Tui_server::serve_browser_distfile_progress(Tdistfile * a_distfile){
 	try{
-		uint percent;
+		uint distfile_percent;
 		if (a_distfile->size>0){
-			percent=a_distfile->dld_bytes*100/a_distfile->size;
+			distfile_percent=a_distfile->dld_bytes*100/a_distfile->size;
 		}else{
-			percent=50;
+			distfile_percent=50;
 		}
-		string result=(string)"<td>"
-				+"<img src=\"/img/blue_progress.jpg\" alt=\"blue_progress\" height=20 width="+toString(percent)+"/>"
-				+"<img src=\"/img/bw_progress.jpg\" alt=\"bw_progress\" height=20 width="+toString(100-percent)+" />"
-				+"</td><td align=center>"+toString(percent)+"%"
+		string result=(string)"<td align=center><table width=100 border=0 cellpadding=0 frame=void><tr>"
+				+((distfile_percent>0)?"<td><img src=\"/img/blue_progress.jpg\" height=20 width="+toString(distfile_percent)+"/></td>"
+					:"")
+				+((100-distfile_percent>0)?"<td><img src=\"/img/bw_progress.jpg\" height=20 width="+toString(100-distfile_percent)+" /></td>"
+					:"")
+				+"</tr></table>"
+				+toString(distfile_percent)+"%"
 				+"</td><td>"+a_distfile->name
 				+"</td><td align=center bgcolor=\""+a_distfile->statusToColor()+"\">"+a_distfile->statusToString()
 				+"</td><td align=right>"+toString(a_distfile->dld_segments_count)
@@ -320,8 +323,8 @@ string Tui_server::get_connections_info(){
 				+"<th>Type</th>"
 				+"<th>Downloaded</th>"
 				+"<th>Total</th>"
-				+"<th>Current</th>"
-				+"<th>Average</th>"
+				+"<th width=100>Current</th>"
+				+"<th width=100>Average</th>"
 			+"</tr>";
 		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
 //			debug("connection_num:"+toString(connection_num));
@@ -357,7 +360,7 @@ string Tui_server::get_rss_info(){
 					"<item>"
 						+"<title>"+rss_distfile_lines[rss_line_num]+"</title>"
 						+"<link><![CDATA["+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"]]></link> "
-//						+"<starter>"+"settings.rss_starter"+"</starter>"
+						+"<starter>"+"settings.rss_starter"+"</starter>"
 						+"<author>seggetd</author>"
 						+"<description><![CDATA[Downloaded distfile "+rss_distfile_lines[rss_line_num]
 						+" (size: "+toString(rss_size_lines[rss_line_num])+" B)]]></description>"
@@ -458,7 +461,6 @@ void Tui_server::serve_browser(uint fd, string msg){
 				debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
 				ui_server.send_to_fd(fd,(string)"<tr>"
 				+"</th><th rowspan=2>Progress"
-				+"</th><th rowspan=2>Percent"
 				+"</th><th rowspan=2>Name"
 				+"</th><th rowspan=2>Status"
 				+"</th><th colspan=2>Segments"
