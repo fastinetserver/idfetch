@@ -803,6 +803,7 @@ void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
 			char current_path[FILENAME_MAX];
 			if (!GetCurrentDir(current_path, sizeof(current_path)))
 			{
+				error_log("Error in distfile.cpp: symlink_distile_to_provide_mirror_dir(): can't get current dir");
 				return;
 			}
 			if (settings.distfiles_dir.find("./",0)==0){
@@ -815,6 +816,7 @@ void Tdistfile::symlink_distfile_to_provide_mirror_dir(){
 			try{
 				if (!symlink(old_distfile_name.c_str(), new_mirror_name.c_str())){
 					log("Distfile:"+old_distfile_path+" was symlinked to the mirror dir:");
+					rss_log(name,size);
 				};
 			}catch(uint errno){
 				switch (errno){

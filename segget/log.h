@@ -31,13 +31,18 @@
 #define LOG_LINES_MAX_NUM 200
 
 using namespace std;
+extern vector<string> rss_distfile_lines;
+extern vector<ulong> rss_size_lines;
+extern vector<string> rss_time_lines;
 extern vector<string> log_lines;
 extern vector<string> error_log_lines;
 
+void rss_log(string distfile_name, ulong distfile_size);
 void log_no_msg(string log_msg_text);
 void log(string log_msg_text);
 void debug_no_msg(string debug_msg_text);
 void debug(string debug_msg_text);
 void error_log_no_msg(string error_msg_text);
 void error_log(string error_msg_text);
+string get_time(string time_format);
 #endif

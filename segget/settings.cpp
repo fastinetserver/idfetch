@@ -127,6 +127,14 @@ void Tsettings::init(){
 		conf.set("ui_server","ui_ip",ui_ip);
 		conf.set("ui_server","ui_port",ui_port,1,65535);
 
+		conf.set("provide_mirror_to_others","provide_mirror_to_others_url",provide_mirror_to_others_url);
+		if (provide_mirror_to_others_url=="ui_ip"){
+			provide_mirror_to_others_url="http://"+ui_ip;
+		}
+
+		conf.set("rss","rss_title",rss_title);
+		conf.set("rss","rss_description",rss_description);
+
 		conf.set("request_server","request_ip",request_ip);
 		conf.set("request_server","request_port",request_port,1,65535);
 

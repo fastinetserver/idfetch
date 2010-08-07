@@ -332,10 +332,94 @@ string Tui_server::get_connections_info(){
 		result=result+"</table></center>";
 		return result;
 	}catch(...){
-		error_log("Error: ui_server.cpp: serve_browser_distfile_progress()");
+		error_log("Error: ui_server.cpp: get_connections_info()");
 		return "";
 	}
 }
+
+string Tui_server::get_rss_info(){
+	try{
+			string rss_result=
+				(string)"<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"> "
+				"<channel>"
+					+"<title>"+settings.rss_title+"</title>"
+					+"<description>"+settings.rss_description+"</description>"
+					+"<link>"+settings.provide_mirror_to_others_url+"</link>"
+					+"<pubDate>"+get_time(settings.general_log_time_format)+"</pubDate>"
+					+"<ttl>5</ttl>"
+					+"<image>"
+						+"<title>"+"settings.rss_title"+"</title>"
+						+"<url>/img/segget_feed.jpg</url>"
+						+"<link>http://simsim/forum/index.php</link>"
+					+"</image>";
+			for (uint rss_line_num=0; rss_line_num<rss_distfile_lines.size(); rss_line_num++){
+				rss_result=rss_result+
+					"<item>"
+						+"<title>"+rss_distfile_lines[rss_line_num]+"</title>"
+						+"<link><![CDATA["+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"]]></link> "
+//						+"<starter>"+"settings.rss_starter"+"</starter>"
+						+"<author>seggetd</author>"
+						+"<description><![CDATA[Downloaded distfile "+rss_distfile_lines[rss_line_num]
+						+" (size: "+toString(rss_size_lines[rss_line_num])+" B)]]></description>"
+						+"<pubDate>"+rss_time_lines[rss_line_num]+"</pubDate>"
+						+"<guid isPermaLink=\"false\">"+toString(rss_line_num)+"</guid>"
+					+"</item>";
+			}
+			rss_result=rss_result+"</channel></rss>";
+		return rss_result;
+	}catch(...){
+		error_log("Error: ui_server.cpp: get_rss_info()");
+		return "";
+	}
+}
+
+/*
+string Tui_server::get_rss_info(){
+	try{
+			string rss_result=
+				(string)"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+					+"<feed xmlns=\"http://www.w3.org/2005/Atom\">"
+					+"<title>"+settings.rss_title+"</title>"
+					+"<subtitle>"+settings.rss_description+"</subtitle>"
+					+"<link rel=\"alternate\" type=\"text/html\" href=\""+settings.provide_mirror_to_others_url+"\" />"
+					+"<link rel=\"self\" type=\"application/atom+xml\" href=\"/rss.xml\" />"
+					+"<id>/rss.xml</id>"
+					+"<author><name>seggetd</name></author>"
+					+"<icon>/img/segget_feed.jpg</icon>"
+					+"<logo>segget_feed.jpg</logo>"
+					+"<updated>2010-08-06T21:43:52Z</updated>"
+//					+"<updated>"+get_time(settings.general_log_time_format)+"</updated>"
+					+"<generator version=\"1.0\">seggetd</generator>";
+			for (uint rss_line_num=0; rss_line_num<rss_distfile_lines.size(); rss_line_num++){
+				rss_result=rss_result+
+					"<entry>"
+						+"<title type=\"html\">"+rss_distfile_lines[rss_line_num]+"</title>"
+						+"<updated>2010-08-06T21:43:52Z</updated>"
+//						+"<updated>"+rss_time_lines[rss_line_num]+"</updated>"
+						+"<author><name>seggetd</name>"
+//						<email>fastinetserver@gmail.com</email>
+						+"</author>"
+//						<contributor>
+//						<name>Kostyantyn Ovechko</name>
+//						<email>fastinetserver@gmail.com</email>
+//						</contributor>
+//						+"<published>"+rss_time_lines[rss_line_num]+"</published>"
+						+"<published>2010-08-06T21:43:52Z</published>"
+						+"<link rel=\"alternate\" type=\"text/html\" href=\""+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"\" />"
+						+"<id>"+toString(rss_line_num)+"</id>"
+						+"<content type=\"xhtml\" xml:base=\""+settings.provide_mirror_to_others_url+"/"+"\">"
+						+"<div xmlns=\"http://www.w3.org/1999/xhtml\">"
+							+"Downloaded distfile "+rss_distfile_lines[rss_line_num]
+						+"</div></content></entry>";
+			}
+			rss_result=rss_result+"</feed>";
+		return rss_result;
+	}catch(...){
+		error_log("Error: ui_server.cpp: get_rss_info()");
+		return "";
+	}
+}
+*/
 void Tui_server::serve_browser(uint fd, string msg){
 	try{
 		debug("Web browser connected");
@@ -350,6 +434,8 @@ void Tui_server::serve_browser(uint fd, string msg){
 			send_to_fd(fd,get_header("Connections"));
 			send_to_fd(fd,get_connections_info());
 			send_to_fd(fd,get_footer());
+		}else if ((uri=="/rss") or (uri=="/rss.rss") or (uri=="/rss.xml")){
+			send_to_fd(fd,get_rss_info());
 		}else if (uri=="/log"){
 			ui_server.send_to_fd(fd,get_header("Log"));
 			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");

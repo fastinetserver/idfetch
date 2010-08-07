@@ -26,6 +26,9 @@
 
 #include "log.h"
 
+vector<string> rss_distfile_lines;
+vector<ulong> rss_size_lines;
+vector<string> rss_time_lines;
 vector<string> log_lines;
 vector<string> error_log_lines;
 
@@ -70,14 +73,32 @@ void log_no_msg(string log_msg_text){
 	}
 }
 
+void rss_log(string distfile_name, ulong distfile_size){
+// save to file here
+//	log_no_msg(log_msg_text);
+	try{
+		rss_distfile_lines.push_back(distfile_name);
+		rss_size_lines.push_back(distfile_size);
+		rss_time_lines.push_back(get_time(settings.general_log_time_format));
+		if (rss_distfile_lines.size()>LOG_LINES_MAX_NUM){
+			rss_distfile_lines.erase(rss_distfile_lines.begin(),rss_distfile_lines.begin()+rss_distfile_lines.size()-LOG_LINES_MAX_NUM);
+			rss_size_lines.erase(rss_size_lines.begin(),rss_size_lines.begin()+rss_size_lines.size()-LOG_LINES_MAX_NUM);
+			rss_time_lines.erase(rss_time_lines.begin(),rss_time_lines.begin()+rss_time_lines.size()-LOG_LINES_MAX_NUM);
+		}
+	}catch(...){
+		error_log("Error in log.cpp: rss_log()");
+	}
+}
+
 void log(string log_msg_text){
 	log_no_msg(log_msg_text);
 	try{
-		log_lines.push_back(log_msg_text);
+		string time_str=get_time(settings.general_log_time_format);
+		log_lines.push_back(time_str+log_msg_text);
 		if (log_lines.size()>LOG_LINES_MAX_NUM){
 			log_lines.erase(log_lines.begin(),log_lines.begin()+log_lines.size()-LOG_LINES_MAX_NUM);
 		}
-		msg_log(get_time(settings.general_log_time_format)+log_msg_text);
+		msg_log(time_str+log_msg_text);
 	}catch(...){
 		error_log("Error in log.cpp: log()");
 	}
@@ -134,11 +155,12 @@ void error_log_no_msg(string error_msg_text){
 void error_log(string error_msg_text){
 	error_log_no_msg(error_msg_text);
 	try{
-		error_log_lines.push_back(error_msg_text);
+		string time_str=get_time(settings.error_log_time_format);
+		error_log_lines.push_back(time_str+error_msg_text);
 		if (error_log_lines.size()>LOG_LINES_MAX_NUM){
 			error_log_lines.erase(error_log_lines.begin(),error_log_lines.begin()+error_log_lines.size()-LOG_LINES_MAX_NUM);
 		}
-		msg_error_log(get_time(settings.error_log_time_format)+error_msg_text);
+		msg_error_log(time_str+error_msg_text);
 	}catch(...){
 		error_log_no_msg("Error in log.cpp: error_log()");
 	}

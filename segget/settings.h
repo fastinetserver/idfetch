@@ -78,6 +78,10 @@ class Tsettings{
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
+	//rss
+		string provide_mirror_to_others_url;
+		string rss_title;
+		string rss_description;
 	//request_server
 		string request_ip;
 		ulong request_port;
@@ -133,6 +137,10 @@ class Tsettings{
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),
+		//rss
+			provide_mirror_to_others_url("http://"+ui_ip),  // init after ui_ip
+			rss_title("Seggetd feed"),
+			rss_description("Files downloaded by seggetd and provided in the local mirror"),
 		//request_server
 			request_ip("127.0.0.1"),
 			request_port(10000),
