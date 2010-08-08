@@ -34,12 +34,13 @@
 using namespace std;
 
 class Tstats{
-	private:
+	public:
 		ulong dld_size;
 		ulong dld_distfiles_count;
 		uint total_size;
-	public:
 		ulong total_bytes_per_last_interval;
+//		time_t prev_time;
+		struct timeval segget_start_time;
 		struct timeval previous_time;
 		double last_time_interval;
 		ulong avg_total_speed;
@@ -48,11 +49,14 @@ class Tstats{
 		ulong segments_count;
 		ulong dld_segments_count;
 		ulong active_connections_counter;
+		ulong fails_counter;
 		Tstats():
 			dld_size(0),
 			dld_distfiles_count(0),
 			total_size(0),
 			total_bytes_per_last_interval(0),
+//			prev_time(),
+			segget_start_time(),
 			previous_time(),
 			last_time_interval(1),
 			avg_total_speed(0),
@@ -60,7 +64,8 @@ class Tstats{
 			distfiles_count(0),
 			segments_count(0),
 			dld_segments_count(0),
-			active_connections_counter(0)
+			active_connections_counter(0),
+			fails_counter(0)
 			{};
 		void inc_dld_size(ulong more_bytes){ dld_size+=more_bytes;};
 		ulong get_dld_size(){return dld_size;};

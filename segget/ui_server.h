@@ -69,6 +69,8 @@ class Tui_server{
 		string serve_browser_distfile_progress(Tdistfile * a_distfile);
 		string get_connections_info();
 		string get_rss_info();
+		string get_stats();
+		string get_mirrors_stats();
 		void serve_browser(uint fd, string msg);
 };
 

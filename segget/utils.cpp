@@ -26,7 +26,7 @@
 
 #include "utils.h"
 
-ulong time_left_from(timeval from_time){
+ulong time_left_since(timeval from_time){
 	try{
 		timeval now_time;
 		gettimeofday(&now_time,NULL);

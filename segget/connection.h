@@ -76,7 +76,6 @@ class Tconnection{
 };
 
 extern long script_waiting_connection_num;
-extern time_t prev_time;
 extern Tconnection connection_array[MAX_CONNECTS];
 void init_connections();
 #endif

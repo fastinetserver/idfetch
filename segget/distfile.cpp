@@ -609,9 +609,9 @@ uint Tdistfile::request_proxy_fetcher_network(uint network_priority){
 							case R_PF_REJECTED:break;
 							default:{
 								//if less then 30 secs left don't bother proxy-fetcher
-								if (2000>time_left_from(network_distfile_brokers_array[network_num].last_request_time)){
+								if (2000>time_left_since(network_distfile_brokers_array[network_num].last_request_time)){
 									debug("====================== Be more patient with proxy-fetcher - network#:"+toString(network_num)
-											+" because time left:"+toString(time_left_from(network_distfile_brokers_array[network_num].last_request_time)));
+											+" because time left:"+toString(time_left_since(network_distfile_brokers_array[network_num].last_request_time)));
 									return R_PF_BE_MORE_PATIENT;
 								}else{
 //						(network_array[best_proxy_fetcher_network_num].active_connections_num>network_array[network_num].active_connections_num)

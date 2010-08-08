@@ -69,7 +69,12 @@ string convert_to_coral_cdn_url(string url_address){
 
 double Tmirror::mirror_on_the_wall(){
 	try{
-		double criterion=honesty*1000000000*dld_time/dld_size;
+		double criterion;
+		if (dld_size>0){
+			criterion=honesty*1000000000*dld_time/dld_size;
+		}else{
+			criterion=honesty*1000000000*dld_time;
+		}
 		honesty=honesty*100/(100+settings.benchmark_oblivion);
 		return criterion;
 	}catch(...){
@@ -88,8 +93,14 @@ void Tmirror::start(){
 	}
 }
 
-void Tmirror::stop(ulong time, uint size){
+void Tmirror::stop(ulong time, ulong size){
 	try{
+		if (size==0){
+			failed_downloads++;
+		}else{
+			successful_downloads++;
+		};
+
 		dld_time+=time/1000;
 		dld_size+=size;
 		honesty=1;

@@ -37,20 +37,24 @@ using namespace std;
 
 class Tmirror{
 	private:
-		uint active_num;
 	public:
+		uint active_num;
 		string url;
 		ulong	dld_time;
 		ulong	dld_size;
+		ulong failed_downloads;
+		ulong successful_downloads;
 		double	honesty;
 		Tmirror():
 			active_num(0),
 			url(""),
 			dld_time(0),
-			dld_size(1),
+			dld_size(0),
+			failed_downloads(0),
+			successful_downloads(0),
 			honesty(1){};
 		void	start();
-		void	stop(ulong time, uint size);
+		void	stop(ulong time, ulong size);
 		double mirror_on_the_wall();
 		uint get_active_num(){return active_num;};
 };

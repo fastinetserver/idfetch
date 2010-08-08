@@ -51,6 +51,11 @@ string toString(bool t){
 	s << t;
 	return s.str();
 }
+string toString(double t){
+	stringstream s;
+	s << t;
+	return s.str();
+}
 /*
 template<typename T> string toString(T t){
 	stringstream s;

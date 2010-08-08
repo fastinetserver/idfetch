@@ -189,8 +189,8 @@ void show_progress(double time_diff){
 			//if connection is not NULL
 			if (connection_array[con_num].active){
 				connection_array[con_num].show_connection_progress(time_diff);
-				if (time_left_from(connection_array[con_num].start_time)>0){
-					stats.avg_total_speed+=(connection_array[con_num].total_dld_bytes*1000)/time_left_from(connection_array[con_num].start_time);
+				if (time_left_since(connection_array[con_num].start_time)>0){
+					stats.avg_total_speed+=(connection_array[con_num].total_dld_bytes*1000)/time_left_since(connection_array[con_num].start_time);
 				}
 			}
 		}

@@ -240,7 +240,7 @@ bool run_user_python_script(uint connection_num){
 		struct timeval user_script_start_time;
 		gettimeofday(&user_script_start_time,NULL);
 		
-		while(1000>time_left_from(user_script_start_time)) {
+		while(1000>time_left_since(user_script_start_time)) {
 			int fd;
 			int nread;
 			testfds = readfds;

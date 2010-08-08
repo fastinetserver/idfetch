@@ -198,7 +198,7 @@ int download_pkgs(){
 		struct timeval prev_connection_activation_cycle_time;
 		while (keep_running_flag) {
 			// Use free connections to download segments connections
-			if (1000>time_left_from(prev_connection_activation_cycle_time)){
+			if (1000>time_left_since(prev_connection_activation_cycle_time)){
 				debug("Not enough time left to start connection activation cycle");
 				sleep(1);
 			}else{
@@ -296,7 +296,7 @@ int download_pkgs(){
 }
 void *refresh_tui_screen(void * ){
 	while (true){
-		ulong time_diff_msecs=time_left_from(stats.previous_time);
+		ulong time_diff_msecs=time_left_since(stats.previous_time);
 		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
 			show_progress(time_diff_msecs);
 		};
@@ -381,7 +381,12 @@ int routine(){
 		signal(SIGABRT,segget_exit);//If program aborts go to assigned function "segget_exit".
 		signal(SIGTERM,segget_exit);//If program terminates go to assigned function "segget_exit".
 		signal(SIGINT,segget_exit);//If program terminates go to assigned function "segget_exit".
-		prev_time=time((time_t *)NULL);
+		try{
+			gettimeofday(&stats.segget_start_time,NULL);
+//			stats.prev_time=time((time_t *)NULL);
+		}catch(...){
+			error_log("Error in stats.cpp: reset_previous_time()");
+		}
 		try{
 			//load settings
 				settings.init();

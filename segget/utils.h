@@ -33,7 +33,7 @@
 
 using namespace std;
 
-ulong time_left_from(timeval from_time);
+ulong time_left_since(timeval from_time);
 string secsToString(ulong secs);
 string speedToString(ulong dld_bytes, ulong time_left);
 string speedToString(ulong speed);

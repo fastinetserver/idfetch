@@ -284,14 +284,20 @@ string Tui_server::get_header(string title){
 			+"<tr align=center>"
 				+"<td><a href=\"connections\"><img src=\"/img/connections.jpg\" alt=\"Segments\" height=50 width=50/></a></td>"
 				+"<td><a href=\"distfiles\"><img src=\"/img/distfiles.png\" alt=\"Distfiles\" height=50 width=50/></a></td>"
+				+"<td><a href=\"stats\"><img src=\"/img/stats.jpg\" alt=\"Stats\" height=50 width=50/></a></td>"
+				+"<td><a href=\"mirrors_stats\"><img src=\"/img/mirrors.jpg\" alt=\"mirrors\" height=50 width=50/></a></td>"
 				+"<td><a href=\"log\"><img src=\"/img/log.png\" alt=\"Log\" height=50 width=50/></a></td>"
 				+"<td><a href=\"errors_log\"><img src=\"/img/errors_log.jpg\" alt=\"Errors log\" height=50 width=50/></a></td>"
+				+"<td><a href=\"rss\"><img src=\"/img/rss.jpg\" alt=\"Log\" height=50 width=50/></a></td>"
 			+"</tr>"
 			+"<tr align=center>"
 				+"<td><a href=\"connections\">Connections</a></td>"
 				+"<td><a href=\"distfiles\">Distfiles</a></td>"
+				+"<td><a href=\"stats\">Stats</a></td>"
+				+"<td><a href=\"mirrors_stats\">Mirrors</a></td>"
 				+"<td><a href=\"log\">Log</a></td>"
 				+"<td><a href=\"errors_log\">Errors log</a></td>"
+				+"<td><a href=\"rss\">RSS</a></td>"
 		+"</tr>"
 		+"</table>"
 		+"<h1>"+title+"</h1>";
@@ -302,15 +308,90 @@ string Tui_server::get_footer(){
 	return "</body></html>";
 }
 
+string Tui_server::get_stats(){
+	ulong total_progress;
+	if (stats.total_size>0){
+		total_progress=(stats.total_size-stats.dld_size)*100/stats.total_size;
+	}else total_progress=0;
+	string stats_str=
+		(string)"<table border=\"1\">"
+			+"<tr><td>Up time</td><td align=right>"+secsToString(time_left_since(stats.segget_start_time)/1000)+"</td></tr>"
+			+"<tr><th colspan=3>Distfiles</td></tr>"
+				+"<tr><td>Downloaded distfiles</td><td align=right>"+toString(stats.dld_distfiles_count)+"</td></tr>"
+				+"<tr><td>Bytes downloaded</td><td align=right>"+toString(stats.dld_size)+"</td></tr>"
+				+"<tr><td>Total progress</td><td align=right>"+toString(total_progress)+"%</td></tr>"
+				+"<tr><td>Distfiles left to download</td><td align=right>"+toString(stats.distfiles_count-stats.dld_distfiles_count)+"</td></tr>"
+				+"<tr><td>Bytes left to download</td><td align=right>"+toString(stats.total_size-stats.dld_size)+"</td></tr>"
+				+"<tr><td>Distfiles total</td><td align=right>"+toString(stats.distfiles_count)+"</td></tr>"
+				+"<tr><td>Bytes total</td><td align=right>"+toString(stats.total_size)+"</td></tr>"
+			+"<tr><th colspan=3>Segments</td></tr>"
+				+"<tr><td>Downloaded segments</td><td align=right>"+toString(stats.dld_segments_count)+"</td></tr>"
+				+"<tr><td>Segmentss left to download</td><td align=right>"+toString(stats.segments_count-stats.dld_segments_count)+"</td></tr>"
+				+"<tr><td>Segments total</td><td align=right>"+toString(stats.segments_count)+"</td></tr>"
+			+"<tr><th colspan=3>Connections</td></tr>"
+				+"<tr><td>Failed connections</td><td align=right>"+toString(stats.fails_counter)+"</td></tr>"
+				+"<tr><td>AVG speed of active connections</td><td align=right>"+speedToString(stats.avg_total_speed)+"</td></tr>"
+//				+"<tr><td>AVG speed since segget start</td><td align=right>"+speedToString(stats.dld_size*1000/time_left_since(stats.segget_start_time))+"</td></tr>"
+//				+"<tr><td>AVG speed since segget start except idle times</td><td align=right>"+speedToString(stats.avg_total_speed)+"</td></tr>"
+		+"</table>";
+	return stats_str;
+}
+
+
+string Tui_server::get_mirrors_stats(){
+	string stats_str=(string)"<table border=\"1\" width=100%>"
+			+"<tr><th>URL</td>"
+				+"<th>Active connections</th>"
+				+"<th>AVG speed per connection**</th>"
+				+"<th>Failed downloads</th>"
+				+"<th>Successful downloads</th>"
+				+"<th>Fail ratio</th>"
+				+"<th>Usage time**, sec</th>"
+				+"<th>Succesfuly downloaded bytes</th>"
+				+"<th>Honesty</th>"
+			+"</tr>";
+	map<string,Tmirror *>::iterator iter; 
+	for( iter = mirror_list.begin(); iter != mirror_list.end(); iter++ ) {
+		ulong avg_speed;
+		if ((iter->second->dld_size!=1) and (iter->second->dld_time>0)){
+			avg_speed=(iter->second->dld_size)/iter->second->dld_time;
+		}else avg_speed=0;
+
+		ulong fail_ratio;
+		if (iter->second->failed_downloads+iter->second->successful_downloads>0){
+			fail_ratio=(iter->second->failed_downloads)*100/(iter->second->failed_downloads+iter->second->successful_downloads);
+		}else fail_ratio=0;
+		stats_str=stats_str
+			+"<tr><td>"+iter->first+"</td>"
+				+"<td align=right>"+toString(iter->second->active_num)+"</td>"
+				+"<td align=right>"+speedToString(avg_speed)+"</td>"
+				+"<td align=right>"+toString(iter->second->failed_downloads)+"</td>"
+				+"<td align=right>"+toString(iter->second->successful_downloads)+"</td>"
+				+"<td align=right>"+toString(fail_ratio)+"%</td>"
+				+"<td align=right>"+toString(iter->second->dld_time)+"</td>"
+				+"<td align=right>"+toString(iter->second->dld_size)+"</td>"
+				+"<td align=right width=15%>"+toString(iter->second->honesty)+"</td>"
+			+"</tr>";
+	}
+	stats_str=stats_str+"</table>";
+
+	stats_str=stats_str+"<br><p>** NOTE: When a mirror has N simultaneous connections "
+		+"\"Usage time\" will be increasing N times faster, therefore \"AVG speed per connection\" will "
+		+"be smaller than average outgoing rate provided by this mirror to your host "
+		+"(which is a summary speed of the simultaneous connections to this mirror)</p>";
+	return stats_str;
+}
+
+
 string Tui_server::get_connections_info(){
 	try{
 		string result=(string)"<center>"
 			+"<h3>Active connections: "+toString(stats.active_connections_counter)+"/"+toString(settings.max_connections)+"</h1>"
 		+"<table border=1 width=100%>"
 			+"<tr>"
-				+"<th rowspan=2>Distfile progress</th>"
+				+"<th rowspan=2 width=110>Distfile progress</th>"
 				+"<th rowspan=2>Distfile name</th>"
-				+"<th rowspan=2>Segment progress</th>"
+				+"<th rowspan=2 width=110>Segment progress</th>"
 				+"<th rowspan=2>Segment #</th>"
 				+"<th rowspan=2>Try</th>"
 				+"<th colspan=2>Network</th>"
@@ -439,6 +520,14 @@ void Tui_server::serve_browser(uint fd, string msg){
 			send_to_fd(fd,get_footer());
 		}else if ((uri=="/rss") or (uri=="/rss.rss") or (uri=="/rss.xml")){
 			send_to_fd(fd,get_rss_info());
+		}else if (uri=="/stats"){
+			ui_server.send_to_fd(fd,get_header("Stats"));
+			ui_server.send_to_fd(fd,get_stats());
+			ui_server.send_to_fd(fd,get_footer());
+		}else if (uri=="/mirrors_stats"){
+			ui_server.send_to_fd(fd,get_header("Mirrors stats"));
+			ui_server.send_to_fd(fd,get_mirrors_stats());
+			ui_server.send_to_fd(fd,get_footer());
 		}else if (uri=="/log"){
 			ui_server.send_to_fd(fd,get_header("Log"));
 			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");
@@ -460,7 +549,7 @@ void Tui_server::serve_browser(uint fd, string msg){
 			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");
 				debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
 				ui_server.send_to_fd(fd,(string)"<tr>"
-				+"</th><th rowspan=2>Progress"
+				+"</th><th rowspan=2 width=110>Progress"
 				+"</th><th rowspan=2>Name"
 				+"</th><th rowspan=2>Status"
 				+"</th><th colspan=2>Segments"

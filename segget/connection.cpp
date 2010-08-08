@@ -30,7 +30,6 @@
 long script_waiting_connection_num=-1;
 uint Tconnection::total_connections=0;
 Tconnection connection_array[MAX_CONNECTS];
-time_t prev_time;
 
 void init_connections(){
 	for (ulong connection_num=0; connection_num<MAX_CONNECTS; connection_num++){
@@ -133,14 +132,14 @@ void Tconnection::stop(CURLcode connection_result){
 		if (connection_result==0){
 			if (! segment->segment_verification_is_ok()){
 				connection_result=CURLE_READ_ERROR;
-				Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
+				Pcurr_mirror->stop(time_left_since(connection_array[connection_num].start_time),0);
 				debug("curl_lies - there is a problem downloading segment");
 				error_log("curl_lies - there is a problem downloading segment");
 			}else{
-				Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),segment->segment_size);
+				Pcurr_mirror->stop(time_left_since(connection_array[connection_num].start_time),segment->segment_size);
 			}
 		}else{
-			Pcurr_mirror->stop(time_left_from(connection_array[connection_num].start_time),0);
+			Pcurr_mirror->stop(time_left_since(connection_array[connection_num].start_time),0);
 		}
 		segment->parent_distfile->active_connections_num--;
 
@@ -161,6 +160,7 @@ void Tconnection::stop(CURLcode connection_result){
 		gettimeofday(&now_time,NULL);
 
 		if (connection_result!=0){
+			stats.fails_counter++;
 			switch (network_array[network_num].network_mode){
 				case MODE_LOCAL:{
 	//				prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
@@ -228,7 +228,7 @@ void Tconnection::show_connection_progress(ulong time_diff){
 	try{
 		stats.total_bytes_per_last_interval+=bytes_per_last_interval;
 		ulong speed=(bytes_per_last_interval*1000)/time_diff;
-		ulong avg_speed=(total_dld_bytes*1000)/time_left_from(start_time);
+		ulong avg_speed=(total_dld_bytes*1000)/time_left_since(start_time);
 		string eta_string;
 		if (avg_speed==0){
 			eta_string=" ETA: inf";
@@ -266,10 +266,10 @@ void Tconnection::show_connection_progress(ulong time_diff){
 
 string Tconnection::get_html_connection_progress(){
 	try{
-		ulong time_diff=time_left_from(stats.previous_time);
+		ulong time_diff=time_left_since(stats.previous_time);
 //		stats.total_bytes_per_last_interval+=bytes_per_last_interval;
 		ulong speed=(bytes_per_last_interval*1000)/time_diff;
-		ulong avg_speed=(total_dld_bytes*1000)/time_left_from(start_time);
+		ulong avg_speed=(total_dld_bytes*1000)/time_left_since(start_time);
 		string eta_string;
 		if (avg_speed==0){
 			eta_string="inf";
@@ -318,7 +318,11 @@ string Tconnection::get_html_connection_progress(){
 			+"</tr></table>"
 //			+"&nbsp;"+toString(distfile_percent+unfinished_segments_distfile_percent)+"%"
 			+"&nbsp;"+toString(distfile_percent)+"%"
-			+"</td><td>"+segment->parent_distfile->name
+			+"</td><td>"
+				+"<table>"
+					+"<tr><td>"+segment->parent_distfile->name+"</td></tr>"
+					+"<tr><td>"+segment->url+"</td></tr>"
+				+"</table>"
 			+"</td><td align=center><table width=100 border=0 cellpadding=0 frame=void><tr>"
 				+((segment_percent>0)?"<td bgcolor=\"#00FF00\"><img src=\"/img/green_progress.jpg\" height=20 width="+toString(segment_percent)+"/></td>"
 					:"")
