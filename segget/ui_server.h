@@ -64,13 +64,17 @@ class Tui_server{
 		void send_distfile_progress_msg_to_all_clients(string msg);
 		void serve_tuiclient(uint fd, string msg);
 		ulong send_binary_to_fd(uint fd, string image_file_name);
-		string get_header(string title);
-		string get_footer();
 		string serve_browser_distfile_progress(Tdistfile * a_distfile);
-		string get_connections_info();
+		string get_html_header(string title);
+		string get_html_footer();
+		string get_html_connections();
+		string get_html_distfiles();
+		string get_html_stats();
+		string get_html_log();
+		string get_html_errors_log();
+		string get_html_mirrors_stats();
+		string get_ajax_for(string content_name);
 		string get_rss_info();
-		string get_stats();
-		string get_mirrors_stats();
 		void serve_browser(uint fd, string msg);
 };
 

@@ -308,37 +308,37 @@ string Tconnection::get_html_connection_progress(){
 			case MODE_CORAL_CDN: network_type_str="CDN"; break;
 		}
 		string progress_text=
-			(string)"<td align=center><table width=100 border=0 cellpadding=0 frame=void><tr>"
-				+((distfile_percent>0)?"<td bgcolor=\"#0000FF\"><img src=\"/img/blue_progress.jpg\" height=20 width="+toString(distfile_percent)+"/></td>"
+			(string)"<td align=\"center\">\n<table width=\"100\" border=\"0\" cellpadding=\"0\" frame=\"void\">\n<tr>\n"
+				+((distfile_percent>0)?"<td bgcolor=\"#0000FF\">\n<img src=\"/img/blue_progress.jpg\" height=\"20\" width=\""+toString(distfile_percent)+"\"/>\n</td>\n"
 					:"")
-				+((unfinished_segments_distfile_percent>0)?"<td bgcolor=\"#00FF00\"><img src=\"/img/green_progress.jpg\" height=20 width="+toString(unfinished_segments_distfile_percent)+"/></td>"
+				+((unfinished_segments_distfile_percent>0)?"<td bgcolor=\"#00FF00\">\n<img src=\"/img/green_progress.jpg\" height=\"20\" width=\""+toString(unfinished_segments_distfile_percent)+"\"/>\n</td>\n"
 					:"")
-				+((100-distfile_percent-unfinished_segments_distfile_percent>0)?"<td bgcolor=\"#555555\"><img src=\"/img/bw_progress.jpg\" height=20 width="+toString(100-distfile_percent-unfinished_segments_distfile_percent)+" /></td>"
+				+((100-distfile_percent-unfinished_segments_distfile_percent>0)?"<td bgcolor=\"#555555\">\n<img src=\"/img/bw_progress.jpg\" height=\"20\" width=\""+toString(100-distfile_percent-unfinished_segments_distfile_percent)+"\" />\n</td>\n"
 					:"")
-			+"</tr></table>"
+			+"</tr>\n</table>\n"
 //			+"&nbsp;"+toString(distfile_percent+unfinished_segments_distfile_percent)+"%"
-			+"&nbsp;"+toString(distfile_percent)+"%"
-			+"</td><td>"
-				+"<table>"
-					+"<tr><td>"+segment->parent_distfile->name+"</td></tr>"
-					+"<tr><td>"+segment->url+"</td></tr>"
-				+"</table>"
-			+"</td><td align=center><table width=100 border=0 cellpadding=0 frame=void><tr>"
-				+((segment_percent>0)?"<td bgcolor=\"#00FF00\"><img src=\"/img/green_progress.jpg\" height=20 width="+toString(segment_percent)+"/></td>"
+			+toString(distfile_percent)+"%"
+			+"</td>\n<td>\n"
+				+"<table>\n"
+					+"<tr>\n<td>"+segment->parent_distfile->name+"</td>\n</tr>\n"
+					+"<tr>\n<td>\n"+segment->url+"</td>\n</tr>\n"
+				+"</table>\n"
+			+"</td><td align=\"center\"><table width=\"100\" border=\"0\" cellpadding=\"0\" frame=\"void\"><tr>"
+				+((segment_percent>0)?"<td bgcolor=\"#00FF00\"><img src=\"/img/green_progress.jpg\" height=\"20\" width=\""+toString(segment_percent)+"\"/></td>"
 					:"")
-				+((100-segment_percent>0)?"<td bgcolor=\"#555555\"><img src=\"/img/bw_progress.jpg\" height=20 width="+toString(100-segment_percent)+" /></td>"
+				+((100-segment_percent>0)?"<td bgcolor=\"#555555\"><img src=\"/img/bw_progress.jpg\" height=\"20\" width=\""+toString(100-segment_percent)+"\" /></td>"
 					:"")
 				+"</tr></table>"
-			+"&nbsp;"+toString(segment_percent)+"%"
-			+"</td><td align=right>"+toString(segment->segment_num)
-			+"</td><td align=right>"+toString(segment->try_num)
-			+"</td><td align=right>"+toString(network_num)
-			+"</td><td align=center>"+network_type_str
-			+"</td><td align=right>"+toString(segment->downloaded_bytes)
-			+"</td><td align=right>"+toString(segment->segment_size)
-			+"</td><td align=right>"+speed_str
-			+"</td><td align=right>"+avg_speed_str
-			+"</td><td align=right>"+eta_string
+			+toString(segment_percent)+"%"
+			+"</td><td align=\"right\">"+toString(segment->segment_num)
+			+"</td><td align=\"right\">"+toString(segment->try_num)
+			+"</td><td align=\"right\">"+toString(network_num)
+			+"</td><td align=\"center\">"+network_type_str
+			+"</td><td align=\"right\">"+toString(segment->downloaded_bytes)
+			+"</td><td align=\"right\">"+toString(segment->segment_size)
+			+"</td><td align=\"right\">"+speed_str
+			+"</td><td align=\"right\">"+avg_speed_str
+			+"</td><td align=\"right\">"+eta_string
 			+"</td>";
 		return progress_text;
 	}catch(...){

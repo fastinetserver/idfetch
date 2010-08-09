@@ -254,19 +254,19 @@ string Tui_server::serve_browser_distfile_progress(Tdistfile * a_distfile){
 		}else{
 			distfile_percent=50;
 		}
-		string result=(string)"<td align=center><table width=100 border=0 cellpadding=0 frame=void><tr>"
-				+((distfile_percent>0)?"<td><img src=\"/img/blue_progress.jpg\" height=20 width="+toString(distfile_percent)+"/></td>"
+		string result=(string)"<td align=\"center\"><table width=\"100\" border=\"0\" cellpadding=\"0\" frame=\"void\"><tr>"
+				+((distfile_percent>0)?"<td><img src=\"/img/blue_progress.jpg\" height=\"20\" width=\""+toString(distfile_percent)+"\"/></td>"
 					:"")
-				+((100-distfile_percent>0)?"<td><img src=\"/img/bw_progress.jpg\" height=20 width="+toString(100-distfile_percent)+" /></td>"
+				+((100-distfile_percent>0)?"<td><img src=\"/img/bw_progress.jpg\" height=\"20\" width=\""+toString(100-distfile_percent)+"\" /></td>"
 					:"")
 				+"</tr></table>"
 				+toString(distfile_percent)+"%"
 				+"</td><td>"+a_distfile->name
-				+"</td><td align=center bgcolor=\""+a_distfile->statusToColor()+"\">"+a_distfile->statusToString()
-				+"</td><td align=right>"+toString(a_distfile->dld_segments_count)
-				+"</td><td align=right>"+toString(a_distfile->segments_count)
-				+"</td><td align=right>"+toString(a_distfile->dld_bytes)
-				+"</td><td align=right>"+toString(a_distfile->size)
+				+"</td><td align=\"center\" bgcolor=\""+a_distfile->statusToColor()+"\">"+a_distfile->statusToString()
+				+"</td><td align=\"right\">"+toString(a_distfile->dld_segments_count)
+				+"</td><td align=\"right\">"+toString(a_distfile->segments_count)
+				+"</td><td align=\"right\">"+toString(a_distfile->dld_bytes)
+				+"</td><td align=\"right\">"+toString(a_distfile->size)
 				+"</td>";
 		return result;
 	}catch(...){
@@ -275,13 +275,15 @@ string Tui_server::serve_browser_distfile_progress(Tdistfile * a_distfile){
 	}
 }
 
-string Tui_server::get_header(string title){
+string Tui_server::get_html_header(string title){
 	string header;
 	header=(string)"HTTP/1.0 200 OK\n\n"
-		+"<html><head><meta http-equiv=\"refresh\" content=\"1\" ><title> Segget - "+title+"</title></head>"
+		+"<html><head>"
+//		+"<meta http-equiv=\"refresh\" content=\"1\" >"
+		+"<title> Segget - "+title+"</title></head>"
 		+"<body>"
-		+"<table border=0>"
-			+"<tr align=center>"
+		+"<table border=\"0\">\n"
+			+"<tr align=\"center\">"
 				+"<td><a href=\"connections\"><img src=\"/img/connections.jpg\" alt=\"Segments\" height=50 width=50/></a></td>"
 				+"<td><a href=\"distfiles\"><img src=\"/img/distfiles.png\" alt=\"Distfiles\" height=50 width=50/></a></td>"
 				+"<td><a href=\"stats\"><img src=\"/img/stats.jpg\" alt=\"Stats\" height=50 width=50/></a></td>"
@@ -289,8 +291,8 @@ string Tui_server::get_header(string title){
 				+"<td><a href=\"log\"><img src=\"/img/log.png\" alt=\"Log\" height=50 width=50/></a></td>"
 				+"<td><a href=\"errors_log\"><img src=\"/img/errors_log.jpg\" alt=\"Errors log\" height=50 width=50/></a></td>"
 				+"<td><a href=\"rss\"><img src=\"/img/rss.jpg\" alt=\"Log\" height=50 width=50/></a></td>"
-			+"</tr>"
-			+"<tr align=center>"
+			+"</tr>\n"
+			+"<tr align=\"center\">"
 				+"<td><a href=\"connections\">Connections</a></td>"
 				+"<td><a href=\"distfiles\">Distfiles</a></td>"
 				+"<td><a href=\"stats\">Stats</a></td>"
@@ -298,58 +300,63 @@ string Tui_server::get_header(string title){
 				+"<td><a href=\"log\">Log</a></td>"
 				+"<td><a href=\"errors_log\">Errors log</a></td>"
 				+"<td><a href=\"rss\">RSS</a></td>"
-		+"</tr>"
-		+"</table>"
-		+"<h1>"+title+"</h1>";
+		+"</tr>\n"
+		+"</table>\n"
+		+"<h1>"+title+"</h1>\n";
 	return header;
 }
 
-string Tui_server::get_footer(){
+string Tui_server::get_html_footer(){
 	return "</body></html>";
 }
 
-string Tui_server::get_stats(){
+string Tui_server::get_html_stats(){
 	ulong total_progress;
 	if (stats.total_size>0){
 		total_progress=(stats.total_size-stats.dld_size)*100/stats.total_size;
 	}else total_progress=0;
 	string stats_str=
-		(string)"<table border=\"1\">"
-			+"<tr><td>Up time</td><td align=right>"+secsToString(time_left_since(stats.segget_start_time)/1000)+"</td></tr>"
-			+"<tr><th colspan=3>Distfiles</td></tr>"
-				+"<tr><td>Downloaded distfiles</td><td align=right>"+toString(stats.dld_distfiles_count)+"</td></tr>"
-				+"<tr><td>Bytes downloaded</td><td align=right>"+toString(stats.dld_size)+"</td></tr>"
-				+"<tr><td>Total progress</td><td align=right>"+toString(total_progress)+"%</td></tr>"
-				+"<tr><td>Distfiles left to download</td><td align=right>"+toString(stats.distfiles_count-stats.dld_distfiles_count)+"</td></tr>"
-				+"<tr><td>Bytes left to download</td><td align=right>"+toString(stats.total_size-stats.dld_size)+"</td></tr>"
-				+"<tr><td>Distfiles total</td><td align=right>"+toString(stats.distfiles_count)+"</td></tr>"
-				+"<tr><td>Bytes total</td><td align=right>"+toString(stats.total_size)+"</td></tr>"
-			+"<tr><th colspan=3>Segments</td></tr>"
-				+"<tr><td>Downloaded segments</td><td align=right>"+toString(stats.dld_segments_count)+"</td></tr>"
-				+"<tr><td>Segmentss left to download</td><td align=right>"+toString(stats.segments_count-stats.dld_segments_count)+"</td></tr>"
-				+"<tr><td>Segments total</td><td align=right>"+toString(stats.segments_count)+"</td></tr>"
-			+"<tr><th colspan=3>Connections</td></tr>"
-				+"<tr><td>Failed connections</td><td align=right>"+toString(stats.fails_counter)+"</td></tr>"
-				+"<tr><td>AVG speed of active connections</td><td align=right>"+speedToString(stats.avg_total_speed)+"</td></tr>"
-//				+"<tr><td>AVG speed since segget start</td><td align=right>"+speedToString(stats.dld_size*1000/time_left_since(stats.segget_start_time))+"</td></tr>"
-//				+"<tr><td>AVG speed since segget start except idle times</td><td align=right>"+speedToString(stats.avg_total_speed)+"</td></tr>"
-		+"</table>";
+		(string)"<table border=\"1\">\n"
+			+"<tr>\n"
+			+"	<td>Up time</td>\n"
+			+"	<td align=\"right\">"+secsToString(time_left_since(stats.segget_start_time)/1000)+"</td>\n"
+			+"</tr>\n"
+			+"<tr>\n"
+			+"	<th colspan=\"2\">Distfiles</th>\n"
+			+"</tr>\n"
+				+"<tr><td>Downloaded distfiles</td><td align=\"right\">"+toString(stats.dld_distfiles_count)+"</td></tr>\n"
+				+"<tr><td>Bytes downloaded</td><td align=\"right\">"+toString(stats.dld_size)+"</td></tr>\n"
+				+"<tr><td>Total progress</td><td align=\"right\">"+toString(total_progress)+"%</td></tr>\n"
+				+"<tr><td>Distfiles left to download</td><td align=\"right\">"+toString(stats.distfiles_count-stats.dld_distfiles_count)+"</td></tr>\n"
+				+"<tr><td>Bytes left to download</td><td align=\"right\">"+toString(stats.total_size-stats.dld_size)+"</td></tr>\n"
+				+"<tr><td>Distfiles total</td><td align=\"right\">"+toString(stats.distfiles_count)+"</td></tr>\n"
+				+"<tr><td>Bytes total</td><td align=\"right\">"+toString(stats.total_size)+"</td></tr>\n"
+			+"<tr><th colspan=\"2\">Segments</th></tr>\n"
+				+"<tr><td>Downloaded segments</td><td align=\"right\">"+toString(stats.dld_segments_count)+"</td></tr>\n"
+				+"<tr><td>Segmentss left to download</td><td align=\"right\">"+toString(stats.segments_count-stats.dld_segments_count)+"</td></tr>\n"
+				+"<tr><td>Segments total</td><td align=\"right\">"+toString(stats.segments_count)+"</td></tr>\n"
+			+"<tr><th colspan=\"2\">Connections</th></tr>\n"
+				+"<tr><td>Failed connections</td><td align=\"right\">"+toString(stats.fails_counter)+"</td></tr>\n"
+				+"<tr><td>AVG speed of active connections</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>\n"
+//				+"<tr><td>AVG speed since segget start</td><td align=\"right\">"+speedToString(stats.dld_size*1000/time_left_since(stats.segget_start_time))+"</td></tr>"
+//				+"<tr><td>AVG speed since segget start except idle times</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>"
+		+"</table>\n";
 	return stats_str;
 }
 
 
-string Tui_server::get_mirrors_stats(){
-	string stats_str=(string)"<table border=\"1\" width=100%>"
-			+"<tr><th>URL</td>"
-				+"<th>Active connections</th>"
-				+"<th>AVG speed per connection**</th>"
-				+"<th>Failed downloads</th>"
-				+"<th>Successful downloads</th>"
-				+"<th>Fail ratio</th>"
-				+"<th>Usage time**, sec</th>"
-				+"<th>Succesfuly downloaded bytes</th>"
-				+"<th>Honesty</th>"
-			+"</tr>";
+string Tui_server::get_html_mirrors_stats(){
+	string stats_str=(string)"<table border=\"1\" width=\"100%\">\n"
+			+"<tr>\n<th>URL</th>\n"
+				+"<th>Active connections</th>\n"
+				+"<th>AVG speed per connection**</th>\n"
+				+"<th>Failed downloads</th>\n"
+				+"<th>Successful downloads</th>\n"
+				+"<th>Fail ratio</th>\n"
+				+"<th>Usage time**, sec</th>\n"
+				+"<th>Succesfuly downloaded bytes</th>\n"
+				+"<th>Honesty</th>\n"
+			+"</tr>\n";
 	map<string,Tmirror *>::iterator iter; 
 	for( iter = mirror_list.begin(); iter != mirror_list.end(); iter++ ) {
 		ulong avg_speed;
@@ -362,18 +369,18 @@ string Tui_server::get_mirrors_stats(){
 			fail_ratio=(iter->second->failed_downloads)*100/(iter->second->failed_downloads+iter->second->successful_downloads);
 		}else fail_ratio=0;
 		stats_str=stats_str
-			+"<tr><td>"+iter->first+"</td>"
-				+"<td align=right>"+toString(iter->second->active_num)+"</td>"
-				+"<td align=right>"+speedToString(avg_speed)+"</td>"
-				+"<td align=right>"+toString(iter->second->failed_downloads)+"</td>"
-				+"<td align=right>"+toString(iter->second->successful_downloads)+"</td>"
-				+"<td align=right>"+toString(fail_ratio)+"%</td>"
-				+"<td align=right>"+toString(iter->second->dld_time)+"</td>"
-				+"<td align=right>"+toString(iter->second->dld_size)+"</td>"
-				+"<td align=right width=15%>"+toString(iter->second->honesty)+"</td>"
-			+"</tr>";
+			+"<tr>\n<td>\n"+iter->first+"</td>\n"
+				+"<td align=\"right\">"+toString(iter->second->active_num)+"</td>\n"
+				+"<td align=\"right\">"+speedToString(avg_speed)+"</td>\n"
+				+"<td align=\"right\">"+toString(iter->second->failed_downloads)+"</td>\n"
+				+"<td align=\"right\">"+toString(iter->second->successful_downloads)+"</td>\n"
+				+"<td align=\"right\">"+toString(fail_ratio)+"%</td>\n"
+				+"<td align=\"right\">"+toString(iter->second->dld_time)+"</td>\n"
+				+"<td align=\"right\">"+toString(iter->second->dld_size)+"</td>\n"
+				+"<td align=\"right\" width=\"15%\">"+toString(iter->second->honesty)+"</td>\n"
+			+"</tr>\n";
 	}
-	stats_str=stats_str+"</table>";
+	stats_str=stats_str+"</table>\n";
 
 	stats_str=stats_str+"<br><p>** NOTE: When a mirror has N simultaneous connections "
 		+"\"Usage time\" will be increasing N times faster, therefore \"AVG speed per connection\" will "
@@ -383,40 +390,101 @@ string Tui_server::get_mirrors_stats(){
 }
 
 
-string Tui_server::get_connections_info(){
+string Tui_server::get_html_connections(){
 	try{
-		string result=(string)"<center>"
-			+"<h3>Active connections: "+toString(stats.active_connections_counter)+"/"+toString(settings.max_connections)+"</h1>"
-		+"<table border=1 width=100%>"
-			+"<tr>"
-				+"<th rowspan=2 width=110>Distfile progress</th>"
-				+"<th rowspan=2>Distfile name</th>"
-				+"<th rowspan=2 width=110>Segment progress</th>"
-				+"<th rowspan=2>Segment #</th>"
-				+"<th rowspan=2>Try</th>"
-				+"<th colspan=2>Network</th>"
-				+"<th colspan=2>Bytes</th>"
-				+"<th colspan=2>Speed</th>"
-				+"<th rowspan=2 width=100>ETA</th>"
-			+"</tr>"
-			+"<tr>"
-				+"<th>Num</th>"
-				+"<th>Type</th>"
-				+"<th>Downloaded</th>"
-				+"<th>Total</th>"
-				+"<th width=100>Current</th>"
-				+"<th width=100>Average</th>"
-			+"</tr>";
+		string result=(string)"<center>\n"
+			+"<h3>Active connections: "+toString(stats.active_connections_counter)+"/"+toString(settings.max_connections)+"</h3>\n"
+		+"<table border=\"1\" width=\"100%\">\n"
+			+"<tr>\n"
+				+"<th rowspan=\"2\" width=\"110\">Distfile progress</th>\n"
+				+"<th rowspan=\"2\">Distfile name</th>\n"
+				+"<th rowspan=\"2\" width=\"110\">Segment progress</th>\n"
+				+"<th rowspan=\"2\">Segment #</th>\n"
+				+"<th rowspan=\"2\">Try</th>\n"
+				+"<th colspan=\"2\">Network</th>\n"
+				+"<th colspan=\"2\">Bytes</th>\n"
+				+"<th colspan=\"2\">Speed</th>\n"
+				+"<th rowspan=\"2\" width=\"100\">ETA</th>\n"
+			+"</tr>\n"
+			+"<tr>\n"
+				+"<th>Num</th>\n"
+				+"<th>Type</th>\n"
+				+"<th>Downloaded</th>\n"
+				+"<th>Total</th>\n"
+				+"<th width=\"100\">Current</th>\n"
+				+"<th width=\"100\">Average</th>\n"
+			+"</tr>\n";
 		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
 //			debug("connection_num:"+toString(connection_num));
 			if (connection_array[connection_num].active){
-				result=result+"<tr>"+connection_array[connection_num].get_html_connection_progress()+"</tr>";
+				result=result+"<tr>"+connection_array[connection_num].get_html_connection_progress()+"</tr>\n";
 			}
 		}
-		result=result+"</table></center>";
+		result=result+"</table>\n</center>\n";
 		return result;
 	}catch(...){
 		error_log("Error: ui_server.cpp: get_connections_info()");
+		return "";
+	}
+}
+string Tui_server::get_html_distfiles(){
+	try{
+		debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
+		string distfiles_html=(string)"<center><table border=\"1\" width=\"100%\">\n"
+				+"<tr>"
+				+"	<th rowspan=\"2\" width=\"110\">Progress"
+				+"	</th><th rowspan=\"2\">Name"
+				+"	</th><th rowspan=\"2\">Status"
+				+"	</th><th colspan=\"2\">Segments"
+				+"	</th><th colspan=\"2\">Bytes"
+				+"	</th>"
+				+"</tr>\n<tr>"
+				+"	<th>Downloaded"
+				+"	</th><th>Total"
+				+"	</th><th>Downloaded"
+				+"	</th><th>Total"
+				+"	</th></tr>\n";
+				for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
+					distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(request_server_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
+					debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+				}
+				for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
+					distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(proxy_fetcher_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
+					debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+				}
+			distfiles_html=distfiles_html+"</table></center>";
+		return distfiles_html;
+	}catch(...){
+		error_log("Error: ui_server.cpp: get_connections_info()");
+		return "";
+	}
+}
+
+string Tui_server::get_html_log(){
+	try{
+		string log_html=(string)"<center><table border=\"1\" width=\"100%\">";
+			for (uint log_line_num=0; log_line_num<log_lines.size(); log_line_num++){
+				log_html=log_html+"<tr><td>"+log_lines[log_line_num]+"</td></tr>";
+			}
+			log_html=log_html+"</table></center>";
+		return log_html;
+	}catch(...){
+		error_log("Error: ui_server.cpp: get_html_log()");
+		return "";
+	}
+}
+
+string Tui_server::get_html_errors_log(){
+	try{
+		debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
+		string error_log_html=(string)"<center><table border=\"1\" width=\"100%\">";
+		for (uint error_log_line_num=0; error_log_line_num<error_log_lines.size(); error_log_line_num++){
+			error_log_html=error_log_html+"<tr><td>"+error_log_lines[error_log_line_num]+"</td></tr>";
+		}
+		error_log_html=error_log_html+"</table></center>";
+		return error_log_html;
+	}catch(...){
+		error_log("Error: ui_server.cpp: get_html_error_log()");
 		return "";
 	}
 }
@@ -456,54 +524,41 @@ string Tui_server::get_rss_info(){
 		return "";
 	}
 }
-
-/*
-string Tui_server::get_rss_info(){
-	try{
-			string rss_result=
-				(string)"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-					+"<feed xmlns=\"http://www.w3.org/2005/Atom\">"
-					+"<title>"+settings.rss_title+"</title>"
-					+"<subtitle>"+settings.rss_description+"</subtitle>"
-					+"<link rel=\"alternate\" type=\"text/html\" href=\""+settings.provide_mirror_to_others_url+"\" />"
-					+"<link rel=\"self\" type=\"application/atom+xml\" href=\"/rss.xml\" />"
-					+"<id>/rss.xml</id>"
-					+"<author><name>seggetd</name></author>"
-					+"<icon>/img/segget_feed.jpg</icon>"
-					+"<logo>segget_feed.jpg</logo>"
-					+"<updated>2010-08-06T21:43:52Z</updated>"
-//					+"<updated>"+get_time(settings.general_log_time_format)+"</updated>"
-					+"<generator version=\"1.0\">seggetd</generator>";
-			for (uint rss_line_num=0; rss_line_num<rss_distfile_lines.size(); rss_line_num++){
-				rss_result=rss_result+
-					"<entry>"
-						+"<title type=\"html\">"+rss_distfile_lines[rss_line_num]+"</title>"
-						+"<updated>2010-08-06T21:43:52Z</updated>"
-//						+"<updated>"+rss_time_lines[rss_line_num]+"</updated>"
-						+"<author><name>seggetd</name>"
-//						<email>fastinetserver@gmail.com</email>
-						+"</author>"
-//						<contributor>
-//						<name>Kostyantyn Ovechko</name>
-//						<email>fastinetserver@gmail.com</email>
-//						</contributor>
-//						+"<published>"+rss_time_lines[rss_line_num]+"</published>"
-						+"<published>2010-08-06T21:43:52Z</published>"
-						+"<link rel=\"alternate\" type=\"text/html\" href=\""+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"\" />"
-						+"<id>"+toString(rss_line_num)+"</id>"
-						+"<content type=\"xhtml\" xml:base=\""+settings.provide_mirror_to_others_url+"/"+"\">"
-						+"<div xmlns=\"http://www.w3.org/1999/xhtml\">"
-							+"Downloaded distfile "+rss_distfile_lines[rss_line_num]
-						+"</div></content></entry>";
-			}
-			rss_result=rss_result+"</feed>";
-		return rss_result;
-	}catch(...){
-		error_log("Error: ui_server.cpp: get_rss_info()");
-		return "";
-	}
+string Tui_server::get_ajax_for(string content_name){
+			string ajax_str=(string)"\n<script  type=\"text/javascript\">\n"
+				+"	var xmlDoc;"
+				+"	function process(){\n"
+				+"		if ( xmlDoc.readyState != 4 ) return;\n"
+				+"		document.getElementById(\""+content_name+"\").innerHTML = xmlDoc.responseText;\n"
+				+"	}\n"
+				+"	function load() {"
+				+"		if (window.XMLHttpRequest) {\n" // Mozilla, Safari, ...
+				+"			xmlDoc = new XMLHttpRequest();\n"
+				+"			xmlDoc.onload = process ;\n"
+				+"		} else if (window.ActiveXObject) {\n" // IE
+				+"			xmlDoc = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"
+				+"			xmlDoc.onreadystatechange = process ;\n"
+				+"		}else{\n"
+				+"			return false;\n"
+				+"		}\n"
+				+"		xmlDoc.abort();\n"
+				+"		xmlDoc.open(\"GET\",\""+content_name+"_"+"\",true);\n"
+				+"		xmlDoc.send(null);\n"
+				+"	}\n"
+				+"	function refresh(){\n"
+				+"		if ( xmlDoc.readyState != 4 ){\n"
+				+"			document.getElementById(\""+content_name+"\").innerHTML=\"<h2 color='#FF0000'>Disconnected</h2>\"\n"
+				+"		};\n"
+				+"		xmlDoc.abort();\n"
+				+"		load();\n"
+				+"		setTimeout(\"refresh()\", 1000);\n"
+				+"	};\n"
+				+"	load();\n"
+				+"	setTimeout(\"refresh()\", 1000);\n"
+				+"</script>\n";
+	return ajax_str;
 }
-*/
+
 void Tui_server::serve_browser(uint fd, string msg){
 	try{
 		debug("Web browser connected");
@@ -515,70 +570,72 @@ void Tui_server::serve_browser(uint fd, string msg){
 			debug("Web browser requests URI:"+uri);
 		}
 		if (uri=="/connections"){
-			send_to_fd(fd,get_header("Connections"));
-			send_to_fd(fd,get_connections_info());
-			send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Connections"));
+			send_to_fd(fd,"<span id=\"connections\">\n");
+			send_to_fd(fd,get_html_connections());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("connections"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/connections_"){
+			send_to_fd(fd,get_html_connections());
 		}else if ((uri=="/rss") or (uri=="/rss.rss") or (uri=="/rss.xml")){
 			send_to_fd(fd,get_rss_info());
 		}else if (uri=="/stats"){
-			ui_server.send_to_fd(fd,get_header("Stats"));
-			ui_server.send_to_fd(fd,get_stats());
-			ui_server.send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Stats"));
+			send_to_fd(fd,"<span id=\"stats\">\n");
+			send_to_fd(fd,get_html_stats());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("stats"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/stats_"){
+			ui_server.send_to_fd(fd,get_html_stats());
 		}else if (uri=="/mirrors_stats"){
-			ui_server.send_to_fd(fd,get_header("Mirrors stats"));
-			ui_server.send_to_fd(fd,get_mirrors_stats());
-			ui_server.send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Mirrors stats"));
+			send_to_fd(fd,"<span id=\"mirrors_stats\">\n");
+			send_to_fd(fd,get_html_mirrors_stats());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("mirrors_stats"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/mirrors_stats_"){
+			send_to_fd(fd,get_html_mirrors_stats());
 		}else if (uri=="/log"){
-			ui_server.send_to_fd(fd,get_header("Log"));
-			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");
-			for (uint log_line_num=0; log_line_num<log_lines.size(); log_line_num++){
-				ui_server.send_to_fd(fd,"<tr><td>"+log_lines[log_line_num]+"</td></tr>");
-			}
-			ui_server.send_to_fd(fd,"</table></center>");
-			ui_server.send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Log"));
+			send_to_fd(fd,"<span id=\"log\">\n");
+			send_to_fd(fd,get_html_log());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("log"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/log_"){
+			send_to_fd(fd,get_html_log());
 		}else if (uri=="/errors_log"){
-			ui_server.send_to_fd(fd,get_header("Errors log"));
-			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");
-			for (uint error_log_line_num=0; error_log_line_num<error_log_lines.size(); error_log_line_num++){
-				ui_server.send_to_fd(fd,"<tr><td>"+error_log_lines[error_log_line_num]+"</td></tr>");
-			}
-			ui_server.send_to_fd(fd,"</table></center>");
-			ui_server.send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Errors log"));
+			send_to_fd(fd,"<span id=\"errors_log\">\n");
+			send_to_fd(fd,get_html_errors_log());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("errors_log"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/errors_log_"){
+			send_to_fd(fd,get_html_errors_log());
 		}else if (uri=="/distfiles"){
-			ui_server.send_to_fd(fd,get_header("Distfiles"));
-			ui_server.send_to_fd(fd,"<center><table border=\"1\" width=\"100%\">");
-				debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
-				ui_server.send_to_fd(fd,(string)"<tr>"
-				+"</th><th rowspan=2 width=110>Progress"
-				+"</th><th rowspan=2>Name"
-				+"</th><th rowspan=2>Status"
-				+"</th><th colspan=2>Segments"
-				+"</th><th colspan=2>Bytes"
-				+"</th></tr>");
-				ui_server.send_to_fd(fd,(string)"<tr>"
-				+"</th><th>Downloaded"
-				+"</th><th>Total"
-				+"</th><th>Downloaded"
-				+"</th><th>Total"
-				+"</th></tr>");
-				for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
-					ui_server.send_to_fd(fd,"<tr>"+serve_browser_distfile_progress(request_server_pkg.Pdistfile_list[distfile_num])+"</tr>");
-					debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-				}
-				for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
-					ui_server.send_to_fd(fd,"<tr>"+serve_browser_distfile_progress(proxy_fetcher_pkg.Pdistfile_list[distfile_num])+"</tr>");
-					debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-				}
-			ui_server.send_to_fd(fd,"</table></center>");
-			ui_server.send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Distfiles"));
+			send_to_fd(fd,"<span id=\"distfiles\">\n");
+			send_to_fd(fd,get_html_distfiles());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("distfiles"));
+			send_to_fd(fd,get_html_footer());
+		}else if (uri=="/distfiles_"){
+			ui_server.send_to_fd(fd,get_html_distfiles());
 		}else if (uri=="/favicon.ico"){
 			ui_server.send_binary_to_fd(fd,"./webui/img/favicon.ico");
 		}else if (uri.find("/img")!=uri.npos){
 			ui_server.send_binary_to_fd(fd,"./webui"+uri);
 		}else{
-			send_to_fd(fd,get_header("Connections"));
-			send_to_fd(fd,get_connections_info());
-			send_to_fd(fd,get_footer());
+			send_to_fd(fd,get_html_header("Connections"));
+			send_to_fd(fd,"<span id=\"connections\">\n");
+			send_to_fd(fd,get_html_connections());
+			send_to_fd(fd,"</span>\n");
+			send_to_fd(fd,get_ajax_for("connections"));
+			send_to_fd(fd,get_html_footer());
 		}
 		shutdown(fd,2);
 		close(fd);
