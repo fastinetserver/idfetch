@@ -213,12 +213,39 @@ void decode_downloaded_distfile_msg(string msg_body){
 }
 */
 
+inline void check_for_quit(ulong cur_distfile){
+		if (tuidistfiles[cur_distfile].is_finished()){
+			for (ulong cur_tuiwaited_distfile=0;cur_tuiwaited_distfile<settings.wait_distfiles_vector.size();cur_tuiwaited_distfile++){
+				if (settings.wait_distfiles_vector[cur_tuiwaited_distfile]==tuidistfiles[cur_distfile].name){
+					if (settings.wait_distfiles_vector.size()>1){
+//						debug("cur_wait_distfile"+settings.wait_distfiles_vector[cur_tuiwaited_distfile]);
+//						debug("wait distfiles num="+toString(settings.wait_distfiles_vector.size()));
+//						debug("d0"+settings.wait_distfiles_vector[0]);
+//						debug("d1"+settings.wait_distfiles_vector[1]);
+						settings.wait_distfiles_vector.erase(settings.wait_distfiles_vector.begin()+cur_tuiwaited_distfile,settings.wait_distfiles_vector.begin()+cur_tuiwaited_distfile+1);
+//						debug("wait distfiles num="+toString(settings.wait_distfiles_vector.size()));
+//						debug("d0"+settings.wait_distfiles_vector[0]);
+					}else{
+						quit(0,"All distfiles have been downloaded");
+					}
+				}
+			}
+		}
+}
 void decode_downloaded_distfile_msg(string msg_body){
 	vector <string> parts;
 	parts=split_to_vector("<>", msg_body);
 	if (parts.size()>5){
 		for (ulong cur_distfile=0;cur_distfile<tuidistfiles.size();cur_distfile++){
 			if (tuidistfiles[cur_distfile].name==parts[0]){
+				// if status changes
+				if (tuidistfiles[cur_distfile].status!=(Tdistfile_status)atoi(parts[1])){
+					tuidistfiles[cur_distfile].status=(Tdistfile_status)atoi(parts[1]);
+					check_for_quit(cur_distfile);
+				}else{
+					tuidistfiles[cur_distfile].status=(Tdistfile_status)atoi(parts[1]);
+				}
+
 				tuidistfiles[cur_distfile].status=(Tdistfile_status)atoi(parts[1]);
 				tuidistfiles[cur_distfile].dld_segments=atol(parts[2]);
 				tuidistfiles[cur_distfile].segments_count=atol(parts[3]);
@@ -228,13 +255,16 @@ void decode_downloaded_distfile_msg(string msg_body){
 			}
 		}
 		Ttuidistfile a_tuidistfile;
-		a_tuidistfile.name=parts[0];
-		a_tuidistfile.status=(Tdistfile_status)atoi(parts[1]);
-		a_tuidistfile.dld_segments=atol(parts[2]);
-		a_tuidistfile.segments_count=atol(parts[3]);
-		a_tuidistfile.dld_bytes=atol(parts[4]);
-		a_tuidistfile.size=atol(parts[5]);
 		tuidistfiles.push_back(a_tuidistfile);
+		ulong new_distfile=tuidistfiles.size()-1;
+		tuidistfiles[new_distfile].name=parts[0];
+		tuidistfiles[new_distfile].status=(Tdistfile_status)atoi(parts[1]);
+		check_for_quit(new_distfile);
+		tuidistfiles[new_distfile].dld_segments=atol(parts[2]);
+		tuidistfiles[new_distfile].segments_count=atol(parts[3]);
+		tuidistfiles[new_distfile].dld_bytes=atol(parts[4]);
+		tuidistfiles[new_distfile].size=atol(parts[5]);
+		// wont work here
 	}
 }
 		
@@ -256,8 +286,9 @@ int parse_cli_arguments(int argc, char* argv[]){
 			posEqual=option.find('=');
 			name  = trim(option.substr(0,posEqual));
 			value = trim(option.substr(posEqual+1));
-			if (name=="--wait-distfile"){
-				settings.arg_wait_distfile=value;
+			if (name=="--wait-distfiles"){
+				settings.arg_wait_distfiles=value;
+				settings.wait_distfiles_vector=split_to_vector(",", value);
 				continue;
 			};
 //		//f (name=="--pkglist-file") {settings.pkg_list_file=value; continue;};
@@ -275,7 +306,8 @@ void no_curses_msg(string msg){
 
 void exit_curses_and_show_msg(){
 	try{
-		nocbreak();
+//		sleep(1);
+//		nocbreak();
 		endwin();
 		try{
 			close(sockfd);
@@ -368,18 +400,16 @@ int main(int argc, char* argv[])
 
 				debug("connected");
 				mainwindow.connected();
-				if (settings.arg_wait_distfile.length()>999){
-					quit(1,"Error in argument --wait-distfile="+settings.arg_wait_distfile+" : Distfile name is too long");
+				if (settings.arg_wait_distfiles.length()>9999){
+					quit(1,"Error in argument --wait-distfile="+settings.arg_wait_distfiles+" : Distfile name is too long");
 				};
 				char send_buffer[10000];
-				string send_msg="<d>"+settings.arg_wait_distfile+"<.>";
+				string send_msg="<d>"+settings.arg_wait_distfiles+"<.>";
 				strcpy(send_buffer,send_msg.c_str());
 				if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)send_msg.length()){
 					perror("Error in request.cpp: request(): request msg size and sent data size are different.");
 				}
-
 				fd_set readfds, testfds;
-
 				FD_ZERO(&readfds);
 				FD_SET(sockfd, &readfds);
 				testfds = readfds;
@@ -412,12 +442,18 @@ int main(int argc, char* argv[])
 							Tparts msg_parts;
 							vector<string> submsgs=split_to_vector("<.>", rest_of_the_msg);
 							for (ulong submsg_num=0; submsg_num<submsgs.size(); submsg_num++){
+								debug("Submsg: "+submsgs[submsg_num]);
 								vector<string> before_msg_and_msg=split_to_vector("<m>",submsgs[submsg_num]);
+								debug("Size:"+toString(submsgs.size()));
 								if (before_msg_and_msg.size()>1){
 									vector<string> msg_type_and_body=split_to_vector("<t>",before_msg_and_msg[1]);
 									if (msg_type_and_body.size()>1){
-										debug("msg_type="+msg_type_and_body[0]);
 										debug("msg_body="+msg_type_and_body[1]);
+									}else{
+										debug("No msg_body found");
+									}
+									if (msg_type_and_body.size()>0){
+										debug("msg_type="+msg_type_and_body[0]);
 										char msg_type=msg_type_and_body[0][0];
 //										debug("msg_type="+msg_type_str);
 										switch (msg_type){
@@ -429,10 +465,10 @@ int main(int argc, char* argv[])
 											case 'y': break; // continue waiting for catchup info
 											// no distfile in the queue
 											case 'n': 
-												quit(1,"Distfile: "+settings.arg_wait_distfile+" is not in the queue - quit");
+												quit(1,"Distfile(s): "+settings.arg_wait_distfiles+" is(are) not in the queue - quit");
 												break; //shouldn't get to this point - but just in case
 											case 'N': 
-												quit(0,"Distfile: "+settings.arg_wait_distfile+" is already downloaded - quit");
+												quit(0,"Distfile(s): "+settings.arg_wait_distfiles+" is(are) already downloaded - quit");
 												break; //shouldn't get to this point - but just in case
 										}
 									}

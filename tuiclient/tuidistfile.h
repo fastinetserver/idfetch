@@ -65,6 +65,7 @@ class Ttuidistfile{
 			{};
 		~Ttuidistfile(){};
 		string statusToString();
+		bool is_finished();
 };
 
 extern vector <Ttuidistfile> tuidistfiles;

@@ -56,6 +56,21 @@ string toString(double t){
 	s << t;
 	return s.str();
 }
+
+vector <string> split_to_vector(string splitter, string str){
+	vector <string> parts;
+	uint splitter_pos=str.find(splitter);
+	while (splitter_pos!=str.npos){
+		parts.push_back(str.substr(0,splitter_pos));
+		str=str.substr(splitter_pos+splitter.length());
+		splitter_pos=str.find(splitter);
+	}
+	if (str.length()>0){
+		parts.push_back(str);
+	}
+	return parts;
+}
+
 /*
 template<typename T> string toString(T t){
 	stringstream s;

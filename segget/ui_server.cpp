@@ -187,57 +187,84 @@ void Tui_server::serve_tuiclient(uint fd, string msg){
 		string request_str_before,request_str_after;
 		split("<d>",msg,request_str_before,request_str_after);
 		split("<.>",request_str_after,request_str_before,request_str_after);
-		string distfile_by_name_lookup_request=request_str_before;
-		TDFsearch_rusults distfile_search_result=NOT_FOUND;
-		if (distfile_by_name_lookup_request.length()>0){
-			for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
-				if (distfile_by_name_lookup_request==request_server_pkg.Pdistfile_list[distfile_num]->name){
-					if (request_server_pkg.Pdistfile_list[distfile_num]->get_status()==DDOWNLOADED){
-						distfile_search_result=DOWNLOADED;
-					}else{
-						distfile_search_result=IN_QUEUE;
-					}
-					break;
-				}
-			}
-			if (distfile_search_result==NOT_FOUND){
-				for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.distfile_count; distfile_num++){
-					if (distfile_by_name_lookup_request==proxy_fetcher_pkg.Pdistfile_list[distfile_num]->name){
-						if (proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_status()==DDOWNLOADED){
+		vector <string> wait_distfiles_vector;
+		wait_distfiles_vector=split_to_vector(",", request_str_before);
+		TDFsearch_rusults ALL_distfiles_search_result;
+		if (wait_distfiles_vector.size()<1){
+			// if no distfile specified just wait for the ones in queue
+			ALL_distfiles_search_result=IN_QUEUE;
+		}else{
+			// Let's start from DONWLOADED, and if we find one IN_QUEUE or even NOT_FOUND we'll change it
+			ALL_distfiles_search_result=DOWNLOADED;
+		}
+		for (ulong cur_tuiwaited_distfile=0;cur_tuiwaited_distfile<wait_distfiles_vector.size();cur_tuiwaited_distfile++){
+			debug("Search distfile:"+wait_distfiles_vector[cur_tuiwaited_distfile]);
+//			string distfile_by_name_lookup_request=request_str_before;
+			TDFsearch_rusults distfile_search_result=NOT_FOUND;
+			if (wait_distfiles_vector[cur_tuiwaited_distfile].length()>0){
+				for (ulong distfile_num=0; distfile_num<request_server_pkg.distfile_count; distfile_num++){
+					debug("..Name:"+request_server_pkg.Pdistfile_list[distfile_num]->name);
+					if (wait_distfiles_vector[cur_tuiwaited_distfile]==request_server_pkg.Pdistfile_list[distfile_num]->name){
+						if (request_server_pkg.Pdistfile_list[distfile_num]->get_status()==DDOWNLOADED){
 							distfile_search_result=DOWNLOADED;
+							debug("....downloaded:"+wait_distfiles_vector[cur_tuiwaited_distfile]);
 						}else{
+							debug("....in queue:"+wait_distfiles_vector[cur_tuiwaited_distfile]);
 							distfile_search_result=IN_QUEUE;
+							ALL_distfiles_search_result=IN_QUEUE;
 						}
 						break;
 					}
 				}
+				if (distfile_search_result==NOT_FOUND){
+					for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.distfile_count; distfile_num++){
+						if (wait_distfiles_vector[cur_tuiwaited_distfile]==proxy_fetcher_pkg.Pdistfile_list[distfile_num]->name){
+							if (proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_status()==DDOWNLOADED){
+								debug("2....downloaded:"+wait_distfiles_vector[cur_tuiwaited_distfile]);
+								distfile_search_result=DOWNLOADED;
+							}else{
+								debug("2....in queue:"+wait_distfiles_vector[cur_tuiwaited_distfile]);
+								distfile_search_result=IN_QUEUE;
+								ALL_distfiles_search_result=IN_QUEUE;
+							}
+							break;
+						}
+					}
+				}
+			}else{
+				// if no name for distfile specified -> no need to find distfile
+				// just keep an eye on the ones in queue
+				distfile_search_result=IN_QUEUE;
 			}
-		}else{
-			// if no name for distfile specified -> no need to find distfile
-			// just keep an eye on the ones in queue
-			distfile_search_result=IN_QUEUE;
+			if (distfile_search_result==NOT_FOUND){
+				ALL_distfiles_search_result=NOT_FOUND;
+				break;
+			}
 		}
-		switch (distfile_search_result){
+		switch (ALL_distfiles_search_result){
 			case NOT_FOUND:
-				ui_server.send_to_fd(fd, "<m>n<t><.>"); //distfile is not in the list quit
+				send_to_fd(fd, "<m>n<t><.>"); //distfile is not in the list quit
+				error_log_no_msg("Distfile(s) not found");
 				break;
 			case DOWNLOADED:
-				ui_server.send_to_fd(fd, "<m>N<t><.>"); //distfile is not in the list quit
+				send_to_fd(fd, "<m>N<t><.>"); //distfile is not in the list quit
+				error_log_no_msg("Distfile(s) downloaded");
 				break;
 			case IN_QUEUE:
-				ui_server.send_to_fd(fd, "<m>y<t><.>"); //distfile is in the list continue
+				error_log_no_msg("Distfile(s) in queue");
+				send_to_fd(fd, "<m>y<t><.>"); //distfile is in the list continue
 				// Get this info to catch up!
 				for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
-					ui_server.send_connection_msg_to_fd(fd, line_num, screenlines[line_num]);
+					send_connection_msg_to_fd(fd, line_num, screenlines[line_num]);
 					debug("Sending to client line:"+toString(line_num)+" "+screenlines[line_num]);
 				}
 				debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
 				for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
-					ui_server.send_distfile_progress_msg_to_fd(fd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+					send_distfile_progress_msg_to_fd(fd, request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 					debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 				}
 				for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
-					ui_server.send_distfile_progress_msg_to_fd(fd, proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+					send_distfile_progress_msg_to_fd(fd, proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 					debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
 				}
 		}

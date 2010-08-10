@@ -29,6 +29,22 @@
 
 vector <Ttuidistfile> tuidistfiles;
 
+bool Ttuidistfile::is_finished(){
+	try{
+		switch(status){
+//			case DSCRIPTREJECTED:
+			case DDOWNLOADED:
+			case DFAILED:
+			case DALL_LM_AND_PF_MIRRORS_FAILED:
+												return 1;
+			default: 							return 0;
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: statusToString()");
+	}
+	return 0;
+}
+
 string Ttuidistfile::statusToString(){
 	try{
 		switch(status){

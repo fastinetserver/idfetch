@@ -37,7 +37,8 @@ class Tsettings{
 	private:
 	public:
 	// cli arguments
-		string arg_wait_distfile;
+		string arg_wait_distfiles;
+		vector <string> wait_distfiles_vector;
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
@@ -49,7 +50,8 @@ class Tsettings{
 
 		Tsettings():
 		// cli arguments
-			arg_wait_distfile(""),
+			arg_wait_distfiles(""),
+			wait_distfiles_vector(),
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),

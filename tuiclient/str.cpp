@@ -51,7 +51,9 @@ vector <string> split_to_vector(string splitter, string str){
 		str=str.substr(splitter_pos+splitter.length());
 		splitter_pos=str.find(splitter);
 	}
-	parts.push_back(str);
+	if (str.length()>0){
+		parts.push_back(str);
+	}
 	return parts;
 }
 /*
