@@ -66,7 +66,7 @@ int routine();
 void start_daemon_mode();
 int parse_cli_arguments(int argc, char* argv[]);
 int init_curses();
-int load_pkgs();
+//int load_pkgs();
 void show_pkgs();
 int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num);
 int choose_segment(uint connection_num);

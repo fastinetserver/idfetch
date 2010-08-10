@@ -81,8 +81,8 @@ void Tsettings::init(){
 		conf.set("folders","distfiles_dir",distfiles_dir);
 		conf.set("folders","segments_dir",segments_dir);
 
-		conf.set("pkg_list","pkg_list_dir",pkg_list_dir);
-		conf.set("pkg_list","del_pkg_list_when_dld_finished",del_pkg_list_when_dld_finished);
+//		conf.set("pkg_list","pkg_list_dir",pkg_list_dir);
+//		conf.set("pkg_list","del_pkg_list_when_dld_finished",del_pkg_list_when_dld_finished);
 
 		conf.set("distfiles","max_connection_num_per_distfile",max_connection_num_per_distfile,1,MAX_CONNECTS);
 

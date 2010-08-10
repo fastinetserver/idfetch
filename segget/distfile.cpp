@@ -861,12 +861,17 @@ int Tdistfile::combine_segments(){
 	try{
 		debug("Combining distfile"+name);
 		ofstream distfile_file;
-		distfile_file.exceptions (ofstream::failbit | ofstream::badbit);
+		distfile_file.exceptions (ofstream::badbit);
 		string distfile_path=settings.distfiles_dir+"/"+name;
 		try{
 			distfile_file.open(distfile_path.c_str(),ofstream::binary|ios::trunc);
+			if (distfile_file==0){
+				error_log("Error: distfile.cpp: combine_segments(): opening distfile "+distfile_path+" for writing");
+				error_log("....Check if folder "+settings.distfiles_dir+" exists and seggetd has permissions to write into it.");
+			}
 		}catch(...){
-			error_log("Error: distfile.cpp: combine_segments(): opening distfile:"+distfile_path);
+			error_log("Error: distfile.cpp: combine_segments(): opening distfile "+distfile_path+" for writing");
+			error_log("....Check if folder "+settings.distfiles_dir+" exists and seggetd has permissions to write into it.");
 			status=DFAILED;
 			return 1;
 		}

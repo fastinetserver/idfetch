@@ -79,14 +79,16 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 			}
 			return REJECTED_BY_USER_PYTHON_SCRIPT;
 		}
-
-		segment->parent_distfile->active_connections_num++;
-		active=true;
-		Pcurr_mirror->start();
-		network_array[network_num].connect();
-
 		stats.active_connections_counter++;
-		segment->prepare_for_connection(cm, connection_num, network_num, distfile_num, url);
+		ulong segment_start_result=segment->start(cm, connection_num, network_num, distfile_num, url);
+		if (segment_start_result){
+			return segment_start_result;
+		}else{
+			segment->parent_distfile->active_connections_num++;
+			active=true;
+			Pcurr_mirror->start();
+			network_array[network_num].connect();
+		}
 		debug("Started connection for distfile: "+segment->parent_distfile->name);
 		return 0;
 	}catch(...){

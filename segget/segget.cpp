@@ -25,7 +25,7 @@
 */
 
 #include "segget.h"
-
+/*
 int load_pkgs(){
 	try{
 		
@@ -79,6 +79,7 @@ int load_pkgs(){
 		return 1;
 	}
 }
+*/
 /*
 void show_pkgs(){
 	try{

@@ -78,7 +78,7 @@ void Tsegment::set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfi
 		error_log("Error in segment.cpp: prepare_for_connection()");
 	}
 }
-void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string url_address){
+uint Tsegment::start(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string url_address){
 	try{
 //		debug("NETWORK:"+toString(network_num)+(network_array[network_num].use_own_mirror_list_only_on ? " - LOCAL": " - REMOTE"));
 		// if MODE_LOCAL or MODE_PROXY_FETCHER
@@ -90,9 +90,10 @@ void Tsegment::prepare_for_connection(CURLM *cm, uint con_num, uint network_num,
 		connection_num=con_num;
 //		connection_array[con_num].start(network_num);
 		try_num++;
-		add_easy_handle_to_multi(cm, network_num);
+		return add_easy_handle_to_multi(cm, network_num);
 	}catch(...){
 		error_log("Error in segment.cpp: prepare_for_connection()");
+		return ERROR_DURING_SEGMENT_START;
 	}
 }
 
@@ -104,18 +105,25 @@ Tsegment::~Tsegment(){
 	}
 }
 
-int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
+uint Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 	try{
 		segment_file.exceptions (ofstream::badbit);
 		segment_file.open((settings.segments_dir+"/"+file_name).c_str(), ios::trunc|ios::binary );
-	}catch(std::ifstream::failure e){
-			if (!segment_file.eof()){
-					error_log("Can't open segment file:"+settings.segments_dir+"/"+file_name+": "+(string)e.what());
-				return 1;
-			}
+		if (segment_file==0){
+			error_log("Can't open for writing segment file "+settings.segments_dir+"/"+file_name);
+			error_log("....Check if folder "+settings.segments_dir+" exists and seggetd has permisions to write into it");
+			return ERROR_WHILE_OPENING_SEGMENT_FOR_WRITING;
+		}
+	}catch(ifstream::failure e){
+		if (!segment_file.eof()){
+			error_log("Can't open for writing segment file: "+settings.segments_dir+"/"+file_name+": "+(string)e.what());
+			error_log("....Check if folder "+settings.segments_dir+" exists and seggetd has permisions to write into it");
+			return ERROR_WHILE_OPENING_SEGMENT_FOR_WRITING;
+		}
 	}catch(...){
-		error_log("Unknown error: Can't open segment file:"+settings.segments_dir+"/"+file_name);
-		return 1;
+		error_log("Unknown error: Can't open for writing segment file: "+settings.segments_dir+"/"+file_name);
+		error_log("Check if folder "+settings.segments_dir+" exists and seggetd has permisions to write into this folder");
+		return ERROR_WHILE_OPENING_SEGMENT_FOR_WRITING;
 	}
 	try{
 		easyhandle = curl_easy_init();
@@ -174,10 +182,10 @@ int Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 			curl_multi_add_handle(cm, easyhandle);
 			return 0;
 		}else
-			return 1;
+			return ERROR_ADDING_EASY_HANDLE_TO_MULTI;
 	}catch(...){
 		error_log("Error in segment.cpp: add_easy_handle_to_multi()");
-		return 1;
+		return ERROR_ADDING_EASY_HANDLE_TO_MULTI;
 	}
 }
 void show_progress(double time_diff){

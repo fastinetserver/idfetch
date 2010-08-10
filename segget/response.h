@@ -59,6 +59,11 @@ using namespace std;
 #define REJECTED_BY_USER_PYTHON_SCRIPT					301
 #define ERROR_WHILE_PREPARING_CONNECTION				302
 
+#define ERROR_DURING_SEGMENT_START						400
+
+#define ERROR_WHILE_OPENING_SEGMENT_FOR_WRITING			500
+#define ERROR_ADDING_EASY_HANDLE_TO_MULTI				501
+
 int decode_server_response(string server_response);
 
 #endif

@@ -87,9 +87,9 @@ class Tsegment{
 		~Tsegment();
 		bool segment_verification_is_ok();
 		void set_segment(Tdistfile *prnt_distfile, uint seg_num, string distfile_name, ulong default_seg_size, ulong range_end);
-		void prepare_for_connection(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string url);
 		string get_file_name(){return file_name;};
-		int add_easy_handle_to_multi(CURLM *cm, uint network_num);
+		uint start(CURLM *cm, uint con_num, uint network_num, uint distfile_num, string url);
+		uint add_easy_handle_to_multi(CURLM *cm, uint network_num);
 };
 
 extern Tsegment *segments_in_progress[MAX_CONNECTS];

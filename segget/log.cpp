@@ -55,8 +55,14 @@ void log_no_msg(string log_msg_text){
 			file.exceptions (ofstream::failbit | ofstream::badbit);
 			try{
 				file.open((settings.logs_dir+"/"+settings.general_log_file).c_str(), ios::app);
+				if (file==0){
+					error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+" for writing.");
+					error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has rights to write into it.");
+					return;
+				}
 			}catch(...){
-				error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+".");
+				error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+" for writing.");
+				error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has rights to write into it.");
 				return;
 			}
 			try{
@@ -111,9 +117,15 @@ void debug_no_msg(string debug_msg_text){
 			file.exceptions (ofstream::failbit | ofstream::badbit);
 			try{
 				file.open((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
+				if (file==0){
+					error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+" for writing.");
+					error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has permissions to write into it.");
+					return;
+				}
 			}
 			catch(...){
-				error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+".");
+				error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+" for writing.");
+				error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has permissions to write into it.");
 				return;
 			}
 			try{

@@ -45,8 +45,8 @@ class Tsettings{
 		string distfiles_dir;
 		string segments_dir;
 	//pkg_list
-		string pkg_list_dir;
-		bool del_pkg_list_when_dld_finished;
+//		string pkg_list_dir;
+//		bool del_pkg_list_when_dld_finished;
 	//distfiles
 		ulong max_connection_num_per_distfile;
 	//segments
@@ -101,11 +101,11 @@ class Tsettings{
 			conf_dir("/etc/seggetd"),
 			no_daemon_flag(false),
 		//folders
-			distfiles_dir("./distfiles"),
-			segments_dir("./tmp"),
+			distfiles_dir("/usr/portage/distfiles"),
+			segments_dir("/tmp/seggetd/segments"),
 		//pkg_list
-			pkg_list_dir("./"),
-			del_pkg_list_when_dld_finished(1),
+//			pkg_list_dir("./"),
+//			del_pkg_list_when_dld_finished(1),
 		//distfiles
 			max_connection_num_per_distfile(3),
 		//segments
@@ -146,12 +146,12 @@ class Tsettings{
 			request_port(10000),
 		//scripting_and_scheduling
 			python_path("/usr/bin/python"),
-			scripts_dir("./scripts"),
+			scripts_dir("/usr/share/seggetd/scripts"),
 		//logs
-			logs_dir("./logs"),
+			logs_dir("/var/log/seggetd"),
 			general_log_file("segget.log"),
 			error_log_file("error.log"),
-			debug_log_file("debug.log"),
+			debug_log_file("none"),
 			general_log_time_format("%m/%d %X"),
 			error_log_time_format("%m/%d %X"),
 			debug_log_time_format("%m/%d %X")
