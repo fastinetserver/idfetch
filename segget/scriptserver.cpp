@@ -225,7 +225,9 @@ bool run_user_python_script(uint connection_num){
 				dup2(fileno(stdout_file), 1);
 				fclose(stdout_file);
 			}
-			system((settings.python_path+" /home/mona/idfetcha/scripts/client.py").c_str());
+			if (system((settings.python_path+" /home/mona/idfetcha/scripts/client.py").c_str())){
+				error_log_no_msg("Error in scriptserver.cpp: run_user_python_script calling system()");
+			}
 			_exit(0);
 		}else{
 			if (pID < 0){            // failed to fork

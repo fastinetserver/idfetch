@@ -18,7 +18,7 @@ all: clean $(BINS)
 %.o: %.cxx
 	$(CXX) -c -o $@ $(CXXFLAGS) $^
 
-segget: segget.o connection.o checksum.o config.o distfile.o log.o mirror.o network.o networkbroker.o phase.o pkg.o response.o segment.o settings.o stats.o str.o tui.o utils.o ui_server.o proxyfetcher.o requestserver.o
+segget: segget.o connection.o checksum.o config.o distfile.o log.o mirror.o network.o networkbroker.o phase.o pkg.o response.o segment.o settings.o stats.o str.o tui.o utils.o ui_server.o proxyfetcher.o requestserver.o scriptserver.o
 	$(CXX) -o $@ -lncurses $(LIBS) $(CIBS) $^
 #%: %.o
 #	$(CXX) -o $@ $(LIBS) $(CIBS) $^

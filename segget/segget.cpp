@@ -487,8 +487,16 @@ void start_daemon_mode(){
 //		chdir("/");
 		// create descriptors in case someone will use them
 		int fileDesc = open("/dev/null", O_RDWR); //stdin
-		dup(fileDesc); //stdout
-		dup(fileDesc); //stderr
+		 //stdout
+		if (dup(fileDesc)){
+			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stdout");
+			exit(1);
+		}
+		//stderr
+		if (dup(fileDesc)){
+			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stderr");
+			exit(1);
+		}
 		log_no_msg("Starting daemon routine");
 		routine();
 		log_no_msg("Exited daemon routine");
