@@ -168,6 +168,45 @@ int Tconfig::set(string const& section, string const& entry, bool &dst) const {
 	}
 }
 
+int Tconfig::set_color(string const& section, string const& entry, int &dst) const {
+	try{
+		map<string,string>::const_iterator ci = content_.find(section + '/' + entry);
+		if (ci == content_.end()){
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has not been set.");
+			log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+colorToString(dst)+". Default value forced.");
+			return 1;
+		}
+		else{
+			if (ci->second.find("color_black")!=ci->second.npos){
+				dst=COLOR_BLACK;
+			}else if (ci->second.find("color_red")!=ci->second.npos){
+				dst=COLOR_RED;
+			}else if (ci->second.find("color_green")!=ci->second.npos){
+				dst=COLOR_GREEN;
+			}else if (ci->second.find("color_yellow")!=ci->second.npos){
+				dst=COLOR_YELLOW;
+			}else if (ci->second.find("color_blue")!=ci->second.npos){
+				dst=COLOR_BLUE;
+			}else if (ci->second.find("color_magenta")!=ci->second.npos){
+				dst=COLOR_MAGENTA;
+			}else if (ci->second.find("color_cyan")!=ci->second.npos){
+				dst=COLOR_CYAN;
+			}else if (ci->second.find("color_white")!=ci->second.npos){
+				dst=COLOR_WHITE;
+			}else{
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+" has wrong value:"+ci->second);
+				log("! Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+colorToString(dst)+". Default value forced.");
+				return 1;
+			}
+			log("Settings in file:"+config_file_name+" ["+section+"]."+entry+"="+colorToString(dst));
+			return 0;
+		}
+	}catch(...){
+		error_log("Error in config.cpp: set(string &dst, string const& section, string const& entry)");
+		return 1;
+	}
+}
+
 void Tconfig::clear(){
 	try{
 		content_.clear();

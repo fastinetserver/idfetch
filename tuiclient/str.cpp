@@ -25,6 +25,8 @@
 */
 
 #include "str.h"
+#include <ncurses.h>
+
 using namespace std;
 
 int atoi(string num_str){
@@ -63,6 +65,20 @@ template<typename T> string toString(T t){
 	return s.str();
 }
 */
+
+string colorToString(uint a_color){
+	switch (a_color){
+		case COLOR_BLACK: return "COLOR_BLACK";
+		case COLOR_RED: return "COLOR_RED";
+		case COLOR_GREEN: return "COLOR_GREEN";
+		case COLOR_YELLOW: return "COLOR_YELLOW";
+		case COLOR_BLUE: return "COLOR_BLUE";
+		case COLOR_MAGENTA: return "COLOR_MAGENTA";
+		case COLOR_CYAN: return "COLOR_CYAN";
+		case COLOR_WHITE: return "COLOR_WHITE";
+		default: return "UNKNOWN COLOR";
+	}
+}
 
 string toString(uint t){
 	stringstream s;

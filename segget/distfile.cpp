@@ -865,7 +865,7 @@ int Tdistfile::combine_segments(){
 		string distfile_path=settings.distfiles_dir+"/"+name;
 		try{
 			distfile_file.open(distfile_path.c_str(),ofstream::binary|ios::trunc);
-			if (distfile_file==0){
+			if (! distfile_file.is_open()){
 				error_log("Error: distfile.cpp: combine_segments(): opening distfile "+distfile_path+" for writing");
 				error_log("....Check if folder "+settings.distfiles_dir+" exists and seggetd has permissions to write into it.");
 			}

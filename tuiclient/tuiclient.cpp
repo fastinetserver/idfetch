@@ -148,7 +148,7 @@ void * watch_keyboard_thread_function(void *){
 			case 'L':mainwindow.log_win.toggle(); mainwindow.show();break;
 			case 'e':
 			case 'E':mainwindow.error_log_win.toggle(); mainwindow.show();break;
-			default: mainwindow.set_line(25,toString((int)key));
+//			default: mainwindow.set_line(25,toString((int)key));
 		}
 	}
 //	pthread_exit((void*)watch_keyboard_thread_status);

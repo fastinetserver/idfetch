@@ -109,7 +109,7 @@ uint Tsegment::add_easy_handle_to_multi(CURLM *cm, uint network_num){
 	try{
 		segment_file.exceptions (ofstream::badbit);
 		segment_file.open((settings.segments_dir+"/"+file_name).c_str(), ios::trunc|ios::binary );
-		if (segment_file==0){
+		if (! segment_file.is_open()){
 			error_log("Can't open for writing segment file "+settings.segments_dir+"/"+file_name);
 			error_log("....Check if folder "+settings.segments_dir+" exists and seggetd has permisions to write into it");
 			return ERROR_WHILE_OPENING_SEGMENT_FOR_WRITING;

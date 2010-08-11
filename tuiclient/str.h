@@ -47,6 +47,8 @@ int atoi(string num_str);
 long atol(string num_str);
 
 //template<typename T> string toString(T t);
+string colorToString(uint a_color);
+
 string toString(uint t);
 string toString(int t);
 string toString(ulong t);

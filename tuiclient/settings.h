@@ -29,6 +29,7 @@
 
 #include <string>
 #include "config.h"
+
 //#include "tui.cpp"
 
 using namespace std;
@@ -42,6 +43,61 @@ class Tsettings{
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
+	//colors
+		int color_distfile_added_connected_fg;
+		int color_distfile_added_connected_bg;
+		int color_distfile_added_disconnected_fg;
+		int color_distfile_added_disconnected_bg;
+
+		int color_distfile_waiting_connected_fg;
+		int color_distfile_waiting_connected_bg;
+		int color_distfile_waiting_disconnected_fg;
+		int color_distfile_waiting_disconnected_bg;
+
+		int color_distfile_script_rejected_connected_fg;
+		int color_distfile_script_rejected_connected_bg;
+		int color_distfile_script_rejected_disconnected_fg;
+		int color_distfile_script_rejected_disconnected_bg;
+
+		int color_distfile_downloading_connected_fg;
+		int color_distfile_downloading_connected_bg;
+		int color_distfile_downloading_disconnected_fg;
+		int color_distfile_downloading_disconnected_bg;
+
+		int color_distfile_downloaded_connected_fg;
+		int color_distfile_downloaded_connected_bg;
+		int color_distfile_downloaded_disconnected_fg;
+		int color_distfile_downloaded_disconnected_bg;
+
+		int color_distfile_failed_connected_fg;
+		int color_distfile_failed_connected_bg;
+		int color_distfile_failed_disconnected_fg;
+		int color_distfile_failed_disconnected_bg;
+
+		int color_distfiles_window_connected_fg;
+		int color_distfiles_window_connected_bg;
+		int color_distfiles_window_disconnected_fg;
+		int color_distfiles_window_disconnected_bg;
+
+		int color_scroll_window_connected_fg;
+		int color_scroll_window_connected_bg;
+		int color_scroll_window_disconnected_fg;
+		int color_scroll_window_disconnected_bg;
+
+		int color_downloads_connected_fg;
+		int color_downloads_connected_bg;
+		int color_downloads_disconnected_fg;
+		int color_downloads_disconnected_bg;
+
+		int color_info_connected_fg;
+		int color_info_connected_bg;
+		int color_info_disconnected_fg;
+		int color_info_disconnected_bg;
+
+		int color_status_connected_fg;
+		int color_status_connected_bg;
+		int color_status_disconnected_fg;
+		int color_status_disconnected_bg;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -55,6 +111,62 @@ class Tsettings{
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),
+		//colors
+			color_distfile_added_connected_fg(COLOR_WHITE),
+			color_distfile_added_connected_bg(COLOR_BLACK),
+			color_distfile_added_disconnected_fg(COLOR_WHITE),
+			color_distfile_added_disconnected_bg(COLOR_BLACK),
+
+			color_distfile_waiting_connected_fg(COLOR_BLUE),
+			color_distfile_waiting_connected_bg(COLOR_BLACK),
+			color_distfile_waiting_disconnected_fg(COLOR_WHITE),
+			color_distfile_waiting_disconnected_bg(COLOR_BLACK),
+
+			color_distfile_script_rejected_connected_fg(COLOR_YELLOW),
+			color_distfile_script_rejected_connected_bg(COLOR_BLACK),
+			color_distfile_script_rejected_disconnected_fg(COLOR_WHITE),
+			color_distfile_script_rejected_disconnected_bg(COLOR_BLACK),
+
+			color_distfile_downloading_connected_fg(COLOR_CYAN),
+			color_distfile_downloading_connected_bg(COLOR_BLACK),
+			color_distfile_downloading_disconnected_fg(COLOR_WHITE),
+			color_distfile_downloading_disconnected_bg(COLOR_BLACK),
+
+			color_distfile_downloaded_connected_fg(COLOR_GREEN),
+			color_distfile_downloaded_connected_bg(COLOR_BLACK),
+			color_distfile_downloaded_disconnected_fg(COLOR_WHITE),
+			color_distfile_downloaded_disconnected_bg(COLOR_BLACK),
+
+			color_distfile_failed_connected_fg(COLOR_RED),
+			color_distfile_failed_connected_bg(COLOR_BLACK),
+			color_distfile_failed_disconnected_fg(COLOR_WHITE),
+			color_distfile_failed_disconnected_bg(COLOR_BLACK),
+
+			color_distfiles_window_connected_fg(COLOR_WHITE),
+			color_distfiles_window_connected_bg(COLOR_BLACK),
+			color_distfiles_window_disconnected_fg(COLOR_WHITE),
+			color_distfiles_window_disconnected_bg(COLOR_BLACK),
+
+			color_scroll_window_connected_fg(COLOR_GREEN),
+			color_scroll_window_connected_bg(COLOR_BLACK),
+			color_scroll_window_disconnected_fg(COLOR_WHITE),
+			color_scroll_window_disconnected_bg(COLOR_BLACK),
+
+			color_downloads_connected_fg(COLOR_WHITE),
+			color_downloads_connected_bg(COLOR_BLACK),
+			color_downloads_disconnected_fg(COLOR_BLACK),
+			color_downloads_disconnected_bg(COLOR_WHITE),
+
+			color_info_connected_fg(COLOR_BLACK),
+			color_info_connected_bg(COLOR_CYAN),
+			color_info_disconnected_fg(COLOR_WHITE),
+			color_info_disconnected_bg(COLOR_BLACK),
+
+			color_status_connected_fg(COLOR_GREEN),
+			color_status_connected_bg(COLOR_BLACK),
+			color_status_disconnected_fg(COLOR_BLACK),
+			color_status_disconnected_bg(COLOR_RED),
+
 		//logs
 			logs_dir("./logs"),
 			general_log_file("tuiclient.log"),

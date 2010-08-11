@@ -30,6 +30,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include <ncurses.h>
 #include "str.h"
 //#include "log.h"
 using namespace std;
@@ -47,6 +48,7 @@ class Tconfig {
 		int set(string const& section, string const& entry, string &dst) const;
 		int set(string const& section, string const& entry, ulong &dst, uint const& min_limit, uint const& max_limit) const;
 		int set(string const& section, string const& entry, bool &dst) const;
+		int set_color(string const& section, string const& entry, int &dst) const;
 		void clear();
 };
 

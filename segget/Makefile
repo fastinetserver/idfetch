@@ -13,7 +13,7 @@ LIBS = $(LIBS_PKGCONFIG)
 #MIBS = -lncurses
 CXXFLAGS = $(CXXFLAGS_PKGCONFIG) -lncurses $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
 
-all: clean $(BINS)
+all: $(BINS)
 	
 %.o: %.cxx
 	$(CXX) -c -o $@ $(CXXFLAGS) $^
