@@ -69,8 +69,8 @@ void Twindow::up(int inc){
 	}else{
 		top_position=tmp_top_position; 
 	}
-	sms="UP"+toString(top_position);
-
+//	sms="UP"+toString(top_position);
+//	refresh();
 }
 void Twindow::down(uint inc){
 	uint tmp_top_position=top_position+inc;
@@ -84,7 +84,8 @@ void Twindow::down(uint inc){
 			top_position=tmp_top_position; 
 		}
 	}
-	sms="DOWN "+toString(top_position)+"------>"+toString(bottom_screenline_num);
+//	sms="DOWN "+toString(top_position)+"------>"+toString(bottom_screenline_num);
+//	refresh();
 }
 
 void Twindow::center(uint max_y, uint max_x){
@@ -103,7 +104,7 @@ void Twindow::resize(uint new_height, uint new_width, uint new_y, uint new_x){
 }
 
 void Twindow::make_frame(){
-	wclear(window);
+//	wclear(window);
 	box(window, ACS_VLINE, ACS_HLINE);
 	mvwaddstr(window,0,(width-caption.length())/2,caption.c_str());
 //	msg_short(0,width-20,"[Lines:"+toString(top_position+1)+"-"+toString(top_position+bottom_screenline_num)+"/"+toString(max_received_screenline_num)+"]");

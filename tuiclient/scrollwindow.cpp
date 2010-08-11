@@ -38,8 +38,12 @@ void Tscroll_window::compose(){
 	make_frame();
 	color_downloads(window);
 //	screenlines[26]="Max_num:"+toString(max_received_screenline_num);
-	top_position=scroll_lines.size()-height+2; // +2 for border lines
-//	if (top_position<0) {top_position=0;};
+//	top_position=; // +2 for border lines
+	if (scroll_lines.size()+2<height){
+		top_position=0;
+	}else{ 
+		top_position=scroll_lines.size()-height+2;
+	};
 	uint line_num=top_position;
 	for (uint y=0; (y<bottom_screenline_num && line_num<scroll_lines.size()); y++, line_num++){
 		msg_line(y+1,scroll_lines[line_num]);

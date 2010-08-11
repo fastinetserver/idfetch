@@ -167,6 +167,8 @@ void Tmainwindow::init(){
 	distfiles_win.visible=true;
 	error_log_win.init(" ERROR LOG ",12,50,5,5);
 	disconnected();
-	show();
+	wclear(window);
 //	sleep(1);
+	show();
+	sleep(1);
 }

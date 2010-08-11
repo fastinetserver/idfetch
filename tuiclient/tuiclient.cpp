@@ -158,11 +158,11 @@ void * watch_keyboard_thread_function(void *){
 void * refresh_screen_thread_function(void *){
 	while (! exit_flag){
 		mainwindow.refresh();
-		mainwindow.refresh();
+//		mainwindow.refresh();
 //		sleep(1);
 		struct timeval delay;
-		delay.tv_sec=0;
-		delay.tv_usec=300000;
+		delay.tv_sec=1;
+		delay.tv_usec=500000;
 		select(FD_SETSIZE, (fd_set *)0, (fd_set *)0,(fd_set *)0, (struct timeval *) &delay);//&timeout
 	}
 	exit_curses_and_show_msg();
