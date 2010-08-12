@@ -78,6 +78,7 @@ class Tsettings{
 	//ui_server
 		string ui_ip;
 		ulong ui_port;
+		string ui_web_ui_dir;
 	//rss
 		string provide_mirror_to_others_url;
 		string rss_title;
@@ -137,6 +138,7 @@ class Tsettings{
 		//ui_server
 			ui_ip("127.0.0.1"),
 			ui_port(9999),
+			ui_web_ui_dir("/usr/share/seggetd/webui"),
 		//rss
 			provide_mirror_to_others_url("http://"+ui_ip),  // init after ui_ip
 			rss_title("Seggetd feed"),

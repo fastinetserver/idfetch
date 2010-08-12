@@ -653,9 +653,9 @@ void Tui_server::serve_browser(uint fd, string msg){
 		}else if (uri=="/distfiles_"){
 			ui_server.send_to_fd(fd,get_html_distfiles());
 		}else if (uri=="/favicon.ico"){
-			ui_server.send_binary_to_fd(fd,"./webui/img/favicon.ico");
+			ui_server.send_binary_to_fd(fd,settings.ui_web_ui_dir+"/favicon.ico");
 		}else if (uri.find("/img")!=uri.npos){
-			ui_server.send_binary_to_fd(fd,"./webui"+uri);
+			ui_server.send_binary_to_fd(fd,settings.ui_web_ui_dir+uri);
 		}else{
 			send_to_fd(fd,get_html_header("Connections"));
 			send_to_fd(fd,"<span id=\"connections\">\n");

@@ -126,6 +126,7 @@ void Tsettings::init(){
 		}
 		conf.set("ui_server","ui_ip",ui_ip);
 		conf.set("ui_server","ui_port",ui_port,1,65535);
+		conf.set("ui_server","ui_web_ui_dir",ui_web_ui_dir);
 
 		conf.set("provide_mirror_to_others","provide_mirror_to_others_url",provide_mirror_to_others_url);
 		if (provide_mirror_to_others_url=="ui_ip"){

@@ -31,7 +31,6 @@
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <fstream>
 #include <iostream>
 #include <json/json.h>
