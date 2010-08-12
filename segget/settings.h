@@ -89,6 +89,7 @@ class Tsettings{
 	//scripting_and_scheduling
 		string python_path;
 		string scripts_dir;
+		string script_socket_path;
 	//logs
 		string logs_dir;
 		string general_log_file;
@@ -149,6 +150,7 @@ class Tsettings{
 		//scripting_and_scheduling
 			python_path("/usr/bin/python"),
 			scripts_dir("/usr/share/seggetd/scripts"),
+			script_socket_path("/tmp/seggetd/script_socket"),
 		//logs
 			logs_dir("/var/log/seggetd"),
 			general_log_file("segget.log"),

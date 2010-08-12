@@ -196,11 +196,11 @@ bool run_user_python_script(uint connection_num){
 		int result;
 		fd_set readfds, testfds;
 
-		unlink("/tmp/segget_script_socket");
+		unlink(settings.script_socket_path.c_str());
 		// Create and name a socket for the server:
 		script_server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		server_address.sun_family = AF_UNIX;
-		strcpy(server_address.sun_path, "/tmp/segget_script_socket");
+		strcpy(server_address.sun_path, settings.script_socket_path.c_str());
 		server_len = sizeof(server_address);
 		bind(script_server_sockfd, (struct sockaddr *)&server_address, server_len);
 		//Create a connection queue and initialize readfds to handle input from server_sockfd:
@@ -225,7 +225,7 @@ bool run_user_python_script(uint connection_num){
 				dup2(fileno(stdout_file), 1);
 				fclose(stdout_file);
 			}
-			if (system((settings.python_path+" /home/mona/idfetcha/scripts/client.py").c_str())){
+			if (system((settings.python_path+" "+settings.scripts_dir+"/client.py").c_str())){
 				error_log_no_msg("Error in scriptserver.cpp: run_user_python_script calling system()");
 			}
 			_exit(0);

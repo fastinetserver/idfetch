@@ -490,12 +490,12 @@ void start_daemon_mode(){
 		 //stdout
 		if (dup(fileDesc)){
 			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stdout");
-			exit(1);
+//			exit(1);
 		}
 		//stderr
 		if (dup(fileDesc)){
 			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stderr");
-			exit(1);
+//			exit(1);
 		}
 		log_no_msg("Starting daemon routine");
 		routine();

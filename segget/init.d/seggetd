@@ -14,7 +14,7 @@ elif [ -x /sbin/start-stop-daemon ]; then
 	SYS_F="De"
 fi
 
-DAEMON=/usr/sbin/seggetd/segget
+DAEMON=/usr/bin/seggetd
 CONF_DIR=/etc/seggetd
 LOCKFILE=/var/lock/subsys/seggetd
 

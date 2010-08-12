@@ -25,5 +25,12 @@ clean:
 	-rm -f $(OBJS)
 	-rm -f *~
 	-rm -f *.o
+	
+install:
+	-mkdir -p /etc/seggetd
+	-cp *.conf /etc/seggetd
+	-cp request /usr/bin
+	-mkdir -p /tmp/seggetd
+	-mkdir -p /var/log/seggetd
 
 .PRECIOUS: %.o

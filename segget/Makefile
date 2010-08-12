@@ -27,5 +27,18 @@ clean:
 	-rm -f $(BINS) $(OBJS)
 	-rm -f *.o
 	-rm -f *.log
+	
+install:
+	-mkdir /etc/seggetd
+	-cp *.conf /etc/seggetd
+	-cp segget /usr/bin/seggetd
+	-cp ./init.d/seggetd /etc/init.d/seggetd
+	-mkdir -p /usr/share/seggetd
+	-cp -R ./webui /usr/share/seggetd
+	-mkdir -p /usr/share/seggetd/scripts
+	-cp -R ./scripts /usr/share/seggetd
+	-mkdir -p /tmp/seggetd/segments
+	-mkdir -p /usr/portage/distfiles
+	-mkdir -p /var/log/seggetd
 
 .PRECIOUS: %.o

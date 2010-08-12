@@ -51,4 +51,9 @@ clean:
 	-rm -f $(BINS) $(OBJS)
 	-rm -f ./logs/*.log *.o
 
+install:
+	-mkdir /etc/seggetd
+	-cp tuiclient.conf /etc/seggetd
+	-cp tuiclient /usr/bin
+
 .PRECIOUS: %.o

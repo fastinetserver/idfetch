@@ -141,6 +141,7 @@ void Tsettings::init(){
 
 		conf.set("scripting_and_scheduling","python_path",python_path);
 		conf.set("scripting_and_scheduling","scripts_dir",scripts_dir);
+		conf.set("scripting_and_scheduling","script_socket_path",script_socket_path);
 
 		conf.clear();
 	}catch(...){
