@@ -25,8 +25,10 @@
 */
 
 #include "utils.h"
-void merror(string error_msg){
-	perror(error_msg.c_str());
+#include <iostream>
+
+void printout(string error_msg){
+	cout<<error_msg<< endl;
 }
 
 ulong time_left_from(timeval from_time){
@@ -38,7 +40,7 @@ ulong time_left_from(timeval from_time){
 			timeleft=1;
 		return timeleft;
 	}catch(...){
-		merror("Error in utils.cpp: time_left_from()");
+		printout("Error in utils.cpp: time_left_from()");
 		return 1;
 	}
 }

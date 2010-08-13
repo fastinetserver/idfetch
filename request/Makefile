@@ -30,7 +30,7 @@ install:
 	-mkdir -p /etc/seggetd
 	-cp *.conf /etc/seggetd
 	-cp request /usr/bin
-	-mkdir -p /tmp/seggetd
+	-mkdir -p /var/tmp/seggetd
 	-mkdir -p /var/log/seggetd
 
 .PRECIOUS: %.o

@@ -63,14 +63,9 @@ using namespace std;
 int sockfd;
 
 int routine();
-void start_daemon_mode();
 int parse_cli_arguments(int argc, char* argv[]);
-int init_curses();
 int load_pkgs();
-void show_pkgs();
-int choose_segment(uint connection_num);
-int download_pkgs();
+//void show_pkgs();
 int main(int argc, char* argv[]);
-void *print_message_function( void *);
 
 #endif

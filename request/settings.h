@@ -37,9 +37,9 @@ using namespace std;
 class Tsettings{
 	public:
 		string conf_dir;
-		bool no_daemon_flag;
 	//pkg_list
-		string pkg_list_file;
+		string pkg_list_file_name;
+		bool keep_pkg_list_file;
 	//request_server
 		string request_ip;
 		ulong request_port;
@@ -51,9 +51,9 @@ class Tsettings{
 
 	Tsettings():
 			conf_dir("/etc/seggetd"),
-			no_daemon_flag(false),
 		//pkg_list
-			pkg_list_file("/tmp/seggetd/pkg.list"),
+			pkg_list_file_name("/var/tmp/seggetd/pkg.list"),
+			keep_pkg_list_file(false),
 		//request_server
 			request_ip("127.0.0.1"),
 			request_port(10000)

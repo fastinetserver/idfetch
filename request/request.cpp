@@ -27,7 +27,6 @@
 #include "request.h"
 
 int request(string msg){
-//	gettimeofday(&network_distfile_brokers_array[network_num].last_request_time, NULL);
 	int len;
 	struct sockaddr_in address;
 	int result;
@@ -43,16 +42,16 @@ int request(string msg){
 	//Connect your socket to the server’s socket:
 	result = connect(sockfd, (struct sockaddr *)&address, len);
 	if(result == -1) {
-		merror("Can't connect to segget daemon");
+		printout("Can't connect to segget daemon");
 		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 	}
 	if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
 	char send_buffer[100000];
-	//	char recv_buffer[256];
+
 	strcpy(send_buffer,msg.c_str());
 	//You can now read and write via sockfd:
 	if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
-		merror("Error in request.cpp: request(): request msg size and sent data size are different.");
+		printout("Error in request.cpp: request(): request msg size and sent data size are different.");
 	};
 
 	fd_set readfds, testfds;
@@ -74,15 +73,15 @@ int request(string msg){
 		char recv_buffer[1000];
 		if(nread == 0) {
 			close(sockfd);
-			merror("Error in request.cpp: request(): no response from segget daemon");
+			printout("Error in request.cpp: request(): no response from segget daemon");
 		}else{
 			if (nread!=read(sockfd, recv_buffer, nread)){
-				merror("Error in request.cpp: request(): response msg size and received data size are different.");
+				printout("Error in request.cpp: request(): response msg size and received data size are different.");
 			};
 			return decode_server_response(recv_buffer);
 		}
 	}else{
-		merror("Error in request.cpp: request(): zero size response from segget daemon");
+		printout("Error in request.cpp: request(): zero size response from segget daemon");
 	}
 	close(sockfd);
 	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
@@ -93,9 +92,9 @@ int load_pkgs(){
 		ifstream json_pkg_list_file;
 		json_pkg_list_file.exceptions (ofstream::failbit | ofstream::badbit);
 		try{
-			json_pkg_list_file.open(settings.pkg_list_file.c_str());
+			json_pkg_list_file.open(settings.pkg_list_file_name.c_str());
 		}catch(...){
-			merror("Error: Can't open distfile list file: "+settings.pkg_list_file);
+			printout("Error: Can't open distfile list file: "+settings.pkg_list_file_name);
 			return 1;
 		}
 		string buff((std::istreambuf_iterator<char>(json_pkg_list_file)), std::istreambuf_iterator<char>());
@@ -103,23 +102,23 @@ int load_pkgs(){
 			json_pkg_list_file>>buff;
 		}catch(std::ifstream::failure e){
 			if (!json_pkg_list_file.eof()){
-				merror("Error: Can't read pkg.list file: "+(string)e.what());
+				printout("Error: Can't read pkg.list file: "+(string)e.what());
 				return 1;
 			}
 		}catch(...){
-			perror("Unknown Error: Can't read pkg.list file");
+			printout("Unknown Error: Can't read pkg.list file");
 			return 1;
 		}
 		try{
 			json_pkg_list_file.close();
 		}catch(...){
-			perror("Error: Can't close pkg.list file");
+			printout("Error: Can't close pkg.list file");
 		}
 		try{
 			json_object *json_array_pkg_list;
 			json_array_pkg_list = json_tokener_parse(buff.c_str());
 			if (is_error(json_array_pkg_list))
-				merror("error parsing json:"+toString(json_tokener_errors[-(unsigned long)json_array_pkg_list]));
+				printout("error parsing json:"+toString(json_tokener_errors[-(unsigned long)json_array_pkg_list]));
 			else {
 				uint pkg_count=json_object_array_length(json_array_pkg_list);
 				// create 0 pkg for distfiles to provide proxy-fetcher
@@ -134,13 +133,21 @@ int load_pkgs(){
 					}
 				}
 			}
-			return 0;
 		}catch(...){
-			perror("Error: Can't parse json data from pkg.list file");
+			printout("Error: Can't parse json data from pkg.list file");
 			return 1;
 		}
+		if (settings.keep_pkg_list_file){
+			printout(settings.pkg_list_file_name+" will NOT be deleted");
+		}else{
+			if(remove(settings.pkg_list_file_name.c_str()) != 0 )
+				printout("Error in request.cpp: load_pkgs(): can't delete:"+settings.pkg_list_file_name);
+			else
+				printout(settings.pkg_list_file_name+" deleted" );
+		}
+		return 0;
 	}catch(...){
-		perror("Error in segget.cpp: load_pkgs()");
+		printout("Error in request.cpp: load_pkgs()");
 		return 1;
 	}
 }
@@ -162,7 +169,7 @@ void show_pkgs(){
 }
 */
 
-void segget_exit(int sig){
+void _exit(int sig){
 	try{
 //		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++) {
 //			close(fd);
@@ -179,10 +186,9 @@ void segget_exit(int sig){
 
 int routine(){
 	try{
-		signal(SIGABRT,segget_exit);//If program aborts go to assigned function "segget_exit".
-		signal(SIGTERM,segget_exit);//If program terminates go to assigned function "segget_exit".
-		signal(SIGINT,segget_exit);//If program terminates go to assigned function "segget_exit".
-//		prev_time=time((time_t *)NULL);
+		signal(SIGABRT,_exit);//If program aborts go to assigned function "segget_exit".
+		signal(SIGTERM,_exit);//If program terminates go to assigned function "segget_exit".
+		signal(SIGINT,_exit);//If program terminates go to assigned function "segget_exit".
 		try{
 			//load settings
 				settings.init();
@@ -196,41 +202,57 @@ int routine(){
 		}catch(...){
 			//error while loading pkgs
 		}
+/*
 		try{
 			//show_pkgs();
-//			stats.show_totals();
 		}catch(...){
 			//error while showing stats
 		}
-		try{
-//			download_pkgs();
-		}catch(...){
-			//error while downloading_pkgs
-		}
+*/
 		return 0;
 	}catch(...)
 	{
-		perror("Error in segget.cpp: routine()");
+		printout("Error in segget.cpp: routine()");
 	}
 	return 1;
 }
+
+void show_help(){
+	try{
+		printout("Usage: request [OPTIONS]");
+		printout("Options:");
+		printout("--conf-dir=PATH_TO_CONFIG_DIR           Specify path to a dir containing segget.conf file. By default it's /etc/seggetd");
+		printout("--help                                  Show this help.");
+		printout("--keep-pkglist-file                     Do NOT delete pkg.list file after sending request to segget daemon.");
+		printout("--pkglist-file=PATH_TO_PKGLIST_FILE     Specify path to pkg.list file. By default it's /var/tmp/seggetd/pkg.list");
+		printout("");
+	}catch(...){
+		printout("Error in segget.cpp: init_curses()");
+	}
+}
+
 int parse_cli_arguments(int argc, char* argv[]){
 	try{
 		string option,name,value;
-		cout << "argc = " << argc << endl;
+//		cout << "argc = " << argc << endl;
 		int posEqual;
+//		for(int i = 0; i < argc; i++){
+//			cout << "argv[" << i << "] = " << argv[i] << endl; 
+//		}
+//		printout("");
 		for(int i = 0; i < argc; i++){
-			cout << "argv[" << i << "] = " << argv[i] << endl; 
 			option=argv[i];
 			posEqual=option.find('=');
 			name  = trim(option.substr(0,posEqual));
 			value = trim(option.substr(posEqual+1));
 			if (name=="--conf-dir") {settings.conf_dir=value; continue;};
-			if (name=="--pkglist-file") {settings.pkg_list_file=value; continue;};
+			if (name=="--pkglist-file") {settings.pkg_list_file_name=value; continue;};
+			if (name=="--keep-pkglist-file") {settings.keep_pkg_list_file=true; continue;};
+			if (name=="--help") {show_help(); _exit(0);};
 		}
 		return 0;
 	}catch(...){
-		perror("Error in segget.cpp: init_curses()");
+		printout("Error in segget.cpp: init_curses()");
 	}
 	return 1;
 }
@@ -242,7 +264,7 @@ int main(int argc, char* argv[])
 		routine();
 		exit (0);
 	}catch(...){
-		perror("Error in segget.cpp main()");
+		printout("Error in segget.cpp main()");
 	}
 	exit(1);
 }

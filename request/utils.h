@@ -34,6 +34,6 @@
 #include <cstdlib>
 using namespace std;
 
-void merror(string error_msg);
+void printout(string error_msg);
 ulong time_left_from(timeval from_time);
 #endif
