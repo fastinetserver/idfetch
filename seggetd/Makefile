@@ -1,4 +1,4 @@
-BINS = segget
+BINS = seggetd
 OBJS = $(addsuffix .o,$(BINS))
 PKGCONFIG_MODULES = json libcurl libcrypto
 MISSING_PLUGINS_LIBS = 
@@ -18,8 +18,8 @@ all: $(BINS)
 %.o: %.cxx
 	$(CXX) -c -o $@ $(CXXFLAGS) $^
 
-segget: segget.o connection.o checksum.o config.o distfile.o log.o mirror.o network.o networkbroker.o phase.o pkg.o response.o segment.o settings.o stats.o str.o tui.o utils.o ui_server.o proxyfetcher.o requestserver.o scriptserver.o
-	$(CXX) -o $@ -lncurses $(LIBS) $(CIBS) $^
+seggetd: seggetd.o connection.o checksum.o config.o distfile.o log.o mirror.o network.o networkbroker.o phase.o pkg.o response.o segment.o settings.o stats.o str.o tui.o utils.o ui_server.o proxyfetcher.o requestserver.o scriptserver.o
+	$(CXX) -o $@ -lncurses -lcryptopp $(LIBS) $(CIBS) $^
 #%: %.o
 #	$(CXX) -o $@ $(LIBS) $(CIBS) $^
 
@@ -31,13 +31,13 @@ clean:
 install:
 	-mkdir /etc/seggetd
 	-cp *.conf /etc/seggetd
-	-cp segget /usr/bin/seggetd
+	-cp seggetd /usr/bin/seggetd
 	-cp ./init.d/seggetd /etc/init.d/seggetd
 	-mkdir -p /usr/share/seggetd
 	-cp -R ./webui /usr/share/seggetd
 	-mkdir -p /usr/share/seggetd/scripts
 	-cp -R ./scripts /usr/share/seggetd
-	-mkdir -p /tmp/seggetd/segments
+	-mkdir -p /var/tmp/seggetd/segments
 	-mkdir -p /usr/portage/distfiles
 	-mkdir -p /var/log/seggetd
 

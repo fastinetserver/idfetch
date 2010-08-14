@@ -168,10 +168,10 @@ class Tsettings{
 			color_status_disconnected_bg(COLOR_RED),
 
 		//logs
-			logs_dir("./logs"),
+			logs_dir("/var/log/seggetd"),
 			general_log_file("tuiclient.log"),
-			error_log_file("error.log"),
-			debug_log_file("debug.log")
+			error_log_file("tuiclient_error.log"),
+			debug_log_file("tuiclient_debug.log")
 			{};
 		void init();
 };

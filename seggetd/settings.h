@@ -104,7 +104,7 @@ class Tsettings{
 			no_daemon_flag(false),
 		//folders
 			distfiles_dir("/usr/portage/distfiles"),
-			segments_dir("/tmp/seggetd/segments"),
+			segments_dir("/var/tmp/seggetd/segments"),
 		//pkg_list
 //			pkg_list_dir("./"),
 //			del_pkg_list_when_dld_finished(1),
@@ -150,10 +150,10 @@ class Tsettings{
 		//scripting_and_scheduling
 			python_path("/usr/bin/python"),
 			scripts_dir("/usr/share/seggetd/scripts"),
-			script_socket_path("/tmp/seggetd/script_socket"),
+			script_socket_path("/var/tmp/seggetd/script_socket"),
 		//logs
 			logs_dir("/var/log/seggetd"),
-			general_log_file("segget.log"),
+			general_log_file("seggetd.log"),
 			error_log_file("error.log"),
 			debug_log_file("none"),
 			general_log_time_format("%m/%d %X"),

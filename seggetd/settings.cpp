@@ -67,7 +67,7 @@ void Tsettings::load_provide_mirror_files_restricted_patterns_vector(){
 
 void Tsettings::init(){
 	try{
-		Tconfig conf("segget.conf");
+		Tconfig conf("seggetd.conf");
 		conf.set("logs","general_log_file",general_log_file);
 		conf.set("logs","logs_dir",logs_dir);
 		conf.set("logs","error_log_file",error_log_file);

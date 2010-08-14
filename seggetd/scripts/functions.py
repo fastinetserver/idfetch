@@ -74,4 +74,4 @@ distfile=Tdistfile
 segment=Tsegment
 
 client_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-client_socket.connect("/tmp/seggetd/script_socket")
+client_socket.connect("/var/tmp/seggetd/script_socket")

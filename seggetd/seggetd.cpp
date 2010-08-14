@@ -24,7 +24,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "segget.h"
+#include "seggetd.h"
 /*
 int load_pkgs(){
 	try{
@@ -484,7 +484,9 @@ void start_daemon_mode(){
 		}
 		umask(0);
 		// prevent unmount problems - switch to root
-//		chdir("/");
+		if (chdir("/")){
+			error_log_no_msg("Error in segget.cpp: start_daemon_mode: can NOT chdir(\"/\")");
+		}
 		// create descriptors in case someone will use them
 		int fileDesc = open("/dev/null", O_RDWR); //stdin
 		 //stdout
