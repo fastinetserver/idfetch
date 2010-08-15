@@ -27,8 +27,8 @@
 #include "utils.h"
 #include <iostream>
 
-void printout(string error_msg){
-	cout<<error_msg<< endl;
+void printout(string msg){
+	cout<<msg<< endl;
 }
 
 ulong time_left_from(timeval from_time){

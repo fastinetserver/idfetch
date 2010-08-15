@@ -58,13 +58,10 @@ vector <string> split_to_vector(string splitter, string str){
 	}
 	return parts;
 }
-/*
-template<typename T> string toString(T t){
-	stringstream s;
-	s << t;
-	return s.str();
+
+void printout(string msg){
+	cout<<msg<< endl;
 }
-*/
 
 string colorToString(uint a_color){
 	switch (a_color){

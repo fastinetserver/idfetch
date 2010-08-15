@@ -275,6 +275,20 @@ void decode_log_msg(string msg_body){
 void decode_error_log_msg(string msg_body){
 	mainwindow.error_log_win.add_line(msg_body);
 }
+
+void show_help(){
+	try{
+		printout("Usage: tuiclient [OPTIONS]");
+		printout("Options:");
+		printout("--help                                               Show this help.");
+		printout("--wait-distfiles=df_name1,df_name2,...,df_nameN      Wait for specified distfiles to download and quit.");
+		printout("");
+		exit(0);
+	}catch(...){
+		printout("Error in request.cpp: show_help()");
+	}
+}
+
 int parse_cli_arguments(int argc, char* argv[]){
 	try{
 		string option,name,value;
@@ -286,6 +300,10 @@ int parse_cli_arguments(int argc, char* argv[]){
 			posEqual=option.find('=');
 			name  = trim(option.substr(0,posEqual));
 			value = trim(option.substr(posEqual+1));
+			if (name=="--help"){
+				show_help();
+				continue;
+			};
 			if (name=="--wait-distfiles"){
 				settings.arg_wait_distfiles=value;
 				settings.wait_distfiles_vector=split_to_vector(",", value);

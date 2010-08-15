@@ -28,6 +28,7 @@
 #define __STR_H__
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <algorithm>
 #include <vector>
 #include "log.h"
@@ -46,7 +47,7 @@ class Tparts{
 int atoi(string num_str);
 long atol(string num_str);
 
-//template<typename T> string toString(T t);
+void printout(string msg);
 string colorToString(uint a_color);
 
 string toString(uint t);
