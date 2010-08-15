@@ -41,35 +41,39 @@ ulong time_left_since(timeval from_time){
 }
 
 string secsToString(ulong secs){
-	string result="";
-	ulong mins=0;
-	ulong hours=0;
-	ulong days=0;
-	ldiv_t time_div_spliter;
-	if (secs>60){
-		time_div_spliter = ldiv (secs,60);
-		secs=time_div_spliter.rem;
-		if (time_div_spliter.quot>60){
-			time_div_spliter = ldiv (time_div_spliter.quot,60);
-			mins=time_div_spliter.rem;
-			if (time_div_spliter.quot>24){
-				time_div_spliter = ldiv (time_div_spliter.quot,24);
-				hours=time_div_spliter.rem;
-				days=time_div_spliter.quot;
-				if (days>999) return ("inf");
-				result=result+field(" ", days,3)+"d";
+	try{
+		string result="";
+		ulong mins=0;
+		ulong hours=0;
+		ulong days=0;
+		ldiv_t time_div_spliter;
+		if (secs>60){
+			time_div_spliter = ldiv (secs,60);
+			secs=time_div_spliter.rem;
+			if (time_div_spliter.quot>60){
+				time_div_spliter = ldiv (time_div_spliter.quot,60);
+				mins=time_div_spliter.rem;
+				if (time_div_spliter.quot>24){
+					time_div_spliter = ldiv (time_div_spliter.quot,24);
+					hours=time_div_spliter.rem;
+					days=time_div_spliter.quot;
+					if (days>999) return ("inf");
+					result=result+field(" ", days,3)+"d";
+				}else{
+					hours=time_div_spliter.quot;
+				}
+				result=result+field(" ", hours,2)+"h";
 			}else{
-				hours=time_div_spliter.quot;
+				mins=time_div_spliter.quot;
 			}
-			result=result+field(" ", hours,2)+"h";
-		}else{
-			mins=time_div_spliter.quot;
+			result=result+field(" ", mins,2)+"m";
 		}
-		result=result+field(" ", mins,2)+"m";
+		result=result+field(" ", secs,2)+"s";
+		return result;
+	}catch(...){
+		error_log("Error in utils.cpp: secsToSting()");
+		return "n/a";
 	}
-	result=result+field(" ", secs,2)+"s";
-
-	return result;
 }
 
 string speedToString(ulong dld_bytes, ulong time_left){

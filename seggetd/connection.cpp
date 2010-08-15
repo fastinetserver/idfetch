@@ -32,9 +32,13 @@ uint Tconnection::total_connections=0;
 Tconnection connection_array[MAX_CONNECTS];
 
 void init_connections(){
-	for (ulong connection_num=0; connection_num<MAX_CONNECTS; connection_num++){
-		connection_array[connection_num].connection_num=connection_num;
-	};
+	try{
+		for (ulong connection_num=0; connection_num<MAX_CONNECTS; connection_num++){
+			connection_array[connection_num].connection_num=connection_num;
+		};
+	}catch(...){
+		error_log("Error in connection.cpp: init_connections()");
+	}
 }
 
 int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegment *started_segment, uint best_mirror_num){
@@ -96,16 +100,7 @@ int Tconnection::start(CURLM *cm, uint network_number, uint distfile_num, Tsegme
 	}
 	return ERROR_WHILE_PREPARING_CONNECTION;
 }
-/*
-string explain_curl_error(int error_code){
-	try{
-		//curl_easy_strerror(
-	}catch(...){
-		error_log("Error in connection.cpp: explain_curl_error()");
-	}
-	return "Error in connection.cpp: explain_curl_error()";
-}
-*/
+
 void Tconnection::stop(CURLcode connection_result){
 	try{
 		stats.active_connections_counter--;
@@ -135,8 +130,8 @@ void Tconnection::stop(CURLcode connection_result){
 			if (! segment->segment_verification_is_ok()){
 				connection_result=CURLE_READ_ERROR;
 				Pcurr_mirror->stop(time_left_since(connection_array[connection_num].start_time),0);
-				debug("curl_lies - there is a problem downloading segment");
-				error_log("curl_lies - there is a problem downloading segment");
+				debug("libcurl stated succesful result but size for the segment is incorrect");
+				error_log("libcurl stated succesful result but size for the segment is incorrect");
 			}else{
 				Pcurr_mirror->stop(time_left_since(connection_array[connection_num].start_time),segment->segment_size);
 			}
@@ -147,16 +142,6 @@ void Tconnection::stop(CURLcode connection_result){
 
 		msg_clean_connection(connection_num);
 
-/*
-		Tmirror *Pcurr_mirror;
-		if (network_array[network_num].network_mode==MODE_LOCAL){
-			Pcurr_mirror=&network_array[network_num].benchmarked_mirror_list[mirror_num];
-			prnt_distfile->network_distfile_brokers_array[network_num].mirror_fails_vector[mirror_num]=true;
-//			find_mirror(strip_mirror_name(segment->url));
-		}else{
-			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
-		}
-*/
 		debug("before gettimeofday");
 		timeval now_time;
 		gettimeofday(&now_time,NULL);
@@ -199,7 +184,6 @@ void Tconnection::stop(CURLcode connection_result){
 			// no error => count this one and start new
 			log("Succesfully downloaded "+segment->file_name+" on connection#"+toString(connection_num));
 			debug(" Successful download "+segment->url);
-// already done earlier in this function			Pcurr_mirror=find_mirror(strip_mirror_name(segment->url));
 			segment->status=SDOWNLOADED;
 			segment->parent_distfile->inc_dld_segments_count(segment);
 		};

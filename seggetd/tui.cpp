@@ -29,27 +29,20 @@ extern Tsettings settings;
 
 const uint CONNECTION_LINES=3;
 string screenlines[DEBUG_LINE_NUM+1];
-//vector<string> log_lines;
 uint log_lines_counter=0;
 uint max_published_screenline_num;
 
-//bool msg_idle=true;
 void msg(uint y, uint x, string msg_text){
-//	if (msg_idle){
-//		msg_idle=false;
 		try{
 			if (max_published_screenline_num<y && y<MAX_LINES) max_published_screenline_num=y;
 			screenlines[y]=msg_text;
 			ui_server.send_connection_msg_to_all_clients(y,msg_text);
-//			string ready_msg_text=msg_text+"                        ";
 			string ready_msg_text=msg_text+"";
 			mvaddstr(y,x,ready_msg_text.c_str());
 			refresh();
 		}catch(...){
 			error_log_no_msg("Error in tui.cpp: msg()");
 		}
-//		msg_idle=true;
-//	}
 }
 
 void msg_segment_progress(uint connection_num, string progress_text){
@@ -82,7 +75,6 @@ void msg_clean_connection(uint connection_num){
 void msg_log(string log_text){
 	try{
 		ui_server.send_log_msg_to_all_clients(log_text);
-//		msg(20,0, error_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_error()");
 	}
@@ -90,7 +82,6 @@ void msg_log(string log_text){
 void msg_error_log(string error_log_text){
 	try{
 		ui_server.send_error_log_msg_to_all_clients(error_log_text);
-//		msg(20,0, error_text);
 	}catch(...){
 		error_log_no_msg("Error in tui.cpp: msg_error()");
 	}

@@ -29,13 +29,6 @@ Tpkg **Ppkg_array;
 Tpkg proxy_fetcher_pkg;
 Tpkg request_server_pkg;
 
-//#define R_DOWNLOAD_STARTED						0
-//#define R_ADDED_TO_PROXY_QUEUE					100
-//#define R_ALREADY_WAS_IN_QUEUE					101
-//#define R_WAIT_FOR_LOCAL_MIRRORS				102
-//#define R_NO_FREE_NETWORK_CONNECTION_FOUND		103
-//#define R_ERROR_ADDING_TO_PROXY_QUEUE			200
-
 int Tpkg::push_back_distfile(json_object* json_obj_distfile){
 	try{
 		Tdistfile * Pcur_distfile=new Tdistfile();
@@ -92,29 +85,9 @@ void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
 		error_log("Error in pkg.cpp: load_distfile_list()");
 	}
 }
-/*
-void Tpkg::load_distfile_list(json_object* json_array_distfile_list){
-	try{
-		distfile_count=json_object_array_length(json_array_distfile_list);
-//		Pdistfile_list= new Tdistfile* [distfile_count];
-		for(uint distfile_array_item_num=0;distfile_array_item_num<distfile_count;distfile_array_item_num++){
-//			Pdistfile_list[distfile_array_item_num]=new Tdistfile();
-			Pdistfile_list.push_back(new Tdistfile());
-//			Tdistfile a_distfile;
-//			a_distfile.load_distfile_from_json(json_object_array_get_idx(json_array_distfile_list,distfile_array_item_num));
-			Pdistfile_list[distfile_array_item_num]->load_distfile_from_json(json_object_array_get_idx(json_array_distfile_list,distfile_array_item_num));
-		}
-	}catch(...){
-		error_log("Error in pkg.cpp: load_distfile_list()");
-	}
-}
-*/
-
-
 
 void Tpkg::load_pkg_from_json(json_object* json_obj_pkg){
 	try{
-		//	printf("\t%d %s\n",array_item_num, json_object_to_json_string(json_obj_pkg));
 		name=json_object_to_json_string(json_object_object_get(json_obj_pkg,"pkg_name"));
 		category=json_object_to_json_string(json_object_object_get(json_obj_pkg,"CATEGORY"));
 		load_distfile_list(json_object_object_get(json_obj_pkg,"distfile_list"));
@@ -128,7 +101,6 @@ Tpkg::~Tpkg(){
 		for (uint i=0;i<distfile_count;i++)
 			delete Pdistfile_list[i];
 		Pdistfile_list.clear();
-//		delete [] Pdistfile_list;
 	}catch(...){
 		error_log("Error in pkg.cpp: ~Tpkg");
 	}

@@ -29,12 +29,17 @@
 Tsegment *segments_in_progress[MAX_CONNECTS]={0};
 
 string statusToString(Tsegment_status the_status){
-	switch (the_status){
-		case SWAITING:return "SWAITING";
-		case SDOWNLOADING:return "SDOWNLOADING";
-		case SDOWNLOADED:return "SDOWNLOADED";
-		case SFAILED:return "SFAILED";
-		default :return "UNKNOWN STATUS";
+	try{
+		switch (the_status){
+			case SWAITING:return "SWAITING";
+			case SDOWNLOADING:return "SDOWNLOADING";
+			case SDOWNLOADED:return "SDOWNLOADED";
+			case SFAILED:return "SFAILED";
+			default :return "UNKNOWN STATUS";
+		}
+	}catch(...){
+		error_log("Error in segment.cpp: statusToString()");
+		return "UNKNOWN STATUS";
 	}
 }
 bool Tsegment::segment_verification_is_ok(){
@@ -88,7 +93,6 @@ uint Tsegment::start(CURLM *cm, uint con_num, uint network_num, uint distfile_nu
 		status=SDOWNLOADING;
 		downloaded_bytes=0;
 		connection_num=con_num;
-//		connection_array[con_num].start(network_num);
 		try_num++;
 		return add_easy_handle_to_multi(cm, network_num);
 	}catch(...){
@@ -223,10 +227,6 @@ size_t write_data(void *buffer, size_t size, size_t nmemb, void *cur_segment){
 			error_log("Can't write segment file:"+segment->file_name);
 		}
 		connection_array[segment->connection_num].inc_bytes_per_last_interval(bytes_written);
-//		ulong time_diff_msecs=time_left_from(stats.previous_time);
-//		if (time_diff_msecs >= settings.current_speed_time_interval_msecs){
-//			show_progress(time_diff_msecs);
-//		};
 	}catch(...){
 		error_log("Error in segment.cpp: write_data()");
 		return 0;

@@ -35,9 +35,10 @@ enum TDFsearch_rusults{
 };
 
 void Tui_server::init(){
-	socklen_t server_len;
-	struct sockaddr_in server_address;
-	// Create and name a socket for the server:
+	try{
+		socklen_t server_len;
+		struct sockaddr_in server_address;
+		// Create and name a socket for the server:
 		server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		// Set socket options. We would like the socket to disappear
 		// as soon as it has been closed for whatever reason.
@@ -62,60 +63,56 @@ void Tui_server::init(){
 							+":"+toString(ntohs(server_address.sin_port)));
 		}
 	//Create a connection queue and initialize readfds to handle input from server_sockfd:
-	listen(server_sockfd, 5);
-	FD_ZERO(&readfds);
-	FD_SET(server_sockfd, &readfds);
-	send_to_fd_busy=false;
+		listen(server_sockfd, 5);
+		FD_ZERO(&readfds);
+		FD_SET(server_sockfd, &readfds);
+		send_to_fd_busy=false;
+	}catch(...){
+		error_log("Error in ui_server.cpp: init()");
+	}
 }
 
 //prevent simultaneous writes
 
 ulong Tui_server::send_binary_to_fd(uint fd, string image_file_name){
-//	if (send_to_fd_idle) {
-			ifstream image_file;
-			try{
-				image_file.open (image_file_name.c_str(), ios::in|ios::binary|ios::ate);
-	//			file.open((settings.conf_dir+"/"+config_file_name).c_str());
+	ifstream image_file;
+	try{
+		image_file.open (image_file_name.c_str(), ios::in|ios::binary|ios::ate);
+	}
+	catch(...){
+		error_log("Error opening image file: ");
+	}
+	try{
+		//processing file
+		ifstream::pos_type size;
+		char * memblock;
+		if (image_file.is_open()){
+			size = image_file.tellg();
+			memblock = new char [size];
+			image_file.seekg (0, ios::beg);
+			image_file.read (memblock, size);
+			while (send_to_fd_busy){
+				sleep(1);
 			}
-			catch(...){
-				error_log("Error opening image file: ");
-	//			return;
-			}
-			try{
-				//processing file
-				ifstream::pos_type size;
-				char * memblock;
-				if (image_file.is_open()){
-					size = image_file.tellg();
-					memblock = new char [size];
-					image_file.seekg (0, ios::beg);
-					image_file.read (memblock, size);
-
-					while (send_to_fd_busy){
-						sleep(1);
+			send_to_fd_busy=true;
+			if (fd !=server_sockfd){
+				if(FD_ISSET(fd,&ui_server.readfds)) {
+					ulong bytes_written=write(fd, memblock, size);
+					if (bytes_written!=size){
+						debug("Error: Not all data has been sent to ui_client during send_binary_to_fd()");
 					}
-					send_to_fd_busy=true;
-					if (fd !=server_sockfd){
-						if(FD_ISSET(fd,&ui_server.readfds)) {
-							ulong bytes_written=write(fd, memblock, size);
-							if (bytes_written!=size){
-								debug("Error: Not all data has been sent to ui_client during send_binary_to_fd()");
-							}
-						}
-					}
-					send_to_fd_busy=false;
-					image_file.close();
-					delete[] memblock;
 				}
-			}catch(ifstream::failure e){
-//
-			}catch(...){
-	//			error_log("Settings file: "+config_file_name+" was opened, but an error occured while reading settings from it.");
 			}
-
+			send_to_fd_busy=false;
+			image_file.close();
+			delete[] memblock;
+		}
+	}catch(ifstream::failure e){
+	}catch(...){
+		error_log("Error in ui_server.cpp: send_binary_to_fd()");
+	}
 	return 0;
 }
-
 
 ulong Tui_server::send_to_fd(uint fd, string msg){
 //	if (send_to_fd_idle) {

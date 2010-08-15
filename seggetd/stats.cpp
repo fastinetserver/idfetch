@@ -31,13 +31,6 @@ Tstats stats;
 void Tstats::inc_dld_distfiles_count(){
 	try{
 		dld_distfiles_count++;
-//		if ((settings.del_pkg_list_when_dld_finished) and (dld_distfiles_count>distfiles_count)){
-			//delete pkg.list file;
-//			if(remove((settings.pkg_list_dir+"/pkg.list").c_str()) != 0 )
-//				error_log("Error in stats.cpp: inc_dld_distfiles_count(): Can't delete:"+settings.pkg_list_dir+"/pkg.list");
-//			else
-//				debug(settings.pkg_list_dir+"/pkg.list"+" deleted" );
-//		}
 	}catch(...){
 		error_log("Error in stats.cpp: show_totals()");
 	}
@@ -65,22 +58,16 @@ void Tstats::show_totals(){
 		msg_total("Total CON:" 
 			+field("",					active_connections_counter,2)+"/"
 			+field("",					settings.max_connections,2)
-//			+field(" PKGs:",			pkg_count,4)
-//			+field(" = DFs:",			dld_distfiles_count,4)
 			+" = DF:"+toString(dld_distfiles_count)
 			+field("/",				distfiles_count,4)
 			+" = Sg:"+toString(dld_segments_count)
 			+field("/",				segments_count,5)
-//			+field(" = Size:",			dld_size/1000,7)
 			+" = Size:"+toString(dld_size/1000)
 			+field("(",				((double)dld_size/show_total_size)*100,3)+"%)"
-//			+field("/",				total_size/1000,7)+" Kb "
 			+"/"+toString(total_size/1000)+"Kb"
 			+" Total spd: "+speedToString(total_bytes_per_last_interval*1000/show_last_time_interval)
 			+avg_speed_str
 			+eta_str
-		//			+" Secs:"+toString(now_timee.tv_sec)
-		//			+" usecs:"+toString(now_timee.tv_usec)
 			);
 		reset_previous_time();
 	}catch(...){

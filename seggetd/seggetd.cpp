@@ -25,78 +25,6 @@
 */
 
 #include "seggetd.h"
-/*
-int load_pkgs(){
-	try{
-		
-		ifstream json_pkg_list_file;
-		json_pkg_list_file.exceptions (ofstream::failbit | ofstream::badbit);
-		try{
-			json_pkg_list_file.open((settings.pkg_list_dir+"/pkg.list").c_str());
-		}catch(...){
-			error_log("Error: Can't open "+settings.pkg_list_dir+"/pkg.list"+" file");
-			return 1;
-		}
-		string buff((std::istreambuf_iterator<char>(json_pkg_list_file)), std::istreambuf_iterator<char>());
-		try{
-			json_pkg_list_file>>buff;
-		}catch(std::ifstream::failure e){
-			if (!json_pkg_list_file.eof()){
-				error_log("Error: Can't read pkg.list file: "+(string)e.what());
-				return 1;
-			}
-		}catch(...){
-			error_log("Unknown Error: Can't read pkg.list file");
-			return 1;
-		}
-		try{
-			json_pkg_list_file.close();
-		}catch(...){
-			error_log("Error: Can't close pkg.list file");
-		}
-		try{
-			//	cout<< buff<<"\n";
-			json_object *json_array_pkg_list;
-			json_array_pkg_list = json_tokener_parse(buff.c_str());
-			if (is_error(json_array_pkg_list))
-				printf("error parsing json: %s\n",json_tokener_errors[-(unsigned long)json_array_pkg_list]);
-			else {
-				stats.pkg_count=json_object_array_length(json_array_pkg_list);
-				Ppkg_array= new Tpkg* [stats.pkg_count];
-				// create 0 pkg for distfiles to provide proxy-fetcher
-				for(uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
-					Ppkg_array[array_item_num]=new Tpkg;
-					Ppkg_array[array_item_num]->load_pkg_from_json(json_object_array_get_idx(json_array_pkg_list,array_item_num));
-				}
-			}
-			return 0;
-		}catch(...){
-			error_log("Error: Can't parse json data from pkg.list file");
-			return 1;
-		}
-	}catch(...){
-		error_log("Error in segget.cpp: load_pkgs()");
-		return 1;
-	}
-}
-*/
-/*
-void show_pkgs(){
-	try{
-		for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
-			cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
-			for(uint distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
-				cout << "    "<< distfile_array_item_num<<") distfile_name:"<< Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->name<<"\n";
-				for(uint urllist_array_item_num=0;urllist_array_item_num<Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count;urllist_array_item_num++){
-					cout <<"        "<<Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_list[urllist_array_item_num]<<"\n";
-				}
-			}
-		}
-	}catch(...){
-		error_log("Error in segget.cpp: show_pkgs()");
-	}
-}
-*/
 int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 	try{
 		uint distfile_num(0);
@@ -144,13 +72,6 @@ int pkg_choose_segment(Tpkg * cur_pkg, uint connection_num){
 int choose_segment(uint connection_num){
 	try{
 		debug("Entered choose_segment()");
-//		for (uint pkg_num=0; pkg_num<stats.pkg_count; pkg_num++){
-//			debug("pkg_num:"+toString(pkg_num));
-//			if (0==pkg_choose_segment(Ppkg_array[pkg_num], connection_num)){
-//				return 0;
-//			}
-//		}
-		
 		if (0==pkg_choose_segment(&request_server_pkg, connection_num)){
 			return 0;
 		}
@@ -159,12 +80,6 @@ int choose_segment(uint connection_num){
 		if (0==pkg_choose_segment(&proxy_fetcher_pkg, connection_num)){
 			return 0;
 		}
-		//  for (uint array_item_num=0;array_item_num<pkg_count;array_item_num++){
-		//for(int distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
-		//  if (Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count)
-		//	Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->dosegments();
-		//}
-		//}
 		return 1;
 	}catch(...){
 		error_log("Error: segget.cpp : choose_segment()");
@@ -173,7 +88,6 @@ int choose_segment(uint connection_num){
 }
 int download_pkgs(){
 	try{
-		//  cout << "Need to download: " << segments_count << " segments\n";
 		CURLMsg *msg;
 		long L;
 		int M, Q, U = -1;
@@ -189,12 +103,6 @@ int download_pkgs(){
 			return EXIT_FAILURE;
 		}
 
-//		for (uint connection_num = 0; connection_num < settings.max_connections; ++connection_num) {
-//			if ( ! connection_array[connection_num].active){
-//				if (choose_segment(connection_num))
-//					break;
-//			}
-//		};
 		bool keep_running_flag=true;
 		struct timeval prev_connection_activation_cycle_time;
 		while (keep_running_flag) {
@@ -226,21 +134,17 @@ int download_pkgs(){
 			debug("After attempt to start connection activation cycle");
 			U=stats.active_connections_counter;
 			debug("before multi_perform");
-//			while (CURLM_CALL_MULTI_PERFORM == curl_multi_perform(cm, &U)){};
 			if (CURLM_CALL_MULTI_PERFORM != curl_multi_perform(cm, &U)){
 				debug("after multi_perform");
-//				if (U) {
 					FD_ZERO(&R);
 					FD_ZERO(&W);
 					FD_ZERO(&E);
 					if (curl_multi_fdset(cm, &R, &W, &E, &M)) {
 						error_log("Error: curl_multi_fdset");
-//						fprintf(stderr, "E: curl_multi_fdset\n");
 						return EXIT_FAILURE;
 					}
 					if (curl_multi_timeout(cm, &L)) {
 						error_log("Error: curl_multi_timeout");
-//						fprintf(stderr, "E: curl_multi_timeout\n");
 						return EXIT_FAILURE;
 					}
 					if (L == -1)
@@ -255,12 +159,10 @@ int download_pkgs(){
 						T.tv_sec = L/1000;
 						T.tv_usec = (L%1000)*1000;
 						if (0 > select(M+1, &R, &W, &E, &T)) {
-//							fprintf(stderr, "E: select(%i,,,,%li): %i: %s\n",
 							error_log("Error: select ("+toString(M+1)+","+toString(L)+"):"+toString(errno)+": "+strerror(errno));
 							return EXIT_FAILURE;
 						}
 					}
-//				}
 				debug("before multi_info_read");
 				while ((msg = curl_multi_info_read(cm, &Q))) {
 					debug("inside multi_info_read");
@@ -268,16 +170,8 @@ int download_pkgs(){
 						Tsegment *current_segment;
 						CURL *e = msg->easy_handle;
 						curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &current_segment);
-//						CURLcode connection_result=msg->data.result;
-//						string result_msg_text="RESULT:"+toString(connection_result)+" "+curl_easy_strerror(msg->data.result)+" while downloading segment";
-//						msg_status1(current_segment->connection_num,current_segment->segment_num,result_msg_text);
 						curl_multi_remove_handle(cm, e);
-	
 						connection_array[current_segment->connection_num].stop(msg->data.result);
-	
-//						if (not choose_segment(current_segment->connection_num)) {
-//							U++; // just to prevent it from remaining at 0 if there are more URLs to get
-//						};
 						stats.show_totals();
 						curl_easy_cleanup(e);
 					}else {
@@ -327,7 +221,6 @@ void launch_proxy_fetcher_server_thread(){
 		pthread_t proxy_fetcher_server_thread;
 		int iret1;
 		debug_no_msg("Creating ui_server_thread.");
-//		proxy_fetcher_server_thread.init();
 		iret1 = pthread_create( &proxy_fetcher_server_thread, NULL, run_proxy_fetcher_server, (void*) NULL);
 		debug_no_msg("proxy_fetcher_server_thread launched");
 	}
@@ -338,23 +231,10 @@ void launch_request_server_thread(){
 		pthread_t request_server_thread;
 		int iret1;
 		debug_no_msg("Creating request_server_thread.");
-//		proxy_fetcher_server_thread.init();
 		iret1 = pthread_create( &request_server_thread, NULL, run_request_server, (void*) NULL);
 		debug_no_msg("request_server_thread launched");
 	}
 }
-/*
-void launch_script_server_thread(){
-//	if (settings.request_ip!="none"){
-		pthread_t script_server_thread;
-		int iret1;
-		debug_no_msg("Creating script_server_thread.");
-//		proxy_fetcher_server_thread.init();
-		iret1 = pthread_create( &script_server_thread, NULL, run_script_server, (void*) NULL);
-		debug_no_msg("script_server_thread launched");
-//	}
-}
-*/
 void segget_exit(int sig){
 	try{
 		endwin();
@@ -384,13 +264,12 @@ int routine(){
 		signal(SIGINT,segget_exit);//If program terminates go to assigned function "segget_exit".
 		try{
 			gettimeofday(&stats.segget_start_time,NULL);
-//			stats.prev_time=time((time_t *)NULL);
 		}catch(...){
 			error_log("Error in stats.cpp: reset_previous_time()");
 		}
 		try{
 			//load settings
-				settings.init();
+			settings.init();
 		}
 		catch(...)
 		{
@@ -417,13 +296,6 @@ int routine(){
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_proxy_fetcher_server_thread failed");
 		}
-/*
-		try{
-			launch_script_server_thread();
-		}catch(...){
-			error_log_no_msg("Error in segget.cpp launch_script_server_thread failed");
-		}
-*/
 		try{
 			launch_proxy_fetcher_server_thread();
 		}catch(...){
@@ -434,11 +306,6 @@ int routine(){
 		}catch(...){
 			error_log_no_msg("Error in segget.cpp launch_tui_theread() failed");
 		}
-//		try{
-//			load_pkgs();
-//		}catch(...){
-			//error while loading pkgs
-//		}
 		try{
 			//show_pkgs();
 			stats.show_totals();
@@ -492,12 +359,10 @@ void start_daemon_mode(){
 		 //stdout
 		if (dup(fileDesc)){
 			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stdout");
-//			exit(1);
 		}
 		//stderr
 		if (dup(fileDesc)){
 			log_no_msg("Error in segget.cpp: start_daemon_mode: during dup(fileDesc) - stderr");
-//			exit(1);
 		}
 		log_no_msg("Starting daemon routine");
 		routine();
@@ -519,6 +384,19 @@ int init_curses(){
 	}
 	return 1;
 }
+void show_help(){
+	try{
+		cout << "Usage: seggetd [OPTIONS]" << endl;
+		cout << "OPTIONS:" << endl;
+		cout << "--conf-dir=path             Use .conf files from specified dir instead of default /etc/seggetd" << endl;
+		cout << "--help                      Show this help" << endl;
+		cout << "--no-daemon                 Do NOT switch to daemon mode on start" << endl;
+		exit (0);
+	}catch(...){
+		perror("Error in segget.cpp show_help()");
+	}
+}
+
 int parse_cli_arguments(int argc, char* argv[]){
 	try{
 		string option,name,value;
@@ -530,6 +408,7 @@ int parse_cli_arguments(int argc, char* argv[]){
 			posEqual=option.find('=');
 			name  = trim(option.substr(0,posEqual));
 			value = trim(option.substr(posEqual+1));
+			if (name=="--help") {show_help(); continue;};
 			if (name=="--conf-dir") {settings.conf_dir=value; continue;};
 			if (name=="--no-daemon"){settings.no_daemon_flag=true; continue;}
 		}

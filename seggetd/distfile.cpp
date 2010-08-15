@@ -116,105 +116,101 @@ void Tdistfile::set_status(Tdistfile_status new_status){
 }
 
 int Tdistfile::request(ulong network_num, string msg){
-	gettimeofday(&network_distfile_brokers_array[network_num].last_request_time, NULL);
-	int sockfd;
-	int len;
-	struct sockaddr_in address;
-	int result;
-	//Create a socket for the client:
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	try{
+		gettimeofday(&network_distfile_brokers_array[network_num].last_request_time, NULL);
+		int sockfd;
+		int len;
+		struct sockaddr_in address;
+		int result;
+		//Create a socket for the client:
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-	//Name the socket, as agreed with the server:
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = inet_addr(network_array[network_num].proxy_fetcher_ip.c_str());
-	address.sin_port = htons(network_array[network_num].proxy_fetcher_port);
-	len = sizeof(address);
+		//Name the socket, as agreed with the server:
+		address.sin_family = AF_INET;
+		address.sin_addr.s_addr = inet_addr(network_array[network_num].proxy_fetcher_ip.c_str());
+		address.sin_port = htons(network_array[network_num].proxy_fetcher_port);
+		len = sizeof(address);
 
-	//Connect your socket to the server’s socket:
-	result = connect(sockfd, (struct sockaddr *)&address, len);
-	if(result == -1) {
-		error_log("Network:"+toString(network_num)+"Can't connect to proxy-fetcher");
+		//Connect your socket to the server’s socket:
+		result = connect(sockfd, (struct sockaddr *)&address, len);
+		if(result == -1) {
+			error_log("Network:"+toString(network_num)+"Can't connect to proxy-fetcher");
+			return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+		}
+		if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
+		char send_buffer[100000];
+		//	char recv_buffer[256];
+		strcpy(send_buffer,msg.c_str());
+		//You can now read and write via sockfd:
+		if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
+			error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"request msg size and sent data size are different.");
+		};
+
+		fd_set readfds, testfds;
+		FD_ZERO(&readfds);
+		FD_SET(sockfd, &readfds);
+		testfds = readfds;
+
+		struct timeval response_timeout;
+		response_timeout.tv_sec=1;
+		response_timeout.tv_usec=0;
+
+		result = select(FD_SETSIZE, &testfds, (fd_set *)0,
+		(fd_set *)0, &response_timeout);
+
+		if(FD_ISSET(sockfd,&testfds)) {
+			int nread;
+			ioctl(sockfd, FIONREAD, &nread);
+
+			char recv_buffer[1000];
+			if(nread == 0) {
+				close(sockfd);
+				error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" no response from proxy-fetcher");
+			}else{
+				if (nread!=read(sockfd, recv_buffer, nread)){
+					error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"response msg size and received data size are different.");
+				};
+				return decode_server_response(recv_buffer);
+			}
+		}else{
+			error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" zero size response from proxy-fetcher");
+		}
+		close(sockfd);
+		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+	}catch(...){
+		error_log("Error: distfile.cpp: request()");
 		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 	}
-	if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
-	char send_buffer[100000];
-	//	char recv_buffer[256];
-	strcpy(send_buffer,msg.c_str());
-	//You can now read and write via sockfd:
-	if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
-		error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"request msg size and sent data size are different.");
-	};
-
-	fd_set readfds, testfds;
-	FD_ZERO(&readfds);
-	FD_SET(sockfd, &readfds);
-	testfds = readfds;
-
-	struct timeval response_timeout;
-	response_timeout.tv_sec=1;
-	response_timeout.tv_usec=0;
-	
-	result = select(FD_SETSIZE, &testfds, (fd_set *)0,
-	(fd_set *)0, &response_timeout);
-
-	if(FD_ISSET(sockfd,&testfds)) {
-		int nread;
-		ioctl(sockfd, FIONREAD, &nread);
-
-		char recv_buffer[1000];
-		if(nread == 0) {
-			close(sockfd);
-			error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" no response from proxy-fetcher");
-		}else{
-			if (nread!=read(sockfd, recv_buffer, nread)){
-				error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+"response msg size and received data size are different.");
-			};
-			return decode_server_response(recv_buffer);
-		}
-	}else{
-		error_log("Error in distfile.cpp: request(): Network:"+toString(network_num)+" zero size response from proxy-fetcher");
-	}
-	close(sockfd);
-	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
 bool Tdistfile::allows_new_actions(){
-//	if (downloaded) return false;
-//	else return true;
-//	int time_left=0;
-	if (status==DDOWNLOADED){
-		debug("No new connection for distfile:"+name+". Distfile has DDOWNLOADED status");
-		return false;
-	}
-	if (status==DFAILED){
-		debug("No new connection for distfile:"+name+". Distfile has DFAILED status");
-		return false;
-	}
-	if (status==DALL_LM_AND_PF_MIRRORS_FAILED){
-		debug("No new connection for distfile:"+name+". Distfile has DALL_LM_AND_PF_MIRRORS_FAILED status");
-		return false;
-	}
-//	debug("Distfile "+Ppkg_array[pkg_num]->distfile_vector[distfile_num]->name+" allows new connections");
-//	debug("	distfile_num:"+toString(distfile_num));
-	if (active_connections_num<settings.max_connection_num_per_distfile){
-		debug("Allow new connection for ============================================= Distfile "+name);
-		debug("max_connection limit has not been reached");
-		return true;
-	}else{
-		debug("No new connection for distfile: "+name+". It already has "
-			+toString(active_connections_num)
-			+" connections => choose another distfile.");
+	try{
+		if (status==DDOWNLOADED){
+			debug("No new connection for distfile:"+name+". Distfile has DDOWNLOADED status");
 			return false;
+		}
+		if (status==DFAILED){
+			debug("No new connection for distfile:"+name+". Distfile has DFAILED status");
+			return false;
+		}
+		if (status==DALL_LM_AND_PF_MIRRORS_FAILED){
+			debug("No new connection for distfile:"+name+". Distfile has DALL_LM_AND_PF_MIRRORS_FAILED status");
+			return false;
+		}
+		if (active_connections_num<settings.max_connection_num_per_distfile){
+			debug("Allow new connection for ============================================= Distfile "+name);
+			debug("max_connection limit has not been reached");
+			return true;
+		}else{
+			debug("No new connection for distfile: "+name+". It already has "
+				+toString(active_connections_num)
+				+" connections => choose another distfile.");
+				return false;
+		}
+	}catch(...){
+		error_log("Error: distfile.cpp: allows_new_actions()");
+		return true;
 	}
-//	if (((status==DPROXY_QUEUED) || (status==DPROXY_DOWNLOADING)) && (time_left<100)) return false;
-//oterwise allow connections
-//	DNEW,
-//	D_NOT_PROXY_REQUESTED,
-//	DPROXY_REJECTED,
-//	DPROXY_FAILED,
-//	DPROXY_DOWNLOADED,
-//	DWAITING,
-//	DDOWNLOADING,json_object_object_get(json_obj_distfile,"SHA512")
 }
 
 void Tdistfile::init(){
@@ -624,16 +620,6 @@ uint Tdistfile::request_proxy_fetcher_network(uint network_priority){
 						}
 					}
 					if (best_proxy_fetcher_network_num!=-1) break;
-/*
-					}else{
-						if (network_array[network_num].only_local_when_possible){
-							if (network_distfile_brokers_array[network_num].some_mirrors_have_NOT_failed_yet()){
-								allow_remote_mirrors=false;
-								debug("Network"+toString(network_num)+" forbids using remote mirrors because not all local mirrors have failed");
-							}
-						}
-					}
-*/
 				}
 			}
 		}

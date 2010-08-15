@@ -64,4 +64,3 @@ int decode_server_response(string server_response){
 		};
 	}
 }
-

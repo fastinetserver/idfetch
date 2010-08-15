@@ -46,52 +46,39 @@ void Tnetwork_distfile_broker::init(ulong network_number){
 }
 
 void Tnetwork_distfile_broker::local_mirror_failed(uint mirror_num){
-	if (phase==E_USE_AS_LOCAL_MIRRORS){
-		if (! mirror_fails_vector[mirror_num]){
-			mirror_fails_vector[mirror_num]=true;
-			failed_mirrors_num++;
-		}
-		if (failed_mirrors_num>=mirror_fails_vector.size()){
-			phase=E_ALL_LOCAL_MIRRORS_FAILED;
-			failed_mirrors_num=0;
-			// clean the vector, to use it again when we switch to E_PROXY_FETCHER_DOWNLOADED phase
-			for (ulong mirr_num=0; mirr_num<mirror_fails_vector.size(); mirr_num++){
-				mirror_fails_vector[mirr_num]=false;
+	try{
+		if (phase==E_USE_AS_LOCAL_MIRRORS){
+			if (! mirror_fails_vector[mirror_num]){
+				mirror_fails_vector[mirror_num]=true;
+				failed_mirrors_num++;
+			}
+			if (failed_mirrors_num>=mirror_fails_vector.size()){
+				phase=E_ALL_LOCAL_MIRRORS_FAILED;
+				failed_mirrors_num=0;
+				// clean the vector, to use it again when we switch to E_PROXY_FETCHER_DOWNLOADED phase
+				for (ulong mirr_num=0; mirr_num<mirror_fails_vector.size(); mirr_num++){
+					mirror_fails_vector[mirr_num]=false;
+				}
 			}
 		}
+	}catch(...){
+		error_log("Error in networkbroker.cpp: local_mirror_failed()");
 	}
 }
 
 void Tnetwork_distfile_broker::proxy_fetcher_mirror_failed(uint mirror_num){
-	if (phase==E_PROXY_FETCHER_DOWNLOADED){
-		if (! mirror_fails_vector[mirror_num]){
-			mirror_fails_vector[mirror_num]=true;
-			failed_mirrors_num++;
-		}
-		if (failed_mirrors_num>=mirror_fails_vector.size()){
-			phase=E_ALL_PROXY_FETCHER_MIRRORS_FAILED;
-			failed_mirrors_num=0;
-		}
-	}
-}
-
-/*
-bool Tnetwork_distfile_broker::some_mirrors_have_NOT_failed_yet(){
 	try{
-		if (failed_mirrors_num<mirror_fails_vector.size()){
-			return false;
-		}else{
-			return true;
+		if (phase==E_PROXY_FETCHER_DOWNLOADED){
+			if (! mirror_fails_vector[mirror_num]){
+				mirror_fails_vector[mirror_num]=true;
+				failed_mirrors_num++;
+			}
+			if (failed_mirrors_num>=mirror_fails_vector.size()){
+				phase=E_ALL_PROXY_FETCHER_MIRRORS_FAILED;
+				failed_mirrors_num=0;
+			}
 		}
-//		for (ulong cur_mirror_num=0; cur_mirror_num<mirror_fails_vector.size();cur_mirror_num++){
-//			if (! mirror_fails_vector[cur_mirror_num]){
-//				return true;
-//			}
-//		}
-//		return false;
 	}catch(...){
-		error_log("Error in networkbroker.cpp: init()");
-		return false;
+		error_log("Error in networkbroker.cpp: proxy_fetcher_mirror_failed()");
 	}
 }
-*/
