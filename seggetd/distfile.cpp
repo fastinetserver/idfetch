@@ -34,31 +34,6 @@
 //Make the necessary includes and set up the variables:
 using namespace std;
 
-/*
-#define R_LM_WAIT_FOR_LOCAL_MIRRORS						100
-
-#define R_PF_ADDED_TO_PROXY_QUEUE						101
-#define R_PF_ALREADY_WAS_IN_QUEUE						102
-#define R_PF_DOWNLOADED									103
-#define R_PF_BE_MORE_PATIENT							104
-#define R_PF_ERROR_ADDING_TO_PROXY_QUEUE				105
-#define R_PF_FAILED										106
-#define R_PF_REJECTED									107
-
-// 0 for succesfull return of provide_segment()
-#define R_R_DOWNLOAD_STARTED							0
-#define R_R_WAITING										108
-#define R_R_DOWNLOADING									109
-
-#define R_LM_PF_R_NO_FREE_NETWORK_CONNECTION_FOUND		110
-
-#define ALLOW_PROXY_FETCHER_NETWORKS					201
-#define DO_NOT_ALLOW_PROXY_FETCHER_NETWORKS				202
-#define ALLOW_REMOTE_NETWORKS							203
-#define DO_NOT_ALLOW_REMOTE_NETWORKS					204
-#define ALLOW_LOWER_PRIORITY_NETWORKS					205
-*/
-
 string Tdistfile::statusToString(){
 	try{
 		switch(status){

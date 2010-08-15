@@ -25,13 +25,19 @@
 */
 
 #include "phase.h"
+#include "utils.h"
 
 string phaseToString(int phase_num){
-	switch(phase_num){
-		case E_USE_AS_LOCAL_MIRRORS: return "E_USE_AS_LOCAL_MIRRORS";
-		case E_ALL_LOCAL_MIRRORS_FAILED: return "E_ALL_LOCAL_MIRRORS_FAILED";
-		case E_PROXY_FETCHER_DOWNLOADED: return "E_PROXY_FETCHER_DOWNLOADED";
-		case E_ALL_PROXY_FETCHER_MIRRORS_FAILED: return "E_ALL_PROXY_FETCHER_MIRRORS_FAILED";
-		default: return "Unknown phase";
+	try{
+		switch(phase_num){
+			case E_USE_AS_LOCAL_MIRRORS: return "E_USE_AS_LOCAL_MIRRORS";
+			case E_ALL_LOCAL_MIRRORS_FAILED: return "E_ALL_LOCAL_MIRRORS_FAILED";
+			case E_PROXY_FETCHER_DOWNLOADED: return "E_PROXY_FETCHER_DOWNLOADED";
+			case E_ALL_PROXY_FETCHER_MIRRORS_FAILED: return "E_ALL_PROXY_FETCHER_MIRRORS_FAILED";
+			default: return "Unknown phase";
+		}
+	}catch(...){
+		printout("Error in phase.cpp: phaseToString()");
+		return "Unknown phase";
 	}
 }

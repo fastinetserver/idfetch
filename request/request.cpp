@@ -27,64 +27,69 @@
 #include "request.h"
 
 int request(string msg){
-	int len;
-	struct sockaddr_in address;
-	int result;
-	//Create a socket for the client:
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	try{
+		int len;
+		struct sockaddr_in address;
+		int result;
+		//Create a socket for the client:
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-	//Name the socket, as agreed with the server:
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = inet_addr(settings.request_ip.c_str());
-	address.sin_port = htons(settings.request_port);
-	len = sizeof(address);
+		//Name the socket, as agreed with the server:
+		address.sin_family = AF_INET;
+		address.sin_addr.s_addr = inet_addr(settings.request_ip.c_str());
+		address.sin_port = htons(settings.request_port);
+		len = sizeof(address);
 
-	//Connect your socket to the server’s socket:
-	result = connect(sockfd, (struct sockaddr *)&address, len);
-	if(result == -1) {
-		printout("Can't connect to segget daemon");
+		//Connect your socket to the server’s socket:
+		result = connect(sockfd, (struct sockaddr *)&address, len);
+		if(result == -1) {
+			printout("Can't connect to segget daemon");
+			return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+		}
+		if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
+		char send_buffer[100000];
+
+		strcpy(send_buffer,msg.c_str());
+		//You can now read and write via sockfd:
+		if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
+			printout("Error in request.cpp: request(): request msg size and sent data size are different.");
+		};
+
+		fd_set readfds, testfds;
+		FD_ZERO(&readfds);
+		FD_SET(sockfd, &readfds);
+		testfds = readfds;
+
+		struct timeval response_timeout;
+		response_timeout.tv_sec=1;
+		response_timeout.tv_usec=0;
+
+		result = select(FD_SETSIZE, &testfds, (fd_set *)0,
+		(fd_set *)0, &response_timeout);
+
+		if(FD_ISSET(sockfd,&testfds)) {
+			int nread;
+			ioctl(sockfd, FIONREAD, &nread);
+
+			char recv_buffer[1000];
+			if(nread == 0) {
+				close(sockfd);
+				printout("Error in request.cpp: request(): no response from segget daemon");
+			}else{
+				if (nread!=read(sockfd, recv_buffer, nread)){
+					printout("Error in request.cpp: request(): response msg size and received data size are different.");
+				};
+				return decode_server_response(recv_buffer);
+			}
+		}else{
+			printout("Error in request.cpp: request(): zero size response from segget daemon");
+		}
+		close(sockfd);
+		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
+	}catch(...){
+		printout("Error: request.cpp: request()");
 		return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 	}
-	if (msg.length()>90000){return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;};
-	char send_buffer[100000];
-
-	strcpy(send_buffer,msg.c_str());
-	//You can now read and write via sockfd:
-	if (write(sockfd, send_buffer, strlen(send_buffer))!=(int)msg.length()){
-		printout("Error in request.cpp: request(): request msg size and sent data size are different.");
-	};
-
-	fd_set readfds, testfds;
-	FD_ZERO(&readfds);
-	FD_SET(sockfd, &readfds);
-	testfds = readfds;
-
-	struct timeval response_timeout;
-	response_timeout.tv_sec=1;
-	response_timeout.tv_usec=0;
-	
-	result = select(FD_SETSIZE, &testfds, (fd_set *)0,
-	(fd_set *)0, &response_timeout);
-
-	if(FD_ISSET(sockfd,&testfds)) {
-		int nread;
-		ioctl(sockfd, FIONREAD, &nread);
-
-		char recv_buffer[1000];
-		if(nread == 0) {
-			close(sockfd);
-			printout("Error in request.cpp: request(): no response from segget daemon");
-		}else{
-			if (nread!=read(sockfd, recv_buffer, nread)){
-				printout("Error in request.cpp: request(): response msg size and received data size are different.");
-			};
-			return decode_server_response(recv_buffer);
-		}
-	}else{
-		printout("Error in request.cpp: request(): zero size response from segget daemon");
-	}
-	close(sockfd);
-	return R_PF_ERROR_ADDING_TO_PROXY_QUEUE;
 }
 
 int load_pkgs(){
@@ -151,29 +156,9 @@ int load_pkgs(){
 		return 1;
 	}
 }
-/*
-void show_pkgs(){
-	try{
-		for (uint array_item_num=0;array_item_num<stats.pkg_count;array_item_num++){
-			cout <<"PKG:"<<array_item_num<<") cat:"<< Ppkg_array[array_item_num]->category <<" name:"<< Ppkg_array[array_item_num]->name <<"\n";
-			for(uint distfile_array_item_num=0;distfile_array_item_num<Ppkg_array[array_item_num]->distfile_count;distfile_array_item_num++){
-				cout << "    "<< distfile_array_item_num<<") distfile_name:"<< Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->name<<"\n";
-				for(uint urllist_array_item_num=0;urllist_array_item_num<Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_count;urllist_array_item_num++){
-					cout <<"        "<<Ppkg_array[array_item_num]->Pdistfile_list[distfile_array_item_num]->url_list[urllist_array_item_num]<<"\n";
-				}
-			}
-		}
-	}catch(...){
-		error_log("Error in segget.cpp: show_pkgs()");
-	}
-}
-*/
 
 void _exit(int sig){
 	try{
-//		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++) {
-//			close(fd);
-//		}
 		close(sockfd);
 	}
 	catch(...)
@@ -202,17 +187,10 @@ int routine(){
 		}catch(...){
 			//error while loading pkgs
 		}
-/*
-		try{
-			//show_pkgs();
-		}catch(...){
-			//error while showing stats
-		}
-*/
 		return 0;
 	}catch(...)
 	{
-		printout("Error in segget.cpp: routine()");
+		printout("Error in request.cpp: routine()");
 	}
 	return 1;
 }
@@ -227,19 +205,14 @@ void show_help(){
 		printout("--pkglist-file=PATH_TO_PKGLIST_FILE     Specify path to pkg.list file. By default it's /var/tmp/seggetd/pkg.list");
 		printout("");
 	}catch(...){
-		printout("Error in segget.cpp: init_curses()");
+		printout("Error in request.cpp: show_help()");
 	}
 }
 
 int parse_cli_arguments(int argc, char* argv[]){
 	try{
 		string option,name,value;
-//		cout << "argc = " << argc << endl;
 		int posEqual;
-//		for(int i = 0; i < argc; i++){
-//			cout << "argv[" << i << "] = " << argv[i] << endl; 
-//		}
-//		printout("");
 		for(int i = 0; i < argc; i++){
 			option=argv[i];
 			posEqual=option.find('=');
@@ -252,7 +225,7 @@ int parse_cli_arguments(int argc, char* argv[]){
 		}
 		return 0;
 	}catch(...){
-		printout("Error in segget.cpp: init_curses()");
+		printout("Error in request.cpp: init_curses()");
 	}
 	return 1;
 }
@@ -264,7 +237,7 @@ int main(int argc, char* argv[])
 		routine();
 		exit (0);
 	}catch(...){
-		printout("Error in segget.cpp main()");
+		printout("Error in request.cpp main()");
 	}
 	exit(1);
 }
