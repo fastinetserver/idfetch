@@ -36,21 +36,23 @@ void log(string log_msg_text){
 }
 void log_no_msg(string log_msg_text){
 	try{
-		ofstream file;
-		file.exceptions (ofstream::failbit | ofstream::badbit);
-		try{
-			file.open((settings.logs_dir+"/"+settings.general_log_file).c_str(), ios::app);
-		}catch(...){
-			error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+".");
-			return;
-		}
-		try{
-			file << log_msg_text << endl;
-			file.close();
-		}
-		catch(...){
-			error_log("Error while writing "+settings.logs_dir+"/"+settings.general_log_file+".");
-			return;
+		if (settings.general_log_file!="none"){
+			ofstream file;
+			file.exceptions (ofstream::failbit | ofstream::badbit);
+			try{
+				file.open((settings.logs_dir+"/"+settings.general_log_file).c_str(), ios::app);
+			}catch(...){
+				error_log("Error opening "+settings.logs_dir+"/"+settings.general_log_file+".");
+				return;
+			}
+			try{
+				file << log_msg_text << endl;
+				file.close();
+			}
+			catch(...){
+				error_log("Error while writing "+settings.logs_dir+"/"+settings.general_log_file+".");
+				return;
+			}
 		}
 	}catch(...){
 		error_log("Error in tui.cpp: log()");
@@ -67,23 +69,29 @@ void debug(string debug_msg_text){
 
 void debug_no_msg(string debug_msg_text){
 	try{
-		ofstream file;
-		file.exceptions (ofstream::failbit | ofstream::badbit);
-		try{
-//			file.open((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
-			file.open("./logs/debug.log", ios::app);
-		}
-		catch(...){
-			error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+".");
-			return;
-		}
-		try{
-			file << debug_msg_text << endl;
-			file.close();
-		}
-		catch(...){
-			error_log("Error while writing "+settings.logs_dir+"/"+settings.debug_log_file+".");
-			return;
+		if (settings.debug_log_file!="none"){
+			ofstream file;
+			file.exceptions (ofstream::failbit | ofstream::badbit);
+			try{
+				file.open((settings.logs_dir+"/"+settings.debug_log_file).c_str(), ios::app);
+				if (! file.is_open()){
+					error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+" for writing.");
+					error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has permissions to write into it.");
+					return;
+				}
+			}
+			catch(...){
+				error_log("Error opening "+settings.logs_dir+"/"+settings.debug_log_file+" for writing.");
+				error_log("....Check if folder "+settings.logs_dir+" exists and seggetd has permissions to write into it.");
+				return;
+			}
+			try{
+				file << debug_msg_text << endl;
+				file.close();
+			}catch(...){
+				error_log("Error while writing "+settings.logs_dir+"/"+settings.debug_log_file+".");
+				return;
+			}
 		}
 	}catch(...){
 		error_log("Error in tui.cpp: debug()");
@@ -92,9 +100,11 @@ void debug_no_msg(string debug_msg_text){
 
 void error_log_no_msg(string error_msg_text){
 	try{
-		ofstream file ((settings.logs_dir+"/"+settings.error_log_file).c_str(), ios::app);
-		file << error_msg_text << endl;
-		file.close();
+		if (settings.error_log_file!="none"){
+			ofstream file ((settings.logs_dir+"/"+settings.error_log_file).c_str(), ios::app);
+			file << error_msg_text << endl;
+			file.close();
+		}
 	}catch(...){
 //		fprintf(stderr, "Error opening error log file.");
 //		fprintf(stderr, "Error log file: %s/%s",settings.logs_dir.c_str(),settings.error_log_file.c_str());

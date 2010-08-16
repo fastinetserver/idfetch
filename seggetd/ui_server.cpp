@@ -115,66 +115,94 @@ ulong Tui_server::send_binary_to_fd(uint fd, string image_file_name){
 }
 
 ulong Tui_server::send_to_fd(uint fd, string msg){
-//	if (send_to_fd_idle) {
-	while (send_to_fd_busy){
-		sleep(1);
-	}
-	send_to_fd_busy=true;
-	if (fd !=server_sockfd){
-		if(FD_ISSET(fd,&ui_server.readfds)) {
-			ulong bytes_written=write(fd, msg.c_str(), msg.length());
-			if (bytes_written!=msg.length()){
-				debug("Error: Not all data has been sent to ui_client()");
+	try{
+		while (send_to_fd_busy){
+			sleep(1);
+		}
+		send_to_fd_busy=true;
+		if (fd !=server_sockfd){
+			if(FD_ISSET(fd,&ui_server.readfds)) {
+				ulong bytes_written=write(fd, msg.c_str(), msg.length());
+				if (bytes_written!=msg.length()){
+					debug("Error: Not all data has been sent to ui_client()");
+				}
 			}
 		}
+		send_to_fd_busy=false;
+		return 0;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_to_fd()");
+		return 1;
 	}
-	send_to_fd_busy=false;
-	return 0;
 }
 
 void Tui_server::send_connection_msg_to_fd(uint fd, uint y, string msg){
-	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
-	send_to_fd(fd, message);
+	try{
+		string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
+		send_to_fd(fd, message);
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_connection_msg_to_fd()");
+	}
 }
 
 void Tui_server::send_connection_msg_to_all_clients(uint y, string msg){
-	string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
-	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		if FD_ISSET(fd, &tuiclient_fds_set){
-			send_to_fd(fd, message);
+	try{
+		string message="<m>c<t>"+toString(y)+"<y>"+msg+"<.>";
+		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+			if FD_ISSET(fd, &tuiclient_fds_set){
+				send_to_fd(fd, message);
+			}
 		}
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_connection_msg_to_all_clients()");
 	}
 }
 
 void Tui_server::send_log_msg_to_all_clients(string msg){
-	string message="<m>l<t>"+msg+"<.>";
-	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		if FD_ISSET(fd, &tuiclient_fds_set){
-			send_to_fd(fd, message);
+	try{
+		string message="<m>l<t>"+msg+"<.>";
+		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+			if FD_ISSET(fd, &tuiclient_fds_set){
+				send_to_fd(fd, message);
+			}
 		}
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_log_msg_to_all_clients()");
 	}
 }
 
 void Tui_server::send_distfile_progress_msg_to_fd(uint fd, string msg){
-	string message="<m>d<t>"+msg+"<.>";
-	send_to_fd(fd, message);
+	try{
+		string message="<m>d<t>"+msg+"<.>";
+		send_to_fd(fd, message);
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_distfile_progress_msg_to_fd()");
+	}
 }
 
 void Tui_server::send_distfile_progress_msg_to_all_clients(string msg){
-	string message="<m>d<t>"+msg+"<.>";
-	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		if FD_ISSET(fd, &tuiclient_fds_set){
-			send_to_fd(fd, message);
+	try{
+		string message="<m>d<t>"+msg+"<.>";
+		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+			if FD_ISSET(fd, &tuiclient_fds_set){
+				send_to_fd(fd, message);
+			}
 		}
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_distfile_progress_msg_to_all_clients()");
 	}
 }
 
 void Tui_server::send_error_log_msg_to_all_clients(string msg){
-	string message="<m>e<t>"+msg+"<.>";
-	for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
-		if FD_ISSET(fd, &tuiclient_fds_set){
-			send_to_fd(fd, message);
+	try{
+		string message="<m>e<t>"+msg+"<.>";
+		for(uint fd = 0; fd <= ui_server.max_fd_num; fd++){
+			if FD_ISSET(fd, &tuiclient_fds_set){
+				send_to_fd(fd, message);
+			}
 		}
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: send_error_log_msg_to_all_clients()");
 	}
 }
 
@@ -248,7 +276,7 @@ void Tui_server::serve_tuiclient(uint fd, string msg){
 				error_log_no_msg("Distfile(s) downloaded");
 				break;
 			case IN_QUEUE:
-				error_log_no_msg("Distfile(s) in queue");
+				debug("Distfile(s) in queue");
 				send_to_fd(fd, "<m>y<t><.>"); //distfile is in the list continue
 				// Get this info to catch up!
 				for (uint line_num=0; line_num<=max_published_screenline_num;line_num++){
@@ -300,34 +328,39 @@ string Tui_server::serve_browser_distfile_progress(Tdistfile * a_distfile){
 }
 
 string Tui_server::get_html_header(string title){
-	string header;
-	header=(string)"HTTP/1.0 200 OK\n\n"
-		+"<html><head>"
-//		+"<meta http-equiv=\"refresh\" content=\"1\" >"
-		+"<title> Segget - "+title+"</title></head>"
-		+"<body>"
-		+"<table border=\"0\">\n"
-			+"<tr align=\"center\">"
-				+"<td><a href=\"connections\"><img src=\"/img/connections.jpg\" alt=\"Segments\" height=50 width=50/></a></td>"
-				+"<td><a href=\"distfiles\"><img src=\"/img/distfiles.png\" alt=\"Distfiles\" height=50 width=50/></a></td>"
-				+"<td><a href=\"stats\"><img src=\"/img/stats.jpg\" alt=\"Stats\" height=50 width=50/></a></td>"
-				+"<td><a href=\"mirrors_stats\"><img src=\"/img/mirrors.jpg\" alt=\"mirrors\" height=50 width=50/></a></td>"
-				+"<td><a href=\"log\"><img src=\"/img/log.png\" alt=\"Log\" height=50 width=50/></a></td>"
-				+"<td><a href=\"errors_log\"><img src=\"/img/errors_log.jpg\" alt=\"Errors log\" height=50 width=50/></a></td>"
-				+"<td><a href=\"rss\"><img src=\"/img/rss.jpg\" alt=\"Log\" height=50 width=50/></a></td>"
-			+"</tr>\n"
-			+"<tr align=\"center\">"
-				+"<td><a href=\"connections\">Connections</a></td>"
-				+"<td><a href=\"distfiles\">Distfiles</a></td>"
-				+"<td><a href=\"stats\">Stats</a></td>"
-				+"<td><a href=\"mirrors_stats\">Mirrors</a></td>"
-				+"<td><a href=\"log\">Log</a></td>"
-				+"<td><a href=\"errors_log\">Errors log</a></td>"
-				+"<td><a href=\"rss\">RSS</a></td>"
-		+"</tr>\n"
-		+"</table>\n"
-		+"<h1>"+title+"</h1>\n";
-	return header;
+	try{
+		string header;
+		header=(string)"HTTP/1.0 200 OK\n\n"
+			+"<html><head>"
+//			+"<meta http-equiv=\"refresh\" content=\"1\" >"
+			+"<title> Segget - "+title+"</title></head>"
+			+"<body>"
+			+"<table border=\"0\">\n"
+				+"<tr align=\"center\">"
+					+"<td><a href=\"connections\"><img src=\"/img/connections.jpg\" alt=\"Segments\" height=50 width=50/></a></td>"
+					+"<td><a href=\"distfiles\"><img src=\"/img/distfiles.png\" alt=\"Distfiles\" height=50 width=50/></a></td>"
+					+"<td><a href=\"stats\"><img src=\"/img/stats.jpg\" alt=\"Stats\" height=50 width=50/></a></td>"
+					+"<td><a href=\"mirrors_stats\"><img src=\"/img/mirrors.jpg\" alt=\"mirrors\" height=50 width=50/></a></td>"
+					+"<td><a href=\"log\"><img src=\"/img/log.png\" alt=\"Log\" height=50 width=50/></a></td>"
+					+"<td><a href=\"errors_log\"><img src=\"/img/errors_log.jpg\" alt=\"Errors log\" height=50 width=50/></a></td>"
+					+"<td><a href=\"rss\"><img src=\"/img/rss.jpg\" alt=\"Log\" height=50 width=50/></a></td>"
+				+"</tr>\n"
+				+"<tr align=\"center\">"
+					+"<td><a href=\"connections\">Connections</a></td>"
+					+"<td><a href=\"distfiles\">Distfiles</a></td>"
+					+"<td><a href=\"stats\">Stats</a></td>"
+					+"<td><a href=\"mirrors_stats\">Mirrors</a></td>"
+					+"<td><a href=\"log\">Log</a></td>"
+					+"<td><a href=\"errors_log\">Errors log</a></td>"
+					+"<td><a href=\"rss\">RSS</a></td>"
+				+"</tr>\n"
+			+"</table>\n"
+			+"<h1>"+title+"</h1>\n";
+		return header;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: get_html_header()");
+		return "";
+	}
 }
 
 string Tui_server::get_html_footer(){
@@ -335,42 +368,48 @@ string Tui_server::get_html_footer(){
 }
 
 string Tui_server::get_html_stats(){
-	ulong total_progress;
-	if (stats.total_size>0){
-		total_progress=(stats.total_size-stats.dld_size)*100/stats.total_size;
-	}else total_progress=0;
-	string stats_str=
-		(string)"<table border=\"1\">\n"
-			+"<tr>\n"
-			+"	<td>Up time</td>\n"
-			+"	<td align=\"right\">"+secsToString(time_left_since(stats.segget_start_time)/1000)+"</td>\n"
-			+"</tr>\n"
-			+"<tr>\n"
-			+"	<th colspan=\"2\">Distfiles</th>\n"
-			+"</tr>\n"
-				+"<tr><td>Downloaded distfiles</td><td align=\"right\">"+toString(stats.dld_distfiles_count)+"</td></tr>\n"
-				+"<tr><td>Bytes downloaded</td><td align=\"right\">"+toString(stats.dld_size)+"</td></tr>\n"
-				+"<tr><td>Total progress</td><td align=\"right\">"+toString(total_progress)+"%</td></tr>\n"
-				+"<tr><td>Distfiles left to download</td><td align=\"right\">"+toString(stats.distfiles_count-stats.dld_distfiles_count)+"</td></tr>\n"
-				+"<tr><td>Bytes left to download</td><td align=\"right\">"+toString(stats.total_size-stats.dld_size)+"</td></tr>\n"
-				+"<tr><td>Distfiles total</td><td align=\"right\">"+toString(stats.distfiles_count)+"</td></tr>\n"
-				+"<tr><td>Bytes total</td><td align=\"right\">"+toString(stats.total_size)+"</td></tr>\n"
-			+"<tr><th colspan=\"2\">Segments</th></tr>\n"
-				+"<tr><td>Downloaded segments</td><td align=\"right\">"+toString(stats.dld_segments_count)+"</td></tr>\n"
-				+"<tr><td>Segmentss left to download</td><td align=\"right\">"+toString(stats.segments_count-stats.dld_segments_count)+"</td></tr>\n"
-				+"<tr><td>Segments total</td><td align=\"right\">"+toString(stats.segments_count)+"</td></tr>\n"
-			+"<tr><th colspan=\"2\">Connections</th></tr>\n"
-				+"<tr><td>Failed connections</td><td align=\"right\">"+toString(stats.fails_counter)+"</td></tr>\n"
-				+"<tr><td>AVG speed of active connections</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>\n"
-//				+"<tr><td>AVG speed since segget start</td><td align=\"right\">"+speedToString(stats.dld_size*1000/time_left_since(stats.segget_start_time))+"</td></tr>"
-//				+"<tr><td>AVG speed since segget start except idle times</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>"
-		+"</table>\n";
-	return stats_str;
+	try{
+		ulong total_progress;
+		if (stats.total_size>0){
+			total_progress=(stats.total_size-stats.dld_size)*100/stats.total_size;
+		}else total_progress=0;
+		string stats_str=
+			(string)"<table border=\"1\">\n"
+				+"<tr>\n"
+				+"	<td>Up time</td>\n"
+				+"	<td align=\"right\">"+secsToString(time_left_since(stats.segget_start_time)/1000)+"</td>\n"
+				+"</tr>\n"
+				+"<tr>\n"
+				+"	<th colspan=\"2\">Distfiles</th>\n"
+				+"</tr>\n"
+					+"<tr><td>Downloaded distfiles</td><td align=\"right\">"+toString(stats.dld_distfiles_count)+"</td></tr>\n"
+					+"<tr><td>Bytes downloaded</td><td align=\"right\">"+toString(stats.dld_size)+"</td></tr>\n"
+					+"<tr><td>Total progress</td><td align=\"right\">"+toString(total_progress)+"%</td></tr>\n"
+					+"<tr><td>Distfiles left to download</td><td align=\"right\">"+toString(stats.distfiles_count-stats.dld_distfiles_count)+"</td></tr>\n"
+					+"<tr><td>Bytes left to download</td><td align=\"right\">"+toString(stats.total_size-stats.dld_size)+"</td></tr>\n"
+					+"<tr><td>Distfiles total</td><td align=\"right\">"+toString(stats.distfiles_count)+"</td></tr>\n"
+					+"<tr><td>Bytes total</td><td align=\"right\">"+toString(stats.total_size)+"</td></tr>\n"
+				+"<tr><th colspan=\"2\">Segments</th></tr>\n"
+					+"<tr><td>Downloaded segments</td><td align=\"right\">"+toString(stats.dld_segments_count)+"</td></tr>\n"
+					+"<tr><td>Segmentss left to download</td><td align=\"right\">"+toString(stats.segments_count-stats.dld_segments_count)+"</td></tr>\n"
+					+"<tr><td>Segments total</td><td align=\"right\">"+toString(stats.segments_count)+"</td></tr>\n"
+				+"<tr><th colspan=\"2\">Connections</th></tr>\n"
+					+"<tr><td>Failed connections</td><td align=\"right\">"+toString(stats.fails_counter)+"</td></tr>\n"
+					+"<tr><td>AVG speed of active connections</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>\n"
+//					+"<tr><td>AVG speed since segget start</td><td align=\"right\">"+speedToString(stats.dld_size*1000/time_left_since(stats.segget_start_time))+"</td></tr>"
+//					+"<tr><td>AVG speed since segget start except idle times</td><td align=\"right\">"+speedToString(stats.avg_total_speed)+"</td></tr>"
+			+"</table>\n";
+		return stats_str;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: get_html_stats()");
+		return "";
+	}
 }
 
 
 string Tui_server::get_html_mirrors_stats(){
-	string stats_str=(string)"<table border=\"1\" width=\"100%\">\n"
+	try{
+		string stats_str=(string)"<table border=\"1\" width=\"100%\">\n"
 			+"<tr>\n<th>URL</th>\n"
 				+"<th>Active connections</th>\n"
 				+"<th>AVG speed per connection**</th>\n"
@@ -381,36 +420,40 @@ string Tui_server::get_html_mirrors_stats(){
 				+"<th>Succesfuly downloaded bytes</th>\n"
 				+"<th>Honesty</th>\n"
 			+"</tr>\n";
-	map<string,Tmirror *>::iterator iter; 
-	for( iter = mirror_list.begin(); iter != mirror_list.end(); iter++ ) {
-		ulong avg_speed;
-		if ((iter->second->dld_size!=1) and (iter->second->dld_time>0)){
-			avg_speed=(iter->second->dld_size)/iter->second->dld_time;
-		}else avg_speed=0;
+		map<string,Tmirror *>::iterator iter; 
+		for( iter = mirror_list.begin(); iter != mirror_list.end(); iter++ ) {
+			ulong avg_speed;
+			if ((iter->second->dld_size!=1) and (iter->second->dld_time>0)){
+				avg_speed=(iter->second->dld_size)/iter->second->dld_time;
+			}else avg_speed=0;
 
-		ulong fail_ratio;
-		if (iter->second->failed_downloads+iter->second->successful_downloads>0){
-			fail_ratio=(iter->second->failed_downloads)*100/(iter->second->failed_downloads+iter->second->successful_downloads);
-		}else fail_ratio=0;
-		stats_str=stats_str
-			+"<tr>\n<td>\n"+iter->first+"</td>\n"
-				+"<td align=\"right\">"+toString(iter->second->active_num)+"</td>\n"
-				+"<td align=\"right\">"+speedToString(avg_speed)+"</td>\n"
-				+"<td align=\"right\">"+toString(iter->second->failed_downloads)+"</td>\n"
-				+"<td align=\"right\">"+toString(iter->second->successful_downloads)+"</td>\n"
-				+"<td align=\"right\">"+toString(fail_ratio)+"%</td>\n"
-				+"<td align=\"right\">"+toString(iter->second->dld_time)+"</td>\n"
-				+"<td align=\"right\">"+toString(iter->second->dld_size)+"</td>\n"
-				+"<td align=\"right\" width=\"15%\">"+toString(iter->second->honesty)+"</td>\n"
-			+"</tr>\n";
+			ulong fail_ratio;
+			if (iter->second->failed_downloads+iter->second->successful_downloads>0){
+				fail_ratio=(iter->second->failed_downloads)*100/(iter->second->failed_downloads+iter->second->successful_downloads);
+			}else fail_ratio=0;
+			stats_str=stats_str
+				+"<tr>\n<td>\n"+iter->first+"</td>\n"
+					+"<td align=\"right\">"+toString(iter->second->active_num)+"</td>\n"
+					+"<td align=\"right\">"+speedToString(avg_speed)+"</td>\n"
+					+"<td align=\"right\">"+toString(iter->second->failed_downloads)+"</td>\n"
+					+"<td align=\"right\">"+toString(iter->second->successful_downloads)+"</td>\n"
+					+"<td align=\"right\">"+toString(fail_ratio)+"%</td>\n"
+					+"<td align=\"right\">"+toString(iter->second->dld_time)+"</td>\n"
+					+"<td align=\"right\">"+toString(iter->second->dld_size)+"</td>\n"
+					+"<td align=\"right\" width=\"15%\">"+toString(iter->second->honesty)+"</td>\n"
+				+"</tr>\n";
+		}
+		stats_str=stats_str+"</table>\n";
+
+		stats_str=stats_str+"<br><p>** NOTE: When a mirror has N simultaneous connections "
+			+"\"Usage time\" will be increasing N times faster, therefore \"AVG speed per connection\" will "
+			+"be smaller than average outgoing rate provided by this mirror to your host "
+			+"(which is a summary speed of the simultaneous connections to this mirror)</p>";
+		return stats_str;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: get_html_mirrors_stats()");
+		return "";
 	}
-	stats_str=stats_str+"</table>\n";
-
-	stats_str=stats_str+"<br><p>** NOTE: When a mirror has N simultaneous connections "
-		+"\"Usage time\" will be increasing N times faster, therefore \"AVG speed per connection\" will "
-		+"be smaller than average outgoing rate provided by this mirror to your host "
-		+"(which is a summary speed of the simultaneous connections to this mirror)</p>";
-	return stats_str;
 }
 
 
@@ -455,28 +498,28 @@ string Tui_server::get_html_distfiles(){
 	try{
 		debug("Sending to client distfiles_num:"+toString(request_server_pkg.Pdistfile_list.size()));
 		string distfiles_html=(string)"<center><table border=\"1\" width=\"100%\">\n"
-				+"<tr>"
-				+"	<th rowspan=\"2\" width=\"110\">Progress"
-				+"	</th><th rowspan=\"2\">Name"
-				+"	</th><th rowspan=\"2\">Status"
-				+"	</th><th colspan=\"2\">Segments"
-				+"	</th><th colspan=\"2\">Bytes"
-				+"	</th>"
-				+"</tr>\n<tr>"
-				+"	<th>Downloaded"
-				+"	</th><th>Total"
-				+"	</th><th>Downloaded"
-				+"	</th><th>Total"
-				+"	</th></tr>\n";
-				for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
-					distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(request_server_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
-					debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-				}
-				for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
-					distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(proxy_fetcher_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
-					debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
-				}
-			distfiles_html=distfiles_html+"</table></center>";
+			+"<tr>"
+			+"	<th rowspan=\"2\" width=\"110\">Progress"
+			+"	</th><th rowspan=\"2\">Name"
+			+"	</th><th rowspan=\"2\">Status"
+			+"	</th><th colspan=\"2\">Segments"
+			+"	</th><th colspan=\"2\">Bytes"
+			+"	</th>"
+			+"</tr>\n<tr>"
+			+"	<th>Downloaded"
+			+"	</th><th>Total"
+			+"	</th><th>Downloaded"
+			+"	</th><th>Total"
+			+"	</th></tr>\n";
+		for (ulong distfile_num=0; distfile_num<request_server_pkg.Pdistfile_list.size(); distfile_num++){
+			distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(request_server_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
+			debug("Sending to client:"+request_server_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+		}
+		for (ulong distfile_num=0; distfile_num<proxy_fetcher_pkg.Pdistfile_list.size(); distfile_num++){
+			distfiles_html=distfiles_html+"<tr>"+serve_browser_distfile_progress(proxy_fetcher_pkg.Pdistfile_list[distfile_num])+"</tr>\n";
+			debug("Sending to client:"+proxy_fetcher_pkg.Pdistfile_list[distfile_num]->get_distfile_progress_str());
+		}
+		distfiles_html=distfiles_html+"</table></center>";
 		return distfiles_html;
 	}catch(...){
 		error_log("Error: ui_server.cpp: get_connections_info()");
@@ -487,10 +530,10 @@ string Tui_server::get_html_distfiles(){
 string Tui_server::get_html_log(){
 	try{
 		string log_html=(string)"<center><table border=\"1\" width=\"100%\">";
-			for (uint log_line_num=0; log_line_num<log_lines.size(); log_line_num++){
-				log_html=log_html+"<tr><td>"+log_lines[log_line_num]+"</td></tr>";
-			}
-			log_html=log_html+"</table></center>";
+		for (uint log_line_num=0; log_line_num<log_lines.size(); log_line_num++){
+			log_html=log_html+"<tr><td>"+log_lines[log_line_num]+"</td></tr>";
+		}
+		log_html=log_html+"</table></center>";
 		return log_html;
 	}catch(...){
 		error_log("Error: ui_server.cpp: get_html_log()");
@@ -515,33 +558,33 @@ string Tui_server::get_html_errors_log(){
 
 string Tui_server::get_rss_info(){
 	try{
-			string rss_result=
-				(string)"<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"> "
-				"<channel>"
-					+"<title>"+settings.rss_title+"</title>"
-					+"<description>"+settings.rss_description+"</description>"
-					+"<link>"+settings.provide_mirror_to_others_url+"</link>"
-					+"<pubDate>"+get_time(settings.general_log_time_format)+"</pubDate>"
-					+"<ttl>5</ttl>"
-					+"<image>"
-						+"<title>"+"settings.rss_title"+"</title>"
-						+"<url>/img/segget_feed.jpg</url>"
-						+"<link>http://simsim/forum/index.php</link>"
-					+"</image>";
-			for (uint rss_line_num=0; rss_line_num<rss_distfile_lines.size(); rss_line_num++){
-				rss_result=rss_result+
-					"<item>"
-						+"<title>"+rss_distfile_lines[rss_line_num]+"</title>"
-						+"<link><![CDATA["+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"]]></link> "
-						+"<starter>"+"settings.rss_starter"+"</starter>"
-						+"<author>seggetd</author>"
-						+"<description><![CDATA[Downloaded distfile "+rss_distfile_lines[rss_line_num]
-						+" (size: "+toString(rss_size_lines[rss_line_num])+" B)]]></description>"
-						+"<pubDate>"+rss_time_lines[rss_line_num]+"</pubDate>"
-						+"<guid isPermaLink=\"false\">"+toString(rss_line_num)+"</guid>"
-					+"</item>";
-			}
-			rss_result=rss_result+"</channel></rss>";
+		string rss_result=
+			(string)"<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"> "
+			"<channel>"
+				+"<title>"+settings.rss_title+"</title>"
+				+"<description>"+settings.rss_description+"</description>"
+				+"<link>"+settings.provide_mirror_to_others_url+"</link>"
+				+"<pubDate>"+get_time(settings.general_log_time_format)+"</pubDate>"
+				+"<ttl>5</ttl>"
+				+"<image>"
+					+"<title>"+"settings.rss_title"+"</title>"
+					+"<url>/img/segget_feed.jpg</url>"
+					+"<link>http://simsim/forum/index.php</link>"
+				+"</image>";
+		for (uint rss_line_num=0; rss_line_num<rss_distfile_lines.size(); rss_line_num++){
+			rss_result=rss_result+
+				"<item>"
+					+"<title>"+rss_distfile_lines[rss_line_num]+"</title>"
+					+"<link><![CDATA["+settings.provide_mirror_to_others_url+"/"+rss_distfile_lines[rss_line_num]+"]]></link> "
+					+"<starter>"+"settings.rss_starter"+"</starter>"
+					+"<author>seggetd</author>"
+					+"<description><![CDATA[Downloaded distfile "+rss_distfile_lines[rss_line_num]
+					+" (size: "+toString(rss_size_lines[rss_line_num])+" B)]]></description>"
+					+"<pubDate>"+rss_time_lines[rss_line_num]+"</pubDate>"
+					+"<guid isPermaLink=\"false\">"+toString(rss_line_num)+"</guid>"
+				+"</item>";
+		}
+		rss_result=rss_result+"</channel></rss>";
 		return rss_result;
 	}catch(...){
 		error_log("Error: ui_server.cpp: get_rss_info()");
@@ -549,38 +592,43 @@ string Tui_server::get_rss_info(){
 	}
 }
 string Tui_server::get_ajax_for(string content_name){
-			string ajax_str=(string)"\n<script  type=\"text/javascript\">\n"
-				+"	var xmlDoc;"
-				+"	function process(){\n"
-				+"		if ( xmlDoc.readyState != 4 ) return;\n"
-				+"		document.getElementById(\""+content_name+"\").innerHTML = xmlDoc.responseText;\n"
-				+"	}\n"
-				+"	function load() {"
-				+"		if (window.XMLHttpRequest) {\n" // Mozilla, Safari, ...
-				+"			xmlDoc = new XMLHttpRequest();\n"
-				+"			xmlDoc.onload = process ;\n"
-				+"		} else if (window.ActiveXObject) {\n" // IE
-				+"			xmlDoc = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"
-				+"			xmlDoc.onreadystatechange = process ;\n"
-				+"		}else{\n"
-				+"			return false;\n"
-				+"		}\n"
-				+"		xmlDoc.abort();\n"
-				+"		xmlDoc.open(\"GET\",\""+content_name+"_"+"\",true);\n"
-				+"		xmlDoc.send(null);\n"
-				+"	}\n"
-				+"	function refresh(){\n"
-				+"		if ( xmlDoc.readyState != 4 ){\n"
-				+"			document.getElementById(\""+content_name+"\").innerHTML=\"<h2 color='#FF0000'>Disconnected</h2>\"\n"
-				+"		};\n"
-				+"		xmlDoc.abort();\n"
-				+"		load();\n"
-				+"		setTimeout(\"refresh()\", 1000);\n"
-				+"	};\n"
-				+"	load();\n"
-				+"	setTimeout(\"refresh()\", 1000);\n"
-				+"</script>\n";
-	return ajax_str;
+	try{
+		string ajax_str=(string)"\n<script  type=\"text/javascript\">\n"
+			+"	var xmlDoc;"
+			+"	function process(){\n"
+			+"		if ( xmlDoc.readyState != 4 ) return;\n"
+			+"		document.getElementById(\""+content_name+"\").innerHTML = xmlDoc.responseText;\n"
+			+"	}\n"
+			+"	function load() {"
+			+"		if (window.XMLHttpRequest) {\n" // Mozilla, Safari, ...
+			+"			xmlDoc = new XMLHttpRequest();\n"
+			+"			xmlDoc.onload = process ;\n"
+			+"		} else if (window.ActiveXObject) {\n" // IE
+			+"			xmlDoc = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"
+			+"			xmlDoc.onreadystatechange = process ;\n"
+			+"		}else{\n"
+			+"			return false;\n"
+			+"		}\n"
+			+"		xmlDoc.abort();\n"
+			+"		xmlDoc.open(\"GET\",\""+content_name+"_"+"\",true);\n"
+			+"		xmlDoc.send(null);\n"
+			+"	}\n"
+			+"	function refresh(){\n"
+			+"		if ( xmlDoc.readyState != 4 ){\n"
+			+"			document.getElementById(\""+content_name+"\").innerHTML=\"<h2 color='#FF0000'>Disconnected</h2>\"\n"
+			+"		};\n"
+			+"		xmlDoc.abort();\n"
+			+"		load();\n"
+			+"		setTimeout(\"refresh()\", 1000);\n"
+			+"	};\n"
+			+"	load();\n"
+			+"	setTimeout(\"refresh()\", 1000);\n"
+			+"</script>\n";
+		return ajax_str;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: get_ajax_for()");
+		return "";
+	}
 }
 
 void Tui_server::serve_browser(uint fd, string msg){
@@ -669,76 +717,81 @@ void Tui_server::serve_browser(uint fd, string msg){
 }
 
 void *run_ui_server(void * ){
-	while(1) {
-		max_published_screenline_num=0;
-		uint fd;
-		int nread;
-		ui_server.testfds = ui_server.readfds;
-		int result;
-		//Now wait for clients and requests. Because you have passed a null pointer as the timeout parameter, no timeout will occur. The program will logg an error if select returns a value less than 1:
-		result = select(FD_SETSIZE, &ui_server.testfds, (fd_set *)0,
-			(fd_set *)0, (struct timeval *) 0);
-		if(result < 1) {
-			error_log_no_msg("Error in ui_server on select");
-			break;
-		}
-		//Once you know you’ve got activity, you can find which descriptor it’s on by checking each in turn using FD_ISSET:
-		for(fd = 0; fd <= ui_server.max_fd_num; fd++) {
-			if(FD_ISSET(fd,&ui_server.testfds)) {
-				//If the activity is on server_sockfd, it must be a request for a new connection, and you add the associated client_sockfd to the descriptor set:
-				if(fd == ui_server.server_sockfd) {
-					uint client_sockfd;
-					socklen_t client_len;
-					struct sockaddr_in client_address;
-
-					client_len = sizeof(client_address);
-					client_sockfd = accept(ui_server.server_sockfd,
-					(struct sockaddr *)&client_address, &client_len);
-
-					debug("Connected new ui client");
-
-					if (client_sockfd>ui_server.max_fd_num) ui_server.max_fd_num=client_sockfd;
-
-					FD_SET(client_sockfd, &ui_server.readfds);
-//					close(client_sockfd);
-
-				//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
-				}else{
-					debug("else");
-					ioctl(fd, FIONREAD, &nread);
-					if(nread == 0) {
-						debug("nothing to read");
-						FD_CLR(fd, &ui_server.readfds);
-						if FD_ISSET(fd, &ui_server.tuiclient_fds_set){
-							FD_CLR(fd, &ui_server.tuiclient_fds_set);
-						}
-						close(fd);
-						debug("Client parted from fd:"+toString(fd));
+	try{
+		while(1) {
+			max_published_screenline_num=0;
+			uint fd;
+			int nread;
+			ui_server.testfds = ui_server.readfds;
+			int result;
+			//Now wait for clients and requests. Because you have passed a null pointer as the timeout parameter, no timeout will occur. The program will logg an error if select returns a value less than 1:
+			result = select(FD_SETSIZE, &ui_server.testfds, (fd_set *)0,
+				(fd_set *)0, (struct timeval *) 0);
+			if(result < 1) {
+				error_log_no_msg("Error in ui_server on select");
+				break;
+			}
+			//Once you know you’ve got activity, you can find which descriptor it’s on by checking each in turn using FD_ISSET:
+			for(fd = 0; fd <= ui_server.max_fd_num; fd++) {
+				if(FD_ISSET(fd,&ui_server.testfds)) {
+					//If the activity is on server_sockfd, it must be a request for a new connection, and you add the associated client_sockfd to the descriptor set:
+					if(fd == ui_server.server_sockfd) {
+						uint client_sockfd;
+						socklen_t client_len;
+						struct sockaddr_in client_address;
+	
+						client_len = sizeof(client_address);
+						client_sockfd = accept(ui_server.server_sockfd,
+						(struct sockaddr *)&client_address, &client_len);
+	
+						debug("Connected new ui client");
+	
+						if (client_sockfd>ui_server.max_fd_num) ui_server.max_fd_num=client_sockfd;
+	
+						FD_SET(client_sockfd, &ui_server.readfds);
+//						close(client_sockfd);
+	
+					//If it isn’t the server, it must be client activity. If close is received, the client has gone away, and you remove it from the descriptor set. Otherwise, you “serve” the client as in the previous examples.
 					}else{
-						debug("reading buffer");
-						char buffer[1000]="";
-						if (nread!=read(fd, &buffer, nread)){
-							debug("Not all data has been read from ui_client()");
-						}
-						string buffer_as_str=buffer;
-						debug("received_from ui_client:"+buffer_as_str);
-						if FD_ISSET(fd, &ui_server.tuiclient_fds_set){
-							ui_server.serve_tuiclient(fd,buffer_as_str);
+						debug("else");
+						ioctl(fd, FIONREAD, &nread);
+						if(nread == 0) {
+							debug("nothing to read");
+							FD_CLR(fd, &ui_server.readfds);
+							if FD_ISSET(fd, &ui_server.tuiclient_fds_set){
+								FD_CLR(fd, &ui_server.tuiclient_fds_set);
+							}
+							close(fd);
+							debug("Client parted from fd:"+toString(fd));
 						}else{
-							if (buffer_as_str.find("Host:")==buffer_as_str.npos){
-								// it's tuiclient else it's browser
-								FD_SET(fd, &ui_server.tuiclient_fds_set);
+							debug("reading buffer");
+							char buffer[1000]="";
+							if (nread!=read(fd, &buffer, nread)){
+								debug("Not all data has been read from ui_client()");
+							}
+							string buffer_as_str=buffer;
+							debug("received_from ui_client:"+buffer_as_str);
+							if FD_ISSET(fd, &ui_server.tuiclient_fds_set){
 								ui_server.serve_tuiclient(fd,buffer_as_str);
-							}else{  // it's browser
-								ui_server.serve_browser(fd,buffer_as_str);
-								FD_CLR(fd, &ui_server.readfds);
-								close(fd);
+							}else{
+								if (buffer_as_str.find("Host:")==buffer_as_str.npos){
+									// it's tuiclient else it's browser
+									FD_SET(fd, &ui_server.tuiclient_fds_set);
+									ui_server.serve_tuiclient(fd,buffer_as_str);
+								}else{  // it's browser
+									ui_server.serve_browser(fd,buffer_as_str);
+									FD_CLR(fd, &ui_server.readfds);
+									close(fd);
+								}
 							}
 						}
 					}
 				}
 			}
 		}
+		return 0;
+	}catch(...){
+		error_log_no_msg("Error in ui_server.cpp: run_ui_server()");
+		return 0;
 	}
-	return 0;
 }

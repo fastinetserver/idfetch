@@ -171,7 +171,7 @@ class Tsettings{
 			logs_dir("/var/log/seggetd"),
 			general_log_file("tuiclient.log"),
 			error_log_file("tuiclient_error.log"),
-			debug_log_file("tuiclient_debug.log")
+			debug_log_file("none")
 			{};
 		void init();
 };
