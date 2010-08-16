@@ -6,11 +6,9 @@ LIBS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $
 CXXFLAGS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))
 
 CXXFLAGS_WARNINGS = -pedantic -Wall -Wextra -Wformat -Weffc++
-#CXXFLAGS_WARNINGS = -pedantic -Wextra -Wformat -Weffc++
 CXXFLAGS_OPT = -O2 -g
 
 LIBS = $(LIBS_PKGCONFIG)
-#MIBS = -lncurses
 CXXFLAGS = $(CXXFLAGS_PKGCONFIG) -lncurses $(CXXFLAGS_WARNINGS) $(CXXFLAGS_OPT)
 
 all: $(BINS)
@@ -20,8 +18,6 @@ all: $(BINS)
 
 seggetd: seggetd.o connection.o checksum.o config.o distfile.o log.o mirror.o network.o networkbroker.o phase.o pkg.o response.o segment.o settings.o stats.o str.o tui.o utils.o ui_server.o proxyfetcher.o requestserver.o scriptserver.o
 	$(CXX) -o $@ -lncurses -lcryptopp $(LIBS) $(CIBS) $^
-#%: %.o
-#	$(CXX) -o $@ $(LIBS) $(CIBS) $^
 
 clean:
 	-rm -f $(BINS) $(OBJS)

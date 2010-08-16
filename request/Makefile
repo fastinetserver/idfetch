@@ -6,7 +6,6 @@ LIBS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $
 CXXFLAGS_PKGCONFIG := $(foreach mod,$(PKGCONFIG_MODULES),$(shell pkg-config --libs $(mod)))
 
 CXXFLAGS_WARNINGS = -pedantic -Wall -Wextra -Wformat -Weffc++
-#CXXFLAGS_WARNINGS = -pedantic -Wextra -Wformat -Weffc++
 CXXFLAGS_OPT = -O0 -g3
 
 LIBS = $(LIBS_PKGCONFIG)
